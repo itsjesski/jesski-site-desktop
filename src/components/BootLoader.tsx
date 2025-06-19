@@ -36,7 +36,7 @@ export const BootLoader: React.FC<BootLoaderProps> = ({ onBootComplete }) => {
     const progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev < 100) {
-          return prev + 3 // Faster progress
+          return Math.min(prev + 3, 100) // Cap at exactly 100%
         }
         return prev
       })
