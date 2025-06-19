@@ -4,7 +4,8 @@ import {
   TextViewer, 
   WebsiteViewer, 
   AboutApp, 
-  StickerPack
+  StickerPack,
+  TwitchChat
 } from '../applications'
 
 interface ApplicationRegistryProps {
@@ -21,6 +22,8 @@ export const ApplicationRegistry: React.FC<ApplicationRegistryProps> = ({ window
       return <AboutApp window={window} />
     case 'sticker-pack':
       return <StickerPack />
+    case 'twitch-chat':
+      return <TwitchChat />
     default:
       return (
         <div className="p-4">
