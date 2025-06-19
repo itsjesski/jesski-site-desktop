@@ -69,18 +69,39 @@ class TwitchAPI {
     }
 
     try {
-      console.log('Note: Using simulated token for demo purposes')
-      console.log('In production, implement a backend proxy for secure Twitch API authentication')
+      // Try to get a real access token using client credentials flow
+      // Note: This will fail in browsers due to CORS and security restrictions
+      // In production, you should implement a backend proxy for this
       
-      // For demo purposes, we'll simulate a token
-      // In production, you need a backend service to handle client credentials securely
+      const response = await fetch('https://id.twitch.tv/oauth2/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          client_id: this.clientId,
+          client_secret: '', // Can't include this in frontend for security
+          grant_type: 'client_credentials'
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        this.accessToken = data.access_token
+        this.tokenExpiration = Date.now() + (data.expires_in * 1000)
+        console.log('Successfully obtained Twitch access token')
+        return this.accessToken!
+      } else {
+        throw new Error(`Token request failed: ${response.status}`)
+      }
+    } catch (error) {
+      console.warn('Failed to get real Twitch token (expected in browser environment):', error)
+      console.log('Using demo mode - implement a backend proxy for real API access')
+      
+      // Fallback to demo token for development
       this.accessToken = 'demo_token_' + Date.now()
       this.tokenExpiration = Date.now() + (3600 * 1000) // 1 hour
-
       return this.accessToken
-    } catch (error) {
-      console.error('Error getting Twitch access token:', error)
-      throw error
     }
   }
 
@@ -89,33 +110,88 @@ class TwitchAPI {
     streamData?: TwitchStreamData
   }> {
     try {
-      console.log('Note: Using simulated stream data for demo purposes')
+      // Get access token for API calls
+      const accessToken = await this.getAccessToken()
       
-      // For demo purposes, randomly simulate stream status
-      // In production, you would make real API calls through a backend proxy
-      const isLive = Math.random() > 0.7 // 30% chance of being live for demo
-      
-      if (isLive) {
-        const streamData: TwitchStreamData = {
-          id: 'demo_stream_id',
-          user_id: 'demo_user_id',
-          user_login: username,
-          user_name: username.charAt(0).toUpperCase() + username.slice(1),
-          game_id: '518203',
-          game_name: 'Just Chatting',
-          type: 'live',
-          title: '🐕 Coding and Chatting with my cute doggy ears! 💻✨',
-          viewer_count: 0, // Not displayed in UI
-          started_at: new Date(Date.now() - Math.random() * 3600000).toISOString(), // Started within last hour
-          language: 'en',
-          thumbnail_url: 'https://static-cdn.jtvnw.net/previews-ttv/live_user_jesski-{width}x{height}.jpg',
-          tag_ids: [],
-          is_mature: false
-        }
-        
-        return { isLive: true, streamData }
+      // Check if we're in demo mode (token starts with 'demo_token_')
+      if (accessToken.startsWith('demo_token_')) {
+        console.log('Demo mode: Using simulated stream status')
+        // In demo mode, return offline status unless you want to test
+        // Change this line to return { isLive: true, streamData: {...} } to test the stream window
+        return { isLive: false }
       }
       
+      // Real API mode - make actual calls to Twitch
+      console.log('Real API mode: Checking actual stream status for', username)
+      
+      // First get the user info to get the user ID
+      const userResponse = await fetch(
+        `https://api.twitch.tv/helix/users?login=${username}`,
+        {
+          headers: {
+            'Client-ID': this.clientId,
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        }
+      )
+
+      if (!userResponse.ok) {
+        console.warn('Failed to get user info:', userResponse.status)
+        return { isLive: false }
+      }
+
+      const userData = await userResponse.json()
+      if (!userData.data || userData.data.length === 0) {
+        console.warn('User not found:', username)
+        return { isLive: false }
+      }
+
+      const userId = userData.data[0].id
+
+      // Now check if the stream is live
+      const streamResponse = await fetch(
+        `https://api.twitch.tv/helix/streams?user_id=${userId}`,
+        {
+          headers: {
+            'Client-ID': this.clientId,
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        }
+      )
+
+      if (!streamResponse.ok) {
+        console.warn('Failed to get stream status:', streamResponse.status)
+        return { isLive: false }
+      }
+
+      const streamData = await streamResponse.json()
+      
+      if (streamData.data && streamData.data.length > 0) {
+        // Stream is live!
+        const stream = streamData.data[0]
+        const twitchStreamData: TwitchStreamData = {
+          id: stream.id,
+          user_id: stream.user_id,
+          user_login: stream.user_login,
+          user_name: stream.user_name,
+          game_id: stream.game_id,
+          game_name: stream.game_name,
+          type: stream.type,
+          title: stream.title,
+          viewer_count: stream.viewer_count,
+          started_at: stream.started_at,
+          language: stream.language,
+          thumbnail_url: stream.thumbnail_url,
+          tag_ids: stream.tag_ids || [],
+          is_mature: stream.is_mature
+        }
+        
+        console.log('🔴 Stream is LIVE:', stream.title)
+        return { isLive: true, streamData: twitchStreamData }
+      }
+      
+      // Stream is offline
+      console.log('⚫ Stream is OFFLINE')
       return { isLive: false }
     } catch (error) {
       console.error('Error checking stream status:', error)

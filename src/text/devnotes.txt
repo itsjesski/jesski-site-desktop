@@ -28,16 +28,25 @@ Recent Features:
 Twitch Integration Details:
 - Real-time stream status checking via Twitch Helix API
 - OAuth token management with automatic refresh
-- Stream information display (viewer count, game name)
+- Stream information display (game name, stream title)
 - Error handling for API failures
 - Configurable via environment variables (.env file)
-- Updates every 2 minutes, only shows when live
-- Security: .env file is now properly gitignored
+- Updates every 2 minutes, only shows when stream is actually live
+- Security: Requires backend proxy for production use
 
-Setup Instructions:
+Setup Instructions for Real Twitch API:
 1. Copy .env.example to .env
-2. Add your Twitch API credentials from https://dev.twitch.tv/console/apps
-3. Never commit .env file to git (now properly ignored)
+2. Add your Twitch Client ID from https://dev.twitch.tv/console/apps
+3. Set VITE_TWITCH_CHANNEL to your Twitch username (e.g., "jesski")
+4. For production: Implement a backend proxy for secure token management
+   (Frontend can't securely handle client secrets)
+
+Current Mode:
+- Demo mode: Shows offline status (secure for frontend)
+- To test stream window: Set return value to true in isStreamLive()
+- For real API: Implement backend proxy with client credentials flow
+
+Never commit .env file to git (now properly ignored)
 
 TODO:
 - Add right-click context menus

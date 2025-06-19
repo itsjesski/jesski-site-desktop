@@ -1,11 +1,13 @@
 import React from 'react'
 import { useDesktopStore } from '../store/desktopStore'
 import { format } from 'date-fns'
-import { Menu, FileText, Globe, User, Folder, X } from 'lucide-react'
+import { Menu, FileText, Globe, User, Folder, X, VolumeX, Volume2 } from 'lucide-react'
 
 interface TaskbarProps {
   isStartMenuOpen: boolean
   onStartMenuToggle: () => void
+  isMuted?: boolean
+  onToggleMute?: () => void
 }
 
 const getIconForComponent = (component: string) => {
@@ -21,7 +23,12 @@ const getIconForComponent = (component: string) => {
   }
 }
 
-export const Taskbar: React.FC<TaskbarProps> = ({ isStartMenuOpen, onStartMenuToggle }) => {
+export const Taskbar: React.FC<TaskbarProps> = ({ 
+  isStartMenuOpen, 
+  onStartMenuToggle, 
+  isMuted = false, 
+  onToggleMute 
+}) => {
   const { windows, focusWindow, minimizeWindow, closeWindow } = useDesktopStore()
   const [currentTime, setCurrentTime] = React.useState(new Date())
 
@@ -133,7 +140,36 @@ export const Taskbar: React.FC<TaskbarProps> = ({ isStartMenuOpen, onStartMenuTo
         </div>
 
         {/* System Tray - Right Section */}
-        <div className="flex-shrink-0 ml-2 sm:ml-4">
+        <div className="flex-shrink-0 ml-2 sm:ml-4 flex items-center gap-2">
+          {/* Notification Mute Button */}
+          {onToggleMute && (
+            <button
+              onClick={onToggleMute}
+              className="p-2 rounded transition-colors cursor-pointer flex items-center justify-center"
+              style={{
+                minHeight: '32px',
+                minWidth: '32px',
+                backgroundColor: isMuted ? 'var(--color-accent-600)' : 'transparent',
+                color: 'var(--taskbar-text)'
+              }}
+              onMouseEnter={(e) => {
+                if (!isMuted) {
+                  e.currentTarget.style.backgroundColor = 'var(--taskbar-hover)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isMuted) {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }
+              }}
+              title={isMuted ? 'Unmute notifications' : 'Mute notifications'}
+              aria-label={isMuted ? 'Unmute notifications' : 'Mute notifications'}
+            >
+              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            </button>
+          )}
+          
+          {/* Date and Time */}
           <div className="text-right px-1 sm:px-3 py-2 text-xs sm:text-sm" style={{ color: 'var(--taskbar-text)' }}>
             <div className="leading-tight">{format(currentTime, 'h:mm a')}</div>
             <div className="text-xs leading-tight hidden sm:block">{format(currentTime, 'MM/dd/yyyy')}</div>
