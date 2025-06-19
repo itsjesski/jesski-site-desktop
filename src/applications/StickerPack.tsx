@@ -156,7 +156,7 @@ export const StickerPack: React.FC = () => {
   ]
 
   return (
-    <div className="p-4">
+    <div className="h-full p-4 overflow-y-auto overflow-x-hidden">
       {/* CSS Animation Definition */}
       <style>
         {`
@@ -179,26 +179,28 @@ export const StickerPack: React.FC = () => {
           }
         `}
       </style>
-      <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
-        🎨 Cute Stickers
-      </h3>
-      <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-        Drag these stickers around for fun! Click them to make them wiggle! 🎉
-      </p>
-      <div className="relative h-96 border-2 border-dashed rounded-lg p-4" style={{ borderColor: 'var(--window-border)' }}>
-        <p className="text-xs text-center mb-4 opacity-70" style={{ color: 'var(--text-muted)' }}>
-          Sticker playground - drag them around!
+      <div className="min-h-full flex flex-col">
+        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
+          🎨 Cute Stickers
+        </h3>
+        <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+          Drag these stickers around for fun! Click them to make them wiggle! 🎉
         </p>
-        {stickers.map((sticker, index) => (
-          <DraggableSticker
-            key={sticker.id}
-            stickerId={sticker.id}
-            src={sticker.src}
-            initialX={100 + (index * 80)}
-            initialY={100 + (index % 2) * 100}
-            size={60}
-          />
-        ))}
+        <div className="relative flex-1 min-h-96 border-2 border-dashed rounded-lg p-4" style={{ borderColor: 'var(--window-border)' }}>
+          <p className="text-xs text-center mb-4 opacity-70" style={{ color: 'var(--text-muted)' }}>
+            Sticker playground - drag them around!
+          </p>
+          {stickers.map((sticker, index) => (
+            <DraggableSticker
+              key={sticker.id}
+              stickerId={sticker.id}
+              src={sticker.src}
+              initialX={100 + (index * 80)}
+              initialY={100 + (index % 2) * 100}
+              size={60}
+            />
+          ))}
+        </div>
       </div>
     </div>
   )

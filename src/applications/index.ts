@@ -2,6 +2,5 @@
 export { TextViewer } from './TextViewer'
 export { WebsiteViewer } from './WebsiteViewer'
 export { AboutApp } from './AboutApp'
-export { ContactApp } from './ContactApp'
 export { StickerPack } from './StickerPack'
 export { ThemeDemo } from './ThemeDemo'

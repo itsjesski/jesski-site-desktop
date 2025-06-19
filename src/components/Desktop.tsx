@@ -4,7 +4,7 @@ import { useDesktopStore } from '../store/desktopStore'
 import { Window, Taskbar, DesktopIcon } from '.'
 import { StartMenu } from './StartMenu'
 import { DesktopStickers } from './DesktopStickers'
-import { FileText, Globe, User, Mail, Folder, Palette } from 'lucide-react'
+import { FileText, Globe, User, Folder, Palette } from 'lucide-react'
 import BackgroundImage from '../images/Background.png'
 
 const desktopIcons = [
@@ -22,34 +22,15 @@ const desktopIcons = [
     })
   },
   {
-    id: 'contact',
-    label: 'Contact',
-    icon: Mail,
-    action: () => ({
-      title: 'Contact',
-      component: 'contact',
-      isMinimized: false,
-      isMaximized: false,
-      position: { x: 150, y: 150 },
-      size: { width: 500, height: 600 }
-    })
-  },
-  {
     id: 'portfolio',
     label: 'Portfolio',
     icon: Globe,
-    action: () => ({
-      title: 'Portfolio Website',
-      component: 'website-viewer',
-      isMinimized: false,
-      isMaximized: false,
-      position: { x: 200, y: 100 },
-      size: { width: 800, height: 600 },
-      data: {
-        url: 'https://github.com',
-        siteName: 'GitHub'
-      }
-    })
+    isExternalLink: true,
+    url: 'https://github.com',
+    action: () => {
+      window.open('https://github.com', '_blank', 'noopener,noreferrer')
+      return null // Don't create a window
+    }
   },
   {
     id: 'readme',
@@ -72,7 +53,7 @@ Features:
 - Draggable and resizable windows
 - Desktop icons
 - Taskbar with open applications
-- Various applications (About, Contact, Website viewer, Text viewer)
+- Various applications (About, Text viewer, Projects, Stickers)
 
 Double-click on icons to open applications.
 Drag windows around to organize your workspace.
@@ -136,13 +117,16 @@ Feel free to reach out if you'd like to collaborate!`
 ]
 
 export const Desktop: React.FC = () => {
-  const { windows, openWindow } = useDesktopStore()
+  const { windows, openWindow, initializeWelcomeWindow } = useDesktopStore()
   const [isStartMenuOpen, setIsStartMenuOpen] = React.useState(false)
   const [iconColumns, setIconColumns] = React.useState<Array<typeof desktopIcons>>([])
 
-  const handleIconDoubleClick = (iconAction: () => Omit<WindowState, 'id' | 'zIndex'>) => {
+  const handleIconDoubleClick = (iconAction: () => Omit<WindowState, 'id' | 'zIndex'> | null) => {
     const windowData = iconAction()
-    openWindow(windowData)
+    if (windowData) {
+      openWindow(windowData)
+    }
+    // If windowData is null, it means the action handled itself (like opening external link)
   }
 
   const handleStartMenuToggle = () => {
@@ -152,6 +136,11 @@ export const Desktop: React.FC = () => {
   const handleStartMenuClose = () => {
     setIsStartMenuOpen(false)
   }
+
+  // Initialize welcome window on first load
+  React.useEffect(() => {
+    initializeWelcomeWindow()
+  }, [initializeWelcomeWindow])
 
   // Calculate responsive icon columns
   React.useEffect(() => {
@@ -213,15 +202,15 @@ export const Desktop: React.FC = () => {
                   minWidth: '90px',
                   maxHeight: '100%'
                 }}
-              >
-                {column.map((icon) => (
-                  <DesktopIcon
-                    key={icon.id}
-                    icon={icon.icon}
-                    label={icon.label}
-                    onDoubleClick={() => handleIconDoubleClick(icon.action)}
-                  />
-                ))}
+              >              {column.map((icon) => (
+                <DesktopIcon
+                  key={icon.id}
+                  icon={icon.icon}
+                  label={icon.label}
+                  isExternalLink={icon.isExternalLink}
+                  onDoubleClick={() => handleIconDoubleClick(icon.action)}
+                />
+              ))}
               </div>
             ))}
           </div>

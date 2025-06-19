@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { User, Mail, Globe, FileText } from 'lucide-react'
+import { User, FileText } from 'lucide-react'
 import type { WindowState } from '../store/desktopStore'
 
 interface StartMenuProps {
@@ -24,36 +24,6 @@ const startMenuItems = [
     })
   },
   {
-    id: 'contact',
-    label: 'Contact',
-    icon: Mail,
-    action: () => ({
-      title: 'Contact',
-      component: 'contact',
-      isMinimized: false,
-      isMaximized: false,
-      position: { x: 150, y: 150 },
-      size: { width: 500, height: 600 }
-    })
-  },
-  {
-    id: 'portfolio',
-    label: 'Portfolio',
-    icon: Globe,
-    action: () => ({
-      title: 'Portfolio Website',
-      component: 'website-viewer',
-      isMinimized: false,
-      isMaximized: false,
-      position: { x: 200, y: 100 },
-      size: { width: 800, height: 600 },
-      data: {
-        url: 'https://github.com',
-        siteName: 'GitHub'
-      }
-    })
-  },
-  {
     id: 'readme',
     label: 'README',
     icon: FileText,
@@ -74,7 +44,7 @@ Features:
 - Draggable and resizable windows
 - Desktop icons
 - Taskbar with open applications
-- Various applications (About, Contact, Website viewer, Text viewer)
+- Various applications (About, Text viewer, Projects, Stickers)
 
 Double-click on icons to open applications.
 Drag windows around to organize your workspace.

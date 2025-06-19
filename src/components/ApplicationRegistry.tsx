@@ -4,7 +4,6 @@ import {
   TextViewer, 
   WebsiteViewer, 
   AboutApp, 
-  ContactApp,
   StickerPack
 } from '../applications'
 
@@ -20,8 +19,6 @@ export const ApplicationRegistry: React.FC<ApplicationRegistryProps> = ({ window
       return <WebsiteViewer window={window} />
     case 'about':
       return <AboutApp window={window} />
-    case 'contact':
-      return <ContactApp window={window} />
     case 'sticker-pack':
       return <StickerPack />
     default:
