@@ -58,7 +58,7 @@ export const useDesktopStore = create<DesktopState>((set, get) => ({
   windows: [],
   nextZIndex: 100,
   hasShownWelcome: false,
-  showTwitchStream: true, // Show by default, component will handle live check
+  showTwitchStream: false, // Will be set to true when stream is detected as live
   
   initializeWelcomeWindow: () => {
     // Always show the welcome window since we're showing boot animation every time

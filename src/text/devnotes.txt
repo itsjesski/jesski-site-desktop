@@ -19,11 +19,19 @@ Architecture:
 - Theme system with CSS custom properties
 
 Recent Features:
-- Twitch stream integration with live detection
+- Twitch stream integration with live detection (COMPLETED: Real API integration)
 - Boot loader animation with stickers
 - Drag & drop sticker pack application
 - File-based text content system
 - Desktop icon management with responsive layout
+
+Twitch Integration Details:
+- Real-time stream status checking via Twitch Helix API
+- OAuth token management with automatic refresh
+- Stream information display (viewer count, game name)
+- Error handling for API failures
+- Configurable via environment variables (.env file)
+- Updates every 2 minutes, only shows when live
 
 TODO:
 - Add right-click context menus
@@ -34,8 +42,7 @@ TODO:
 
 Known Issues:
 - Window dragging on mobile could be improved
-- Need better error handling for failed API calls
-- Twitch embed sizing in maximized mode
+- Twitch embed sizing in maximized mode needs refinement
 
 Performance Optimizations:
 - Lazy loading of applications

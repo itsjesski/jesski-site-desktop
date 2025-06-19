@@ -1,0 +1,135 @@
+/* Theme Variables - inspired by warm, natural aesthetic */
+:root {
+  /* Primary Colors - Warm browns and amber tones */
+  --color-primary-50: #fdf8f6;
+  --color-primary-100: #f2e8e5;
+  --color-primary-200: #eaddd7;
+  --color-primary-300: #e0cfc5;
+  --color-primary-400: #d2bab0;
+  --color-primary-500: #b8997a;
+  --color-primary-600: #a08765;
+  --color-primary-700: #8b7355;
+  --color-primary-800: #725d46;
+  --color-primary-900: #5d4a38;
+
+  /* Secondary Colors - Natural greens */
+  --color-secondary-50: #f0fdf4;
+  --color-secondary-100: #dcfce7;
+  --color-secondary-200: #bbf7d0;
+  --color-secondary-300: #86efac;
+  --color-secondary-400: #4ade80;
+  --color-secondary-500: #22c55e;
+  --color-secondary-600: #16a34a;
+  --color-secondary-700: #15803d;
+  --color-secondary-800: #166534;
+  --color-secondary-900: #14532d;
+
+  /* Accent Colors - Warm amber */
+  --color-accent-50: #fffbeb;
+  --color-accent-100: #fef3c7;
+  --color-accent-200: #fde68a;
+  --color-accent-300: #fcd34d;
+  --color-accent-400: #fbbf24;
+  --color-accent-500: #f59e0b;
+  --color-accent-600: #d97706;
+  --color-accent-700: #b45309;
+  --color-accent-800: #92400e;
+  --color-accent-900: #78350f;
+
+  /* Neutral Colors - Warm grays */
+  --color-neutral-50: #fafaf9;
+  --color-neutral-100: #f5f5f4;
+  --color-neutral-200: #e7e5e4;
+  --color-neutral-300: #d6d3d1;
+  --color-neutral-400: #a8a29e;
+  --color-neutral-500: #78716c;
+  --color-neutral-600: #57534e;
+  --color-neutral-700: #44403c;
+  --color-neutral-800: #292524;
+  --color-neutral-900: #1c1917;
+
+  /* Desktop theme */
+  --desktop-bg: linear-gradient(135deg, var(--color-accent-400), var(--color-secondary-500), var(--color-accent-300));
+  --desktop-bg-image: url('/src/images/Background.png'); /* Background image */
+  --desktop-bg-size: cover;
+  --desktop-bg-position: center;
+  --desktop-bg-repeat: no-repeat;
+
+  /* Window theme */
+  --window-bg: var(--color-primary-50);
+  --window-border: var(--color-primary-400);
+  --window-header-bg: var(--color-primary-600);
+  --window-header-text: var(--color-primary-50);
+  --window-content-bg: var(--color-primary-50);
+
+  /* Taskbar theme */
+  --taskbar-bg: var(--color-primary-800);
+  --taskbar-border: var(--color-primary-600);
+  --taskbar-text: var(--color-primary-50);
+  --taskbar-hover: var(--color-primary-700);
+  --taskbar-active: var(--color-primary-500);
+
+  /* Start menu theme */
+  --start-menu-bg: var(--color-primary-700);
+  --start-menu-border: var(--color-primary-600);
+  --start-menu-text: var(--color-primary-50);
+  --start-menu-hover: var(--color-primary-600);
+
+  /* Icon theme */
+  --icon-bg: var(--color-accent-100);
+  --icon-border: var(--color-accent-600);
+  --icon-text: var(--color-primary-900);
+  --icon-hover: var(--color-accent-200);
+  --icon-active: var(--color-accent-300);
+
+  /* Effects */
+  --window-shadow: 0 10px 15px -3px rgba(92, 73, 56, 0.1), 0 4px 6px -2px rgba(92, 73, 56, 0.05);
+  --resize-handle-color: var(--color-primary-600);
+  --resize-handle-hover: var(--color-primary-500);
+
+  /* Text colors */
+  --text-primary: var(--color-primary-900);
+  --text-secondary: var(--color-primary-700);
+  --text-muted: var(--color-primary-500);
+  --text-inverse: var(--color-primary-50);
+
+  /* Interactive states */
+  --focus-ring: 2px solid var(--color-accent-500);
+  --focus-ring-offset: 2px;
+}
+
+/* Desktop background utility class */
+.desktop-background {
+  background: var(--desktop-bg);
+  background-image: var(--desktop-bg-image);
+  background-size: var(--desktop-bg-size);
+  background-position: var(--desktop-bg-position);
+  background-repeat: var(--desktop-bg-repeat);
+  background-attachment: fixed;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure content stays above overlay */
+.desktop-background > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* When background image is set, overlay the gradient for better contrast */
+.desktop-background[style*="background-image"]:not([style*="background-image: none"])::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(34, 197, 94, 0.3), rgba(252, 211, 77, 0.3));
+  pointer-events: none;
+  z-index: 1;
+}
