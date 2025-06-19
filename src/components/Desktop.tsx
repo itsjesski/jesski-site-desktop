@@ -7,19 +7,28 @@ import { DesktopStickers } from './DesktopStickers'
 import { FileText, Globe, User, Folder, Palette } from 'lucide-react'
 import BackgroundImage from '../images/Background.png'
 
+// Helper function to create window action with defaults
+const createWindowAction = (
+  title: string,
+  component: string,
+  position: { x: number; y: number },
+  data?: Record<string, unknown>
+) => () => ({
+  title,
+  component,
+  isMinimized: false,
+  isMaximized: false,
+  position,
+  size: { width: 600, height: 500 }, // Will be auto-sized by store
+  ...(data && { data })
+})
+
 const desktopIcons = [
   {
     id: 'about',
     label: 'About Me',
     icon: User,
-    action: () => ({
-      title: 'About Me',
-      component: 'about',
-      isMinimized: false,
-      isMaximized: false,
-      position: { x: 100, y: 100 },
-      size: { width: 600, height: 500 }
-    })
+    action: createWindowAction('About Me', 'about', { x: 100, y: 100 })
   },
   {
     id: 'portfolio',
@@ -29,23 +38,16 @@ const desktopIcons = [
     url: 'https://github.com',
     action: () => {
       window.open('https://github.com', '_blank', 'noopener,noreferrer')
-      return null // Don't create a window
+      return null
     }
   },
   {
     id: 'readme',
     label: 'README.txt',
     icon: FileText,
-    action: () => ({
-      title: 'README.txt',
-      component: 'text-viewer',
-      isMinimized: false,
-      isMaximized: false,
-      position: { x: 250, y: 200 },
-      size: { width: 600, height: 400 },
-      data: {
-        fileName: 'README.txt',
-        content: `Welcome to Jess's Desktop!
+    action: createWindowAction('README.txt', 'text-viewer', { x: 250, y: 200 }, {
+      fileName: 'README.txt',
+      content: `Welcome to Jess's Desktop!
 
 This is a Windows-style desktop interface built with React and TypeScript.
 
@@ -60,23 +62,15 @@ Drag windows around to organize your workspace.
 Use the taskbar to switch between open applications.
 
 Enjoy exploring!`
-      }
     })
   },
   {
     id: 'projects',
     label: 'Projects',
     icon: Folder,
-    action: () => ({
-      title: 'My Projects',
-      component: 'text-viewer',
-      isMinimized: false,
-      isMaximized: false,
-      position: { x: 300, y: 150 },
-      size: { width: 700, height: 500 },
-      data: {
-        fileName: 'projects.txt',
-        content: `My Projects
+    action: createWindowAction('My Projects', 'text-viewer', { x: 300, y: 150 }, {
+      fileName: 'projects.txt',
+      content: `My Projects
 
 1. Desktop Website
    - This very website you're looking at!
@@ -98,21 +92,13 @@ Enjoy exploring!`
    - Cloud: AWS, Docker
 
 Feel free to reach out if you'd like to collaborate!`
-      }
     })
   },
   {
     id: 'stickers',
     label: 'Stickers',
     icon: Palette,
-    action: () => ({
-      title: 'Cute Stickers',
-      component: 'sticker-pack',
-      isMinimized: false,
-      isMaximized: false,
-      position: { x: 200, y: 50 },
-      size: { width: 600, height: 500 }
-    })
+    action: createWindowAction('Cute Stickers', 'sticker-pack', { x: 200, y: 50 })
   }
 ]
 
