@@ -2,7 +2,11 @@ import React from 'react'
 import { useDesktopStore } from '../store/desktopStore'
 import { format } from 'date-fns'
 import { Menu, FileText, Globe, User, Mail, Folder, X } from 'lucide-react'
-import { StartMenu } from './StartMenu'
+
+interface TaskbarProps {
+  isStartMenuOpen: boolean
+  onStartMenuToggle: () => void
+}
 
 const getIconForComponent = (component: string) => {
   switch (component) {
@@ -19,10 +23,9 @@ const getIconForComponent = (component: string) => {
   }
 }
 
-export const Taskbar: React.FC = () => {
-  const { windows, focusWindow, minimizeWindow, closeWindow, openWindow } = useDesktopStore()
+export const Taskbar: React.FC<TaskbarProps> = ({ isStartMenuOpen, onStartMenuToggle }) => {
+  const { windows, focusWindow, minimizeWindow, closeWindow } = useDesktopStore()
   const [currentTime, setCurrentTime] = React.useState(new Date())
-  const [isStartMenuOpen, setIsStartMenuOpen] = React.useState(false)
 
   React.useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -42,27 +45,51 @@ export const Taskbar: React.FC = () => {
     closeWindow(windowId)
   }
 
-  const handleStartClick = () => {
-    setIsStartMenuOpen(!isStartMenuOpen)
-  }
-
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 h-12 bg-gray-800 border-t border-gray-600 flex items-center z-50 px-2 sm:px-4" role="navigation" aria-label="Taskbar">
+      <div 
+        className="fixed left-0 right-0 h-12 flex items-center px-2 sm:px-4 border-t" 
+        style={{
+          backgroundColor: 'var(--taskbar-bg)',
+          borderColor: 'var(--taskbar-border)',
+          color: 'var(--taskbar-text)',
+          bottom: 0,
+          top: 'auto',
+          position: 'fixed',
+          zIndex: 9999
+        }}
+        role="navigation" 
+        aria-label="Taskbar"
+      >
         {/* Start Button - Left Section */}
         <div className="flex-shrink-0 mr-2 sm:mr-4">
           <button 
-            onClick={handleStartClick}
-            className={`flex items-center space-x-1 sm:space-x-2 px-3 py-3 sm:px-3 sm:py-2 rounded text-white text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
-              isStartMenuOpen ? 'bg-gray-600' : 'bg-transparent hover:bg-gray-700'
+            onClick={onStartMenuToggle}
+            className={`flex items-center space-x-1 sm:space-x-2 px-3 py-3 sm:px-3 sm:py-2 rounded text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
+              isStartMenuOpen ? '' : 'hover:bg-opacity-80'
             }`}
+            style={{
+              backgroundColor: isStartMenuOpen ? 'var(--taskbar-active)' : 'transparent',
+              color: 'var(--taskbar-text)'
+            }}
+            onMouseEnter={(e) => {
+              if (!isStartMenuOpen) {
+                e.currentTarget.style.backgroundColor = 'var(--taskbar-hover)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isStartMenuOpen) {
+                e.currentTarget.style.backgroundColor = 'transparent'
+              }
+            }}
             aria-label="Start menu"
             aria-expanded={isStartMenuOpen}
             aria-haspopup="menu"
+            tabIndex={1}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                handleStartClick()
+                onStartMenuToggle()
               }
             }}
           >
@@ -75,17 +102,15 @@ export const Taskbar: React.FC = () => {
         <div className="flex flex-1 gap-1 sm:gap-3 overflow-x-auto" role="group" aria-label="Open windows">
           {windows.map((window) => {
             const IconComponent = getIconForComponent(window.component)
-            return (
-              <div
-                key={window.id}
-                className={`
-                  relative flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors border max-w-32 sm:max-w-48 flex-shrink-0
-                  ${window.isMinimized 
-                    ? 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600' 
-                    : 'bg-blue-600 text-white border-blue-500 hover:bg-blue-500'
-                  }
-                `}
-              >
+            return (                <div
+                  key={window.id}
+                  className="relative flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors border max-w-32 sm:max-w-48 flex-shrink-0"
+                  style={{
+                    backgroundColor: window.isMinimized ? 'var(--taskbar-hover)' : 'var(--taskbar-active)',
+                    color: 'var(--taskbar-text)',
+                    borderColor: 'var(--taskbar-border)'
+                  }}
+                >
                 <button
                   onClick={() => handleTaskClick(window.id, window.isMinimized)}
                   className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0 pr-1 cursor-pointer"
@@ -111,22 +136,12 @@ export const Taskbar: React.FC = () => {
 
         {/* System Tray - Right Section */}
         <div className="flex-shrink-0 ml-2 sm:ml-4">
-          <div className="text-right px-1 sm:px-3 py-2 text-white text-xs sm:text-sm">
+          <div className="text-right px-1 sm:px-3 py-2 text-xs sm:text-sm" style={{ color: 'var(--taskbar-text)' }}>
             <div className="leading-tight">{format(currentTime, 'h:mm a')}</div>
             <div className="text-xs leading-tight hidden sm:block">{format(currentTime, 'MM/dd/yyyy')}</div>
           </div>
         </div>
       </div>
-
-      {/* Start Menu */}
-      <StartMenu 
-        isOpen={isStartMenuOpen}
-        onClose={() => setIsStartMenuOpen(false)}
-        onOpenWindow={(windowData) => {
-          openWindow(windowData)
-          setIsStartMenuOpen(false)
-        }}
-      />
     </>
   )
 }

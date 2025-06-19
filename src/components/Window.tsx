@@ -69,11 +69,14 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
   if (window.isMaximized) {
     return (
       <div
-        className="fixed top-0 left-0 bg-white border border-gray-300 shadow-lg overflow-hidden z-40"
+        className="fixed top-0 left-0 overflow-hidden z-40"
         style={{
           width: '100vw',
           height: 'calc(100vh - 48px)',
           zIndex: window.zIndex,
+          backgroundColor: 'var(--window-bg)',
+          border: '1px solid var(--window-border)',
+          boxShadow: 'var(--window-shadow)'
         }}
         onClick={handleWindowClick}
         role="dialog"
@@ -81,7 +84,13 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
         aria-describedby={`window-content-${window.id}`}
       >
         {/* Window Title Bar */}
-        <div className="bg-blue-500 text-white px-3 py-2 flex items-center justify-between cursor-move select-none">
+        <div 
+          className="px-3 py-2 flex items-center justify-between cursor-move select-none"
+          style={{
+            backgroundColor: 'var(--window-header-bg)',
+            color: 'var(--window-header-text)'
+          }}
+        >
           <span id={`window-title-${window.id}`} className="text-sm font-medium">{window.title}</span>
           <div className="flex items-center space-x-1" role="group" aria-label="Window controls">
             <button
@@ -89,8 +98,18 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
                 e.stopPropagation()
                 minimizeWindow(window.id)
               }}
-              className="p-2 hover:bg-blue-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
-              style={{ minHeight: '36px', minWidth: '36px' }}
+              className="p-2 rounded touch-manipulation cursor-pointer flex items-center justify-center transition-colors"
+              style={{ 
+                minHeight: '36px', 
+                minWidth: '36px',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+              }}
               aria-label={`Minimize ${window.title}`}
               title="Minimize window"
             >
@@ -101,8 +120,18 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
                 e.stopPropagation()
                 maximizeWindow(window.id)
               }}
-              className="p-2 hover:bg-blue-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
-              style={{ minHeight: '36px', minWidth: '36px' }}
+              className="p-2 rounded touch-manipulation cursor-pointer flex items-center justify-center transition-colors"
+              style={{ 
+                minHeight: '36px', 
+                minWidth: '36px',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+              }}
               aria-label={window.isMaximized ? `Restore ${window.title}` : `Maximize ${window.title}`}
               title={window.isMaximized ? "Restore window" : "Maximize window"}
             >
@@ -113,8 +142,18 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
                 e.stopPropagation()
                 closeWindow(window.id)
               }}
-              className="p-2 hover:bg-red-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
-              style={{ minHeight: '36px', minWidth: '36px' }}
+              className="p-2 rounded touch-manipulation cursor-pointer flex items-center justify-center transition-colors"
+              style={{ 
+                minHeight: '36px', 
+                minWidth: '36px',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.8)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+              }}
               aria-label={`Close ${window.title}`}
               title="Close window"
             >
@@ -126,8 +165,11 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
         {/* Window Content */}
         <div 
           id={`window-content-${window.id}`}
-          className="overflow-auto bg-white" 
-          style={{ height: 'calc(100vh - 88px)' }}
+          className="overflow-auto" 
+          style={{ 
+            height: 'calc(100vh - 88px)',
+            backgroundColor: 'var(--window-bg)'
+          }}
           role="main"
           aria-label={`${window.title} content`}
         >
@@ -157,17 +199,28 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
         resizeHandles={['se', 'e', 's']}
       >
         <div
-          className="bg-white border border-gray-300 shadow-lg rounded-t-lg overflow-hidden relative"
+          className="rounded-t-lg overflow-hidden relative"
           onClick={handleWindowClick}
-          style={{ width: '100%', height: '100%' }}
+          style={{ 
+            width: '100%', 
+            height: '100%',
+            backgroundColor: 'var(--window-bg)',
+            border: '1px solid var(--window-border)',
+            boxShadow: 'var(--window-shadow)'
+          }}
           role="dialog"
           aria-labelledby={`window-title-${window.id}`}
           aria-describedby={`window-content-${window.id}`}
         >
           {/* Window Title Bar */}
           <div 
-            className="bg-blue-500 text-white px-3 py-2 flex items-center justify-between select-none"
+            className="px-3 py-2 flex items-center justify-between select-none"
             {...dragHandleProps}
+            style={{
+              backgroundColor: 'var(--window-header-bg)',
+              color: 'var(--window-header-text)',
+              ...dragHandleProps.style
+            }}
           >
             <span id={`window-title-${window.id}`} className="text-sm font-medium">{window.title}</span>
             <div className="flex items-center space-x-1" role="group" aria-label="Window controls">
@@ -176,8 +229,18 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
                   e.stopPropagation()
                   minimizeWindow(window.id)
                 }}
-                className="p-2 hover:bg-blue-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
-                style={{ minHeight: '36px', minWidth: '36px' }}
+                className="p-2 rounded touch-manipulation cursor-pointer flex items-center justify-center transition-colors"
+                style={{ 
+                  minHeight: '36px', 
+                  minWidth: '36px',
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }}
                 aria-label={`Minimize ${window.title}`}
                 title="Minimize window"
               >
@@ -188,8 +251,18 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
                   e.stopPropagation()
                   maximizeWindow(window.id)
                 }}
-                className="p-2 hover:bg-blue-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
-                style={{ minHeight: '36px', minWidth: '36px' }}
+                className="p-2 rounded touch-manipulation cursor-pointer flex items-center justify-center transition-colors"
+                style={{ 
+                  minHeight: '36px', 
+                  minWidth: '36px',
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }}
                 aria-label={`Maximize ${window.title}`}
                 title="Maximize window"
               >
@@ -200,8 +273,18 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
                   e.stopPropagation()
                   closeWindow(window.id)
                 }}
-                className="p-2 hover:bg-red-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
-                style={{ minHeight: '36px', minWidth: '36px' }}
+                className="p-2 rounded touch-manipulation cursor-pointer flex items-center justify-center transition-colors"
+                style={{ 
+                  minHeight: '36px', 
+                  minWidth: '36px',
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.8)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }}
                 aria-label={`Close ${window.title}`}
                 title="Close window"
               >
@@ -213,8 +296,11 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
           {/* Window Content */}
           <div 
             id={`window-content-${window.id}`}
-            className="overflow-auto bg-white" 
-            style={{ height: `${window.size.height - 40}px` }}
+            className="overflow-auto" 
+            style={{ 
+              height: `${window.size.height - 40}px`,
+              backgroundColor: 'var(--window-bg)'
+            }}
             role="main"
             aria-label={`${window.title} content`}
           >
@@ -222,12 +308,14 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
           </div>
           
           {/* Resize Handle Indicator - positioned relative to entire window */}
-          <div className="absolute bottom-0 right-0 w-4 h-4 pointer-events-none z-10 bg-gray-200 border-l border-t border-gray-300">
+          <div 
+            className="absolute bottom-0 right-0 w-4 h-4 pointer-events-none z-10"
+          >
             <svg width="16" height="16" viewBox="0 0 16 16" className="absolute bottom-0 right-0">
-              <g stroke="#374151" strokeWidth="1.5" opacity="0.8">
-                <line x1="6" y1="16" x2="16" y2="6" />
-                <line x1="10" y1="16" x2="16" y2="10" />
+              <g stroke="var(--color-primary-600)" strokeWidth="1.5" strokeLinecap="round">
                 <line x1="14" y1="16" x2="16" y2="14" />
+                <line x1="10" y1="16" x2="16" y2="10" />
+                <line x1="6" y1="16" x2="16" y2="6" />
               </g>
             </svg>
           </div>

@@ -2,15 +2,16 @@ import React from 'react'
 import type { WindowState } from '../store/desktopStore'
 import { useDesktopStore } from '../store/desktopStore'
 import { Window, Taskbar, DesktopIcon } from '.'
-import { FileText, Globe, User, Mail, Folder } from 'lucide-react'
+import { StartMenu } from './StartMenu'
+import { DesktopStickers } from './DesktopStickers'
+import { FileText, Globe, User, Mail, Folder, Palette } from 'lucide-react'
+import BackgroundImage from '../images/Background.png'
 
 const desktopIcons = [
   {
     id: 'about',
     label: 'About Me',
     icon: User,
-    x: 30,
-    y: 30,
     action: () => ({
       title: 'About Me',
       component: 'about',
@@ -24,8 +25,6 @@ const desktopIcons = [
     id: 'contact',
     label: 'Contact',
     icon: Mail,
-    x: 30,
-    y: 140,
     action: () => ({
       title: 'Contact',
       component: 'contact',
@@ -39,8 +38,6 @@ const desktopIcons = [
     id: 'portfolio',
     label: 'Portfolio',
     icon: Globe,
-    x: 30,
-    y: 250,
     action: () => ({
       title: 'Portfolio Website',
       component: 'website-viewer',
@@ -58,8 +55,6 @@ const desktopIcons = [
     id: 'readme',
     label: 'README.txt',
     icon: FileText,
-    x: 30,
-    y: 360,
     action: () => ({
       title: 'README.txt',
       component: 'text-viewer',
@@ -91,8 +86,6 @@ Enjoy exploring!`
     id: 'projects',
     label: 'Projects',
     icon: Folder,
-    x: 30,
-    y: 470,
     action: () => ({
       title: 'My Projects',
       component: 'text-viewer',
@@ -126,43 +119,117 @@ Enjoy exploring!`
 Feel free to reach out if you'd like to collaborate!`
       }
     })
+  },
+  {
+    id: 'stickers',
+    label: 'Stickers',
+    icon: Palette,
+    action: () => ({
+      title: 'Cute Stickers',
+      component: 'sticker-pack',
+      isMinimized: false,
+      isMaximized: false,
+      position: { x: 200, y: 50 },
+      size: { width: 600, height: 500 }
+    })
   }
 ]
 
 export const Desktop: React.FC = () => {
   const { windows, openWindow } = useDesktopStore()
+  const [isStartMenuOpen, setIsStartMenuOpen] = React.useState(false)
+  const [iconColumns, setIconColumns] = React.useState<Array<typeof desktopIcons>>([])
 
   const handleIconDoubleClick = (iconAction: () => Omit<WindowState, 'id' | 'zIndex'>) => {
     const windowData = iconAction()
     openWindow(windowData)
   }
 
-  return (
-    <div className="fixed inset-0 h-screen w-screen bg-gradient-to-br from-blue-400 to-blue-600 overflow-hidden">
-      {/* Taskbar - First for proper tab order */}
-      <Taskbar />
+  const handleStartMenuToggle = () => {
+    setIsStartMenuOpen(!isStartMenuOpen)
+  }
 
+  const handleStartMenuClose = () => {
+    setIsStartMenuOpen(false)
+  }
+
+  // Calculate responsive icon columns
+  React.useEffect(() => {
+    const calculateColumns = () => {
+      const taskbarHeight = 48
+      const padding = 32 // Top and bottom padding
+      const availableHeight = window.innerHeight - taskbarHeight - padding
+      const iconHeight = 100 // Increased to account for icon + label + spacing
+      const iconsPerColumn = Math.floor(availableHeight / iconHeight)
+      
+      // Ensure at least 1 icon per column
+      const safeIconsPerColumn = Math.max(1, iconsPerColumn)
+
+      const columns: Array<typeof desktopIcons> = []
+      for (let i = 0; i < desktopIcons.length; i += safeIconsPerColumn) {
+        columns.push(desktopIcons.slice(i, i + safeIconsPerColumn))
+      }
+      setIconColumns(columns)
+    }
+
+    calculateColumns()
+    window.addEventListener('resize', calculateColumns)
+    return () => window.removeEventListener('resize', calculateColumns)
+  }, [])
+
+  return (
+    <div 
+      className="fixed inset-0 h-screen w-screen overflow-hidden"
+      style={{
+        backgroundImage: `url(${BackgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
       {/* Desktop Background */}
-      <div className="absolute inset-0 pb-12">
-        {/* Desktop Icons - Hidden on mobile */}
-        <main id="main-content" className="relative h-full w-full hidden sm:block" role="main" aria-label="Desktop">
-          <div role="group" aria-label="Desktop shortcuts">
-            {desktopIcons.map((icon) => (
-              <DesktopIcon
-                key={icon.id}
-                icon={icon.icon}
-                label={icon.label}
-                x={icon.x}
-                y={icon.y}
-                onDoubleClick={() => handleIconDoubleClick(icon.action)}
-              />
+      <div className="absolute inset-0" style={{ paddingBottom: '48px' }}>
+        {/* Decorative Stickers */}
+        <DesktopStickers />
+        
+        {/* Desktop Icons - Responsive vertical columns like Windows */}
+        <main id="main-content" className="relative h-full w-full hidden sm:block p-4" role="main" aria-label="Desktop">
+          <div 
+            role="group" 
+            aria-label="Desktop shortcuts"
+            className="flex gap-2 h-full"
+            style={{
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              maxHeight: `calc(100vh - 80px)`, // More conservative height calculation
+              overflow: 'visible' // Allow icons to be fully visible
+            }}
+          >
+            {iconColumns.map((column, columnIndex) => (
+              <div 
+                key={columnIndex}
+                className="flex flex-col gap-3"
+                style={{ 
+                  minWidth: '90px',
+                  maxHeight: '100%'
+                }}
+              >
+                {column.map((icon) => (
+                  <DesktopIcon
+                    key={icon.id}
+                    icon={icon.icon}
+                    label={icon.label}
+                    onDoubleClick={() => handleIconDoubleClick(icon.action)}
+                  />
+                ))}
+              </div>
             ))}
           </div>
         </main>
 
         {/* Mobile Welcome Screen - Only shown on mobile */}
         <main id="main-content" className="sm:hidden flex items-center justify-center h-full p-6" role="main" aria-label="Mobile welcome screen">
-          <div className="text-center text-white">
+          <div className="text-center" style={{ color: 'var(--text-primary)' }}>
             <div className="mb-4">
               <User size={48} className="mx-auto mb-2 opacity-80" aria-hidden="true" />
             </div>
@@ -171,7 +238,11 @@ export const Desktop: React.FC = () => {
               Use the Start menu at the bottom to open applications
             </p>
             <div className="flex justify-center">
-              <div className="bg-gray-800 bg-opacity-20 rounded-lg p-3 backdrop-blur-sm">
+              <div className="rounded-lg p-3 backdrop-blur-sm" style={{ 
+                backgroundColor: 'var(--color-primary-800)', 
+                color: 'var(--text-inverse)',
+                opacity: 0.9 
+              }}>
                 <p className="text-xs opacity-80">Tap the Start button ↓</p>
               </div>
             </div>
@@ -185,6 +256,22 @@ export const Desktop: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Taskbar - At the end for proper positioning */}
+      <Taskbar 
+        isStartMenuOpen={isStartMenuOpen}
+        onStartMenuToggle={handleStartMenuToggle}
+      />
+
+      {/* Start Menu - Rendered at top level for proper positioning */}
+      <StartMenu 
+        isOpen={isStartMenuOpen}
+        onClose={handleStartMenuClose}
+        onOpenWindow={(windowData) => {
+          openWindow(windowData)
+          handleStartMenuClose()
+        }}
+      />
     </div>
   )
 }
