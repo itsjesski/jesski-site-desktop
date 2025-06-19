@@ -48,7 +48,7 @@ export const Taskbar: React.FC = () => {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 h-12 bg-gray-800 border-t border-gray-600 flex items-center z-50 px-2 sm:px-4">
+      <div className="fixed bottom-0 left-0 right-0 h-12 bg-gray-800 border-t border-gray-600 flex items-center z-50 px-2 sm:px-4" role="navigation" aria-label="Taskbar">
         {/* Start Button - Left Section */}
         <div className="flex-shrink-0 mr-2 sm:mr-4">
           <button 
@@ -56,14 +56,23 @@ export const Taskbar: React.FC = () => {
             className={`flex items-center space-x-1 sm:space-x-2 px-3 py-3 sm:px-3 sm:py-2 rounded text-white text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
               isStartMenuOpen ? 'bg-gray-600' : 'bg-transparent hover:bg-gray-700'
             }`}
+            aria-label="Start menu"
+            aria-expanded={isStartMenuOpen}
+            aria-haspopup="menu"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                handleStartClick()
+              }
+            }}
           >
-            <Menu size={18} className="sm:w-4 sm:h-4" />
+            <Menu size={18} className="sm:w-4 sm:h-4" aria-hidden="true" />
             <span className="hidden sm:inline">Start</span>
           </button>
         </div>
 
         {/* Open Applications - Left aligned with spacing */}
-        <div className="flex flex-1 gap-1 sm:gap-3 overflow-x-auto">
+        <div className="flex flex-1 gap-1 sm:gap-3 overflow-x-auto" role="group" aria-label="Open windows">
           {windows.map((window) => {
             const IconComponent = getIconForComponent(window.component)
             return (
@@ -80,17 +89,20 @@ export const Taskbar: React.FC = () => {
                 <button
                   onClick={() => handleTaskClick(window.id, window.isMinimized)}
                   className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0 pr-1 cursor-pointer"
+                  aria-label={`${window.isMinimized ? 'Restore' : 'Minimize'} ${window.title} window`}
+                  title={`${window.isMinimized ? 'Restore' : 'Minimize'} ${window.title}`}
                 >
-                  <IconComponent size={12} className="sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                  <IconComponent size={12} className="sm:w-3.5 sm:h-3.5 flex-shrink-0" aria-hidden="true" />
                   <span className="truncate hidden sm:inline">{window.title}</span>
                 </button>
                 <button
                   onClick={(e) => handleCloseWindow(e, window.id)}
                   className="flex-shrink-0 p-1 hover:bg-black hover:bg-opacity-20 rounded transition-colors touch-manipulation cursor-pointer"
                   style={{ minHeight: '20px', minWidth: '20px' }}
-                  title="Close"
+                  title={`Close ${window.title}`}
+                  aria-label={`Close ${window.title} window`}
                 >
-                  <X size={10} className="sm:w-3 sm:h-3" />
+                  <X size={10} className="sm:w-3 sm:h-3" aria-hidden="true" />
                 </button>
               </div>
             )

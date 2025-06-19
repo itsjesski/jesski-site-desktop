@@ -76,11 +76,14 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
           zIndex: window.zIndex,
         }}
         onClick={handleWindowClick}
+        role="dialog"
+        aria-labelledby={`window-title-${window.id}`}
+        aria-describedby={`window-content-${window.id}`}
       >
         {/* Window Title Bar */}
         <div className="bg-blue-500 text-white px-3 py-2 flex items-center justify-between cursor-move select-none">
-          <span className="text-sm font-medium">{window.title}</span>
-          <div className="flex items-center space-x-1">
+          <span id={`window-title-${window.id}`} className="text-sm font-medium">{window.title}</span>
+          <div className="flex items-center space-x-1" role="group" aria-label="Window controls">
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -88,8 +91,10 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
               }}
               className="p-2 hover:bg-blue-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
               style={{ minHeight: '36px', minWidth: '36px' }}
+              aria-label={`Minimize ${window.title}`}
+              title="Minimize window"
             >
-              <Minus size={16} />
+              <Minus size={16} aria-hidden="true" />
             </button>
             <button
               onClick={(e) => {
@@ -98,8 +103,10 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
               }}
               className="p-2 hover:bg-blue-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
               style={{ minHeight: '36px', minWidth: '36px' }}
+              aria-label={window.isMaximized ? `Restore ${window.title}` : `Maximize ${window.title}`}
+              title={window.isMaximized ? "Restore window" : "Maximize window"}
             >
-              <Minimize2 size={16} />
+              <Minimize2 size={16} aria-hidden="true" />
             </button>
             <button
               onClick={(e) => {
@@ -108,14 +115,22 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
               }}
               className="p-2 hover:bg-red-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
               style={{ minHeight: '36px', minWidth: '36px' }}
+              aria-label={`Close ${window.title}`}
+              title="Close window"
             >
-              <X size={16} />
+              <X size={16} aria-hidden="true" />
             </button>
           </div>
         </div>
 
         {/* Window Content */}
-        <div className="overflow-auto bg-white" style={{ height: 'calc(100vh - 88px)' }}>
+        <div 
+          id={`window-content-${window.id}`}
+          className="overflow-auto bg-white" 
+          style={{ height: 'calc(100vh - 88px)' }}
+          role="main"
+          aria-label={`${window.title} content`}
+        >
           <ApplicationRegistry window={window} />
         </div>
       </div>
@@ -145,14 +160,17 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
           className="bg-white border border-gray-300 shadow-lg rounded-t-lg overflow-hidden relative"
           onClick={handleWindowClick}
           style={{ width: '100%', height: '100%' }}
+          role="dialog"
+          aria-labelledby={`window-title-${window.id}`}
+          aria-describedby={`window-content-${window.id}`}
         >
           {/* Window Title Bar */}
           <div 
             className="bg-blue-500 text-white px-3 py-2 flex items-center justify-between select-none"
             {...dragHandleProps}
           >
-            <span className="text-sm font-medium">{window.title}</span>
-            <div className="flex items-center space-x-1">
+            <span id={`window-title-${window.id}`} className="text-sm font-medium">{window.title}</span>
+            <div className="flex items-center space-x-1" role="group" aria-label="Window controls">
               <button
                 onClick={(e) => {
                   e.stopPropagation()
@@ -160,8 +178,10 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
                 }}
                 className="p-2 hover:bg-blue-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
                 style={{ minHeight: '36px', minWidth: '36px' }}
+                aria-label={`Minimize ${window.title}`}
+                title="Minimize window"
               >
-                <Minus size={16} />
+                <Minus size={16} aria-hidden="true" />
               </button>
               <button
                 onClick={(e) => {
@@ -170,8 +190,10 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
                 }}
                 className="p-2 hover:bg-blue-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
                 style={{ minHeight: '36px', minWidth: '36px' }}
+                aria-label={`Maximize ${window.title}`}
+                title="Maximize window"
               >
-                <Maximize2 size={16} />
+                <Maximize2 size={16} aria-hidden="true" />
               </button>
               <button
                 onClick={(e) => {
@@ -180,16 +202,21 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
                 }}
                 className="p-2 hover:bg-red-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
                 style={{ minHeight: '36px', minWidth: '36px' }}
+                aria-label={`Close ${window.title}`}
+                title="Close window"
               >
-                <X size={16} />
+                <X size={16} aria-hidden="true" />
               </button>
             </div>
           </div>
 
           {/* Window Content */}
           <div 
+            id={`window-content-${window.id}`}
             className="overflow-auto bg-white" 
             style={{ height: `${window.size.height - 40}px` }}
+            role="main"
+            aria-label={`${window.title} content`}
           >
             <ApplicationRegistry window={window} />
           </div>

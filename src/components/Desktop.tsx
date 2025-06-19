@@ -139,29 +139,34 @@ export const Desktop: React.FC = () => {
 
   return (
     <div className="fixed inset-0 h-screen w-screen bg-gradient-to-br from-blue-400 to-blue-600 overflow-hidden">
+      {/* Taskbar - First for proper tab order */}
+      <Taskbar />
+
       {/* Desktop Background */}
       <div className="absolute inset-0 pb-12">
         {/* Desktop Icons - Hidden on mobile */}
-        <div className="relative h-full w-full hidden sm:block">
-          {desktopIcons.map((icon) => (
-            <DesktopIcon
-              key={icon.id}
-              icon={icon.icon}
-              label={icon.label}
-              x={icon.x}
-              y={icon.y}
-              onDoubleClick={() => handleIconDoubleClick(icon.action)}
-            />
-          ))}
-        </div>
+        <main id="main-content" className="relative h-full w-full hidden sm:block" role="main" aria-label="Desktop">
+          <div role="group" aria-label="Desktop shortcuts">
+            {desktopIcons.map((icon) => (
+              <DesktopIcon
+                key={icon.id}
+                icon={icon.icon}
+                label={icon.label}
+                x={icon.x}
+                y={icon.y}
+                onDoubleClick={() => handleIconDoubleClick(icon.action)}
+              />
+            ))}
+          </div>
+        </main>
 
         {/* Mobile Welcome Screen - Only shown on mobile */}
-        <div className="sm:hidden flex items-center justify-center h-full p-6">
+        <main id="main-content" className="sm:hidden flex items-center justify-center h-full p-6" role="main" aria-label="Mobile welcome screen">
           <div className="text-center text-white">
             <div className="mb-4">
-              <User size={48} className="mx-auto mb-2 opacity-80" />
+              <User size={48} className="mx-auto mb-2 opacity-80" aria-hidden="true" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Welcome to Jess's Desktop</h2>
+            <h1 className="text-xl font-semibold mb-2">Welcome to Jess's Desktop</h1>
             <p className="text-sm opacity-90 mb-4">
               Use the Start menu at the bottom to open applications
             </p>
@@ -171,16 +176,15 @@ export const Desktop: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </main>
 
         {/* Windows */}
-        {windows.map((window) => (
-          <Window key={window.id} window={window} />
-        ))}
+        <div role="region" aria-label="Open windows">
+          {windows.map((window) => (
+            <Window key={window.id} window={window} />
+          ))}
+        </div>
       </div>
-
-      {/* Taskbar */}
-      <Taskbar />
     </div>
   )
 }
