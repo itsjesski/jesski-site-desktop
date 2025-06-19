@@ -1,12 +1,13 @@
 import React from 'react'
 import type { WindowState } from '../store/desktopStore'
 import { useDesktopStore } from '../store/desktopStore'
-import { Window, Taskbar, DesktopIcon, TwitchStream } from '.'
+import { Window, Taskbar, DesktopIcon, TwitchStream, Notification } from '.'
 import { StartMenu } from './StartMenu'
 import { DesktopStickers } from './DesktopStickers'
 import { FileText, Globe, User, Folder, Palette, Video, MessageCircle } from 'lucide-react'
 import BackgroundImage from '../images/Background.png'
 import { twitchAPI } from '../services/twitchAPI'
+import { useNotificationManager } from '../hooks/useNotificationManager'
 
 // Helper function to create window action with defaults
 const createWindowAction = (
@@ -100,6 +101,7 @@ const desktopIcons = [
 
 export const Desktop: React.FC = () => {
   const { windows, openWindow, initializeWelcomeWindow, showTwitchStream, setTwitchStreamVisible } = useDesktopStore()
+  const { activeNotifications, isMuted, dismissNotification, toggleMute } = useNotificationManager()
   const [isStartMenuOpen, setIsStartMenuOpen] = React.useState(false)
   const [iconColumns, setIconColumns] = React.useState<Array<typeof desktopIcons>>([])
   const [isMobile, setIsMobile] = React.useState(false)
@@ -159,13 +161,13 @@ export const Desktop: React.FC = () => {
     window.addEventListener('resize', calculateColumns)
     return () => window.removeEventListener('resize', calculateColumns)
   }, [])
-
   // Check for live stream status
   React.useEffect(() => {
     const checkStreamStatus = async () => {
       try {
         const twitchChannel = import.meta.env.VITE_TWITCH_CHANNEL || 'jesski'
         const result = await twitchAPI.isStreamLive(twitchChannel)
+        console.log(`Stream status check: ${result.isLive ? 'LIVE' : 'OFFLINE'}`)
         setTwitchStreamVisible(result.isLive)
       } catch (error) {
         console.error('Failed to check stream status:', error)
@@ -259,12 +261,12 @@ export const Desktop: React.FC = () => {
             <Window key={window.id} window={window} />
           ))}
         </div>
-      </div>
-
-      {/* Taskbar - At the end for proper positioning */}
+      </div>      {/* Taskbar - At the end for proper positioning */}
       <Taskbar 
         isStartMenuOpen={isStartMenuOpen}
         onStartMenuToggle={handleStartMenuToggle}
+        isMuted={isMuted}
+        onToggleMute={toggleMute}
       />
 
       {/* Start Menu - Rendered at top level for proper positioning */}
@@ -275,12 +277,30 @@ export const Desktop: React.FC = () => {
           openWindow(windowData)
           handleStartMenuClose()
         }}
-      />
-
-      {/* Twitch Stream - Desktop only */}
+      />      {/* Twitch Stream - Desktop only */}
       {!isMobile && showTwitchStream && (
         <TwitchStream onClose={() => setTwitchStreamVisible(false)} />
-      )}
+      )}      {/* Notifications - Bottom right corner */}
+      <div className="fixed bottom-16 right-4 z-50">        
+        {/* Notification Stack */}
+        <div className="space-y-2">
+          {activeNotifications.map((notification, index) => (
+            <div 
+              key={notification.id}
+              style={{ 
+                transform: `translateY(-${index * 8}px)`,
+                zIndex: 50 - index
+              }}
+            >              <Notification
+                title={notification.title}
+                message={notification.message}
+                icon={notification.icon}
+                onClose={() => dismissNotification(notification.id)}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

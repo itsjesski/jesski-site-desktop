@@ -98,6 +98,12 @@
   --focus-ring-offset: 2px;
 }
 
+/* Notification Animations */
+@keyframes notification-progress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
 /* Desktop background utility class */
 .desktop-background {
   background: var(--desktop-bg);
