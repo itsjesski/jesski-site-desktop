@@ -103,22 +103,22 @@ export const StartMenu: React.FC<StartMenuProps> = ({ isOpen, onClose, onOpenWin
       />
       
       {/* Start Menu */}
-      <div className="fixed bottom-12 left-4 z-[70] bg-gray-800 border border-gray-600 rounded-t-lg shadow-2xl min-w-80 max-w-96">
-        <div className="p-5">
-          <div className="text-white text-lg font-semibold mb-3 px-3 py-2">
+      <div className="fixed bottom-12 left-2 sm:left-4 z-[70] bg-gray-800 border border-gray-600 rounded-t-lg shadow-2xl w-72 sm:min-w-80 sm:max-w-96">
+        <div className="p-3 sm:p-5">
+          <div className="text-white text-base sm:text-lg font-semibold mb-2 sm:mb-3 px-2 sm:px-3 py-1 sm:py-2">
             Quick Access
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1 sm:gap-2">
             {startMenuItems.map((item) => {
               const IconComponent = item.icon
               return (
                 <button
                   key={item.id}
                   onClick={() => handleItemClick(item)}
-                  className="w-full flex items-center gap-3 px-3 py-3 mx-1 text-white hover:bg-gray-700 rounded-md transition-colors text-left"
+                  className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-3 mx-0.5 sm:mx-1 text-white hover:bg-gray-700 rounded-md transition-colors text-left cursor-pointer"
                 >
-                  <IconComponent size={18} />
-                  <span className="text-base font-medium">{item.label}</span>
+                  <IconComponent size={16} className="sm:w-4.5 sm:h-4.5" />
+                  <span className="text-sm sm:text-base font-medium">{item.label}</span>
                 </button>
               )
             })}

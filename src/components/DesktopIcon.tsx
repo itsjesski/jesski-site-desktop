@@ -25,13 +25,13 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
 
   return (
     <div
-      className={`absolute cursor-pointer select-none group w-20`}
-      style={{ left: x, top: y }}
+      className={`absolute cursor-pointer select-none group w-20 desktop-icon touch-manipulation`}
+      style={{ left: x, top: y, minHeight: '44px', minWidth: '44px' }}
       onClick={handleClick}
       onDoubleClick={onDoubleClick}
     >
       <div className={`
-        flex flex-col items-center p-2 rounded-lg transition-colors w-full h-24
+        flex flex-col items-center p-3 rounded-lg transition-colors w-full min-h-24
         ${isSelected ? 'bg-blue-200 bg-opacity-50' : 'hover:bg-blue-900 hover:bg-opacity-30'}
       `}>
         <div className="bg-white bg-opacity-90 p-3 rounded-lg shadow-md mb-2">

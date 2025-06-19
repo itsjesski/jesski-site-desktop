@@ -20,6 +20,23 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
     updateWindowSize 
   } = useDesktopStore()
 
+  const [viewportSize, setViewportSize] = React.useState({
+    width: globalThis.window?.innerWidth || 1024,
+    height: globalThis.window?.innerHeight || 768
+  })
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setViewportSize({
+        width: globalThis.window?.innerWidth || 1024,
+        height: globalThis.window?.innerHeight || 768
+      })
+    }
+
+    globalThis.window?.addEventListener('resize', handleResize)
+    return () => globalThis.window?.removeEventListener('resize', handleResize)
+  }, [])
+
   const { ref: dragRef, position, dragHandleProps } = useDraggable({
     initialPosition: window.position,
     onDrag: (newPosition) => {
@@ -28,8 +45,8 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
     bounds: {
       left: 0,
       top: 0,
-      right: 800,
-      bottom: 500
+      right: Math.max(0, viewportSize.width - window.size.width),
+      bottom: Math.max(0, viewportSize.height - window.size.height - 48) // Account for taskbar
     }
   })
 
@@ -69,27 +86,30 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
                 e.stopPropagation()
                 minimizeWindow(window.id)
               }}
-              className="p-1 hover:bg-blue-600 rounded"
+              className="p-2 hover:bg-blue-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
+              style={{ minHeight: '36px', minWidth: '36px' }}
             >
-              <Minus size={14} />
+              <Minus size={16} />
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 maximizeWindow(window.id)
               }}
-              className="p-1 hover:bg-blue-600 rounded"
+              className="p-2 hover:bg-blue-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
+              style={{ minHeight: '36px', minWidth: '36px' }}
             >
-              <Minimize2 size={14} />
+              <Minimize2 size={16} />
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 closeWindow(window.id)
               }}
-              className="p-1 hover:bg-red-600 rounded"
+              className="p-2 hover:bg-red-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
+              style={{ minHeight: '36px', minWidth: '36px' }}
             >
-              <X size={14} />
+              <X size={16} />
             </button>
           </div>
         </div>
@@ -122,7 +142,7 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
         resizeHandles={['se', 'e', 's']}
       >
         <div
-          className="bg-white border border-gray-300 shadow-lg rounded-t-lg overflow-hidden"
+          className="bg-white border border-gray-300 shadow-lg rounded-t-lg overflow-hidden relative"
           onClick={handleWindowClick}
           style={{ width: '100%', height: '100%' }}
         >
@@ -138,27 +158,30 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
                   e.stopPropagation()
                   minimizeWindow(window.id)
                 }}
-                className="p-1 hover:bg-blue-600 rounded"
+                className="p-2 hover:bg-blue-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
+                style={{ minHeight: '36px', minWidth: '36px' }}
               >
-                <Minus size={14} />
+                <Minus size={16} />
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation()
                   maximizeWindow(window.id)
                 }}
-                className="p-1 hover:bg-blue-600 rounded"
+                className="p-2 hover:bg-blue-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
+                style={{ minHeight: '36px', minWidth: '36px' }}
               >
-                <Maximize2 size={14} />
+                <Maximize2 size={16} />
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation()
                   closeWindow(window.id)
                 }}
-                className="p-1 hover:bg-red-600 rounded"
+                className="p-2 hover:bg-red-600 rounded touch-manipulation cursor-pointer flex items-center justify-center"
+                style={{ minHeight: '36px', minWidth: '36px' }}
               >
-                <X size={14} />
+                <X size={16} />
               </button>
             </div>
           </div>
@@ -169,6 +192,17 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
             style={{ height: `${window.size.height - 40}px` }}
           >
             <ApplicationRegistry window={window} />
+          </div>
+          
+          {/* Resize Handle Indicator - positioned relative to entire window */}
+          <div className="absolute bottom-0 right-0 w-4 h-4 pointer-events-none z-10 bg-gray-200 border-l border-t border-gray-300">
+            <svg width="16" height="16" viewBox="0 0 16 16" className="absolute bottom-0 right-0">
+              <g stroke="#374151" strokeWidth="1.5" opacity="0.8">
+                <line x1="6" y1="16" x2="16" y2="6" />
+                <line x1="10" y1="16" x2="16" y2="10" />
+                <line x1="14" y1="16" x2="16" y2="14" />
+              </g>
+            </svg>
           </div>
         </div>
       </ResizableBox>

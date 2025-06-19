@@ -141,8 +141,8 @@ export const Desktop: React.FC = () => {
     <div className="fixed inset-0 h-screen w-screen bg-gradient-to-br from-blue-400 to-blue-600 overflow-hidden">
       {/* Desktop Background */}
       <div className="absolute inset-0 pb-12">
-        {/* Desktop Icons */}
-        <div className="relative h-full w-full">
+        {/* Desktop Icons - Hidden on mobile */}
+        <div className="relative h-full w-full hidden sm:block">
           {desktopIcons.map((icon) => (
             <DesktopIcon
               key={icon.id}
@@ -153,6 +153,24 @@ export const Desktop: React.FC = () => {
               onDoubleClick={() => handleIconDoubleClick(icon.action)}
             />
           ))}
+        </div>
+
+        {/* Mobile Welcome Screen - Only shown on mobile */}
+        <div className="sm:hidden flex items-center justify-center h-full p-6">
+          <div className="text-center text-white">
+            <div className="mb-4">
+              <User size={48} className="mx-auto mb-2 opacity-80" />
+            </div>
+            <h2 className="text-xl font-semibold mb-2">Welcome to Jess's Desktop</h2>
+            <p className="text-sm opacity-90 mb-4">
+              Use the Start menu at the bottom to open applications
+            </p>
+            <div className="flex justify-center">
+              <div className="bg-gray-800 bg-opacity-20 rounded-lg p-3 backdrop-blur-sm">
+                <p className="text-xs opacity-80">Tap the Start button ↓</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Windows */}
