@@ -191,13 +191,10 @@ export const TwitchStream: React.FC<TwitchStreamProps> = ({ onClose }) => {
                 style={{
                   backgroundColor: 'rgba(220, 38, 38, 0.95)',
                   color: 'white'
-                }}
-                title={`🔴 LIVE - ${streamData?.viewer_count ? `${streamData.viewer_count} viewers` : ''} - Click to watch on Twitch`}
+                }}                title="🔴 LIVE - Click to watch on Twitch"
               >
                 <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                 <span>LIVE</span>
-                {streamData?.viewer_count && (
-                  <span className="opacity-90">({streamData.viewer_count})</span>                )}
                 <ExternalLink size={10} className="opacity-75" />
               </button>
             </>

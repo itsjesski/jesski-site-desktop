@@ -63,14 +63,24 @@ export const useDesktopStore = create<DesktopState>((set, get) => ({
   initializeWelcomeWindow: () => {
     // Always show the welcome window since we're showing boot animation every time
     if (!get().hasShownWelcome) {
+      // Calculate center position that avoids desktop icons
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      const windowWidth = 700
+      const windowHeight = 500
+      
+      // Position in center-right area to avoid left-side desktop icons
+      const centerX = Math.max(300, (viewportWidth - windowWidth) / 2)
+      const centerY = Math.max(50, (viewportHeight - windowHeight - 100) / 2) // Account for taskbar
+      
       // Open the README.txt welcome window
       const welcomeWindowData = {
         title: 'README.txt',
         component: 'text-viewer',
         isMinimized: false,
         isMaximized: false,
-        position: { x: 150, y: 100 },
-        size: { width: 700, height: 500 },
+        position: { x: centerX, y: centerY },
+        size: { width: windowWidth, height: windowHeight },
         data: {
           fileName: 'README.txt',
           content: `Welcome to Jess's Desktop!

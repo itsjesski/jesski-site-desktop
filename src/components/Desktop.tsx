@@ -4,7 +4,7 @@ import { useDesktopStore } from '../store/desktopStore'
 import { Window, Taskbar, DesktopIcon, TwitchStream } from '.'
 import { StartMenu } from './StartMenu'
 import { DesktopStickers } from './DesktopStickers'
-import { FileText, Globe, User, Folder, Palette, Video } from 'lucide-react'
+import { FileText, Globe, User, Folder, Palette, Video, MessageCircle } from 'lucide-react'
 import BackgroundImage from '../images/Background.png'
 import { twitchAPI } from '../services/twitchAPI'
 
@@ -66,13 +66,24 @@ const desktopIcons = [
     icon: FileText,
     action: createWindowAction('Development Notes', 'text-viewer', { x: 350, y: 250 }, {
       fileName: 'devnotes.txt'
-    })
-  },
+    })  },
   {
     id: 'stickers',
     label: 'Stickers',
     icon: Palette,
     action: createWindowAction('Cute Stickers', 'sticker-pack', { x: 200, y: 50 })
+  },  {
+    id: 'chat',
+    label: 'Chat',
+    icon: MessageCircle,
+    action: () => ({
+      title: 'Twitch Chat',
+      component: 'twitch-chat',
+      isMinimized: false,
+      isMaximized: false,
+      position: { x: 400, y: 100 },
+      size: { width: 900, height: 650 }
+    })
   },
   {
     id: 'twitch',
@@ -125,14 +136,13 @@ export const Desktop: React.FC = () => {
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
-
   // Calculate responsive icon columns
   React.useEffect(() => {
     const calculateColumns = () => {
       const taskbarHeight = 48
-      const padding = 32 // Top and bottom padding
+      const padding = 40 // Increased padding for better spacing
       const availableHeight = window.innerHeight - taskbarHeight - padding
-      const iconHeight = 100 // Increased to account for icon + label + spacing
+      const iconHeight = 110 // Increased to account for icon + label + extra spacing
       const iconsPerColumn = Math.floor(availableHeight / iconHeight)
       
       // Ensure at least 1 icon per column
@@ -181,9 +191,8 @@ export const Desktop: React.FC = () => {
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
       }}
-    >
-      {/* Desktop Background */}
-      <div className="absolute inset-0" style={{ paddingBottom: '48px' }}>
+    >      {/* Desktop Background */}
+      <div className="absolute inset-0" style={{ paddingBottom: '52px' }}>
         {/* Decorative Stickers */}
         <DesktopStickers />
         
@@ -196,7 +205,7 @@ export const Desktop: React.FC = () => {
             style={{
               flexDirection: 'row',
               alignItems: 'flex-start',
-              maxHeight: `calc(100vh - 80px)`, // More conservative height calculation
+              maxHeight: `calc(100vh - 100px)`, // Account for taskbar (48px) + padding
               overflow: 'visible' // Allow icons to be fully visible
             }}
           >
