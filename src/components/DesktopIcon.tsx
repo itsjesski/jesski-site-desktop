@@ -4,16 +4,12 @@ import type { LucideIcon } from 'lucide-react'
 interface DesktopIconProps {
   icon: LucideIcon
   label: string
-  x: number
-  y: number
   onDoubleClick: () => void
 }
 
 export const DesktopIcon: React.FC<DesktopIconProps> = ({ 
   icon: Icon, 
   label, 
-  x, 
-  y, 
   onDoubleClick 
 }) => {
   const [isSelected, setIsSelected] = useState(false)
@@ -25,12 +21,12 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
 
   return (
     <div
-      className={`absolute cursor-pointer select-none group w-20 desktop-icon touch-manipulation`}
-      style={{ left: x, top: y, minHeight: '44px', minWidth: '44px' }}
+      className={`cursor-pointer select-none group desktop-icon touch-manipulation flex justify-center flex-shrink-0`}
+      style={{ minHeight: '44px', minWidth: '44px', width: '90px' }}
       onClick={handleClick}
       onDoubleClick={onDoubleClick}
       role="button"
-      tabIndex={0}
+      tabIndex={2}
       aria-label={`Open ${label}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -40,13 +36,36 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
       }}
     >
       <div className={`
-        flex flex-col items-center p-3 rounded-lg transition-colors w-full min-h-24
-        ${isSelected ? 'bg-blue-200 bg-opacity-50' : 'hover:bg-blue-900 hover:bg-opacity-30'}
-      `}>
-        <div className="bg-white bg-opacity-90 p-3 rounded-lg shadow-md mb-2">
-          <Icon size={32} className="text-blue-600" aria-hidden="true" />
+        flex flex-col items-center p-2 rounded-lg transition-colors w-full
+        ${isSelected ? 'bg-opacity-50' : 'hover:bg-opacity-30'}
+      `}
+      style={{
+        backgroundColor: isSelected ? 'var(--icon-active)' : 'transparent'
+      }}
+      onMouseEnter={(e) => {
+        if (!isSelected) {
+          e.currentTarget.style.backgroundColor = 'var(--icon-hover)'
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isSelected) {
+          e.currentTarget.style.backgroundColor = 'transparent'
+        }
+      }}
+      >
+        <div 
+          className="p-3 rounded-lg shadow-md mb-2 border"
+          style={{
+            backgroundColor: 'var(--icon-bg)',
+            borderColor: 'var(--icon-border)'
+          }}
+        >
+          <Icon size={32} style={{ color: 'var(--icon-text)' }} aria-hidden="true" />
         </div>
-        <span className="text-white text-xs font-medium text-center leading-tight break-words">
+        <span 
+          className="text-xs font-medium text-center leading-tight break-words drop-shadow-sm"
+          style={{ color: 'var(--icon-text)' }}
+        >
           {label}
         </span>
       </div>

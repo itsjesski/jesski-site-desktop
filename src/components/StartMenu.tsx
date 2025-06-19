@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
 import { User, Mail, Globe, FileText } from 'lucide-react'
 import type { WindowState } from '../store/desktopStore'
 
@@ -94,7 +95,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({ isOpen, onClose, onOpenWin
     onClose()
   }
 
-  return (
+  const startMenuContent = (
     <>
       {/* Backdrop */}
       <div 
@@ -104,12 +105,25 @@ export const StartMenu: React.FC<StartMenuProps> = ({ isOpen, onClose, onOpenWin
       
       {/* Start Menu */}
       <div 
-        className="fixed bottom-12 left-2 sm:left-4 z-[70] bg-gray-800 border border-gray-600 rounded-t-lg shadow-2xl w-72 sm:min-w-80 sm:max-w-96"
+        className="border rounded-t-lg shadow-2xl w-72 sm:min-w-80 sm:max-w-96"
+        style={{
+          backgroundColor: 'var(--start-menu-bg)',
+          borderColor: 'var(--start-menu-border)',
+          position: 'fixed',
+          bottom: '48px',
+          left: '8px',
+          zIndex: 10000
+        }}
         role="menu"
         aria-label="Start menu"
       >
         <div className="p-3 sm:p-5">
-          <div className="text-white text-base sm:text-lg font-semibold mb-2 sm:mb-3 px-2 sm:px-3 py-1 sm:py-2" role="heading" aria-level={2}>
+          <div 
+            className="text-base sm:text-lg font-semibold mb-2 sm:mb-3 px-2 sm:px-3 py-1 sm:py-2" 
+            style={{ color: 'var(--start-menu-text)' }}
+            role="heading" 
+            aria-level={2}
+          >
             Quick Access
           </div>
           <div className="flex flex-col gap-1 sm:gap-2" role="group">
@@ -119,7 +133,17 @@ export const StartMenu: React.FC<StartMenuProps> = ({ isOpen, onClose, onOpenWin
                 <button
                   key={item.id}
                   onClick={() => handleItemClick(item)}
-                  className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-3 mx-0.5 sm:mx-1 text-white hover:bg-gray-700 rounded-md transition-colors text-left cursor-pointer"
+                  className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-3 mx-0.5 sm:mx-1 rounded-md transition-colors text-left cursor-pointer"
+                  style={{
+                    color: 'var(--start-menu-text)',
+                    backgroundColor: 'transparent'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--start-menu-hover)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                  }}
                   role="menuitem"
                   aria-label={`Open ${item.label}`}
                 >
@@ -133,4 +157,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({ isOpen, onClose, onOpenWin
       </div>
     </>
   )
+
+  // Render using a portal to bypass any parent container positioning issues
+  return ReactDOM.createPortal(startMenuContent, document.body)
 }
