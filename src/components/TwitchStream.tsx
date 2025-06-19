@@ -1,52 +1,41 @@
 import React, { useState, useEffect } from 'react'
 import { ExternalLink, VideoOff, Minus, Maximize, X } from 'lucide-react'
+import { twitchAPI, type TwitchStreamData } from '../services/twitchAPI'
 
 interface TwitchStreamProps {
   onClose: () => void
 }
 
 export const TwitchStream: React.FC<TwitchStreamProps> = ({ onClose }) => {
-  const [isLive, setIsLive] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isMinimized, setIsMinimized] = useState(false)
   const [isMaximized, setIsMaximized] = useState(false)
+  const [streamData, setStreamData] = useState<TwitchStreamData | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const twitchChannel = 'jesski'
-  const twitchUrl = `https://twitch.tv/${twitchChannel}`
-
-  // Check if stream is live
+  const twitchChannel = import.meta.env.VITE_TWITCH_CHANNEL || 'jesski'
+  const twitchUrl = `https://twitch.tv/${twitchChannel}`  // Fetch stream data when component mounts (we already know stream is live)
   useEffect(() => {
-    const checkStreamStatus = async () => {
+    const fetchStreamData = async () => {
       try {
-        // For demo purposes, set as live to show the component
-        const isStreamLive = true // Set to true for demo
+        setError(null)
+        const result = await twitchAPI.isStreamLive(twitchChannel)
         
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 800))
-        
-        setIsLive(isStreamLive)
+        if (result.isLive && result.streamData) {
+          setStreamData(result.streamData)
+        }
       } catch (error) {
-        console.error('Failed to check stream status:', error)
-        setIsLive(false)
+        console.error('Failed to fetch stream data:', error)
+        setError('Failed to load stream info')
       } finally {
         setIsLoading(false)
       }
     }
 
-    checkStreamStatus()
-    
-    // Check every 2 minutes
-    const interval = setInterval(checkStreamStatus, 2 * 60 * 1000)
-    
-    return () => clearInterval(interval)
-  }, [])
-
+    fetchStreamData()
+  }, [twitchChannel])
   const handleOpenTwitch = () => {
     window.open(twitchUrl, '_blank', 'noopener,noreferrer')
-  }
-
-  if (!isLive && !isLoading) {
-    return null // Don't show if not live
   }
 
   return (
@@ -71,9 +60,8 @@ export const TwitchStream: React.FC<TwitchStreamProps> = ({ onClose }) => {
           backgroundColor: 'var(--window-header-bg)',
           color: 'var(--window-header-text)'
         }}
-      >
-        <span className="text-sm font-medium">
-          {isLoading ? 'Connecting...' : 'Live Twitch Feed'}
+      >        <span className="text-sm font-medium">
+          {isLoading ? 'Loading stream...' : error ? 'Connection Error' : streamData?.game_name ? `Live: ${streamData.game_name}` : 'Live Twitch Feed'}
         </span>
         
         <div className="flex items-center space-x-1" role="group" aria-label="Window controls">
@@ -154,17 +142,38 @@ export const TwitchStream: React.FC<TwitchStreamProps> = ({ onClose }) => {
             height: isMaximized ? 'calc(100vh - 160px)' : '280px', // Account for title bar and margins
             backgroundColor: 'var(--color-primary-900)'
           }}
-        >
-          {isLoading ? (
+        >          {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <div 
                 className="text-sm animate-pulse"
                 style={{ color: 'var(--text-secondary)' }}
               >
-                Connecting...
+                Connecting to Twitch...
               </div>
             </div>
-          ) : isLive ? (
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center h-full px-4">
+              <VideoOff 
+                size={24} 
+                className="mb-2" 
+                style={{ color: 'var(--text-secondary)' }}
+              />
+              <span 
+                className="text-sm mb-2 text-center"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                {error}
+              </span>
+              <button
+                onClick={handleOpenTwitch}
+                className="text-xs underline transition-colors"
+                style={{ 
+                  color: 'var(--color-accent-400)',
+                }}
+              >
+                Visit Twitch Channel
+              </button>            </div>
+          ) : (
             <>
               {/* Twitch Embed */}
               <iframe
@@ -175,8 +184,7 @@ export const TwitchStream: React.FC<TwitchStreamProps> = ({ onClose }) => {
                 className="border-0"
                 title="Jess's Stream"
               />
-              
-              {/* Combined Live indicator + Twitch button */}
+                {/* Combined Live indicator + Twitch button */}
               <button
                 onClick={handleOpenTwitch}
                 className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium shadow-lg transition-all hover:scale-105 cursor-pointer"
@@ -184,36 +192,15 @@ export const TwitchStream: React.FC<TwitchStreamProps> = ({ onClose }) => {
                   backgroundColor: 'rgba(220, 38, 38, 0.95)',
                   color: 'white'
                 }}
-                title="🔴 LIVE - Click to watch on Twitch"
+                title={`🔴 LIVE - ${streamData?.viewer_count ? `${streamData.viewer_count} viewers` : ''} - Click to watch on Twitch`}
               >
                 <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                 <span>LIVE</span>
+                {streamData?.viewer_count && (
+                  <span className="opacity-90">({streamData.viewer_count})</span>                )}
                 <ExternalLink size={10} className="opacity-75" />
               </button>
             </>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full">
-              <VideoOff 
-                size={24} 
-                className="mb-2" 
-                style={{ color: 'var(--text-secondary)' }}
-              />
-              <span 
-                className="text-sm mb-2"
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                Stream Offline
-              </span>
-              <button
-                onClick={handleOpenTwitch}
-                className="text-xs underline transition-colors"
-                style={{ 
-                  color: 'var(--color-accent-400)',
-                }}
-              >
-                Visit Twitch Channel
-              </button>
-            </div>
           )}
         </div>
       )}
