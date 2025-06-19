@@ -1,10 +1,10 @@
 import React from 'react'
 import type { WindowState } from '../store/desktopStore'
 import { useDesktopStore } from '../store/desktopStore'
-import { Window, Taskbar, DesktopIcon } from '.'
+import { Window, Taskbar, DesktopIcon, TwitchStream } from '.'
 import { StartMenu } from './StartMenu'
 import { DesktopStickers } from './DesktopStickers'
-import { FileText, Globe, User, Folder, Palette } from 'lucide-react'
+import { FileText, Globe, User, Folder, Palette, Video } from 'lucide-react'
 import BackgroundImage from '../images/Background.png'
 
 // Helper function to create window action with defaults
@@ -28,7 +28,9 @@ const desktopIcons = [
     id: 'about',
     label: 'About Me',
     icon: User,
-    action: createWindowAction('About Me', 'about', { x: 100, y: 100 })
+    action: createWindowAction('About Me', 'text-viewer', { x: 100, y: 100 }, {
+      fileName: 'about.txt'
+    })
   },
   {
     id: 'portfolio',
@@ -46,22 +48,7 @@ const desktopIcons = [
     label: 'README.txt',
     icon: FileText,
     action: createWindowAction('README.txt', 'text-viewer', { x: 250, y: 200 }, {
-      fileName: 'README.txt',
-      content: `Welcome to Jess's Desktop!
-
-This is a Windows-style desktop interface built with React and TypeScript.
-
-Features:
-- Draggable and resizable windows
-- Desktop icons
-- Taskbar with open applications
-- Various applications (About, Text viewer, Projects, Stickers)
-
-Double-click on icons to open applications.
-Drag windows around to organize your workspace.
-Use the taskbar to switch between open applications.
-
-Enjoy exploring!`
+      fileName: 'README.txt'
     })
   },
   {
@@ -69,29 +56,15 @@ Enjoy exploring!`
     label: 'Projects',
     icon: Folder,
     action: createWindowAction('My Projects', 'text-viewer', { x: 300, y: 150 }, {
-      fileName: 'projects.txt',
-      content: `My Projects
-
-1. Desktop Website
-   - This very website you're looking at!
-   - Built with React, TypeScript, and Tailwind CSS
-   - Features window management and desktop simulation
-
-2. Future Project Ideas
-   - Add more applications (calculator, notepad, file explorer)
-   - Implement right-click context menus
-   - Add system notifications
-   - Create a proper file system simulation
-   - Add themes and customization options
-
-3. Technologies I Work With
-   - React & TypeScript
-   - Node.js & Express
-   - Python & Django
-   - Database: PostgreSQL, MongoDB
-   - Cloud: AWS, Docker
-
-Feel free to reach out if you'd like to collaborate!`
+      fileName: 'projects.txt'
+    })
+  },
+  {
+    id: 'devnotes',
+    label: 'Dev Notes',
+    icon: FileText,
+    action: createWindowAction('Development Notes', 'text-viewer', { x: 350, y: 250 }, {
+      fileName: 'devnotes.txt'
     })
   },
   {
@@ -99,13 +72,25 @@ Feel free to reach out if you'd like to collaborate!`
     label: 'Stickers',
     icon: Palette,
     action: createWindowAction('Cute Stickers', 'sticker-pack', { x: 200, y: 50 })
+  },
+  {
+    id: 'twitch',
+    label: 'Twitch',
+    icon: Video,
+    isExternalLink: true,
+    url: 'https://twitch.tv/jesski',
+    action: () => {
+      window.open('https://twitch.tv/jesski', '_blank', 'noopener,noreferrer')
+      return null
+    }
   }
 ]
 
 export const Desktop: React.FC = () => {
-  const { windows, openWindow, initializeWelcomeWindow } = useDesktopStore()
+  const { windows, openWindow, initializeWelcomeWindow, showTwitchStream, setTwitchStreamVisible } = useDesktopStore()
   const [isStartMenuOpen, setIsStartMenuOpen] = React.useState(false)
   const [iconColumns, setIconColumns] = React.useState<Array<typeof desktopIcons>>([])
+  const [isMobile, setIsMobile] = React.useState(false)
 
   const handleIconDoubleClick = (iconAction: () => Omit<WindowState, 'id' | 'zIndex'> | null) => {
     const windowData = iconAction()
@@ -127,6 +112,18 @@ export const Desktop: React.FC = () => {
   React.useEffect(() => {
     initializeWelcomeWindow()
   }, [initializeWelcomeWindow])
+
+  // Detect mobile and update state
+  React.useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Calculate responsive icon columns
   React.useEffect(() => {
@@ -247,6 +244,11 @@ export const Desktop: React.FC = () => {
           handleStartMenuClose()
         }}
       />
+
+      {/* Twitch Stream - Desktop only */}
+      {!isMobile && showTwitchStream && (
+        <TwitchStream onClose={() => setTwitchStreamVisible(false)} />
+      )}
     </div>
   )
 }

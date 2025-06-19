@@ -42,6 +42,7 @@ interface DesktopState {
   windows: WindowState[]
   nextZIndex: number
   hasShownWelcome: boolean
+  showTwitchStream: boolean
   openWindow: (window: Omit<WindowState, 'id' | 'zIndex'>) => void
   closeWindow: (id: string) => void
   minimizeWindow: (id: string) => void
@@ -50,12 +51,14 @@ interface DesktopState {
   updateWindowPosition: (id: string, position: { x: number; y: number }) => void
   updateWindowSize: (id: string, size: { width: number; height: number }) => void
   initializeWelcomeWindow: () => void
+  setTwitchStreamVisible: (visible: boolean) => void
 }
 
 export const useDesktopStore = create<DesktopState>((set, get) => ({
   windows: [],
   nextZIndex: 100,
   hasShownWelcome: false,
+  showTwitchStream: true, // Show by default, component will handle live check
   
   initializeWelcomeWindow: () => {
     // Always show the welcome window since we're showing boot animation every time
@@ -197,5 +200,9 @@ Enjoy exploring!`
         w.id === id ? { ...w, size } : w
       ),
     }))
+  },
+
+  setTwitchStreamVisible: (visible) => {
+    set({ showTwitchStream: visible })
   },
 }))
