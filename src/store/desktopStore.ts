@@ -30,8 +30,23 @@ export const useDesktopStore = create<DesktopState>((set, get) => ({
   
   openWindow: (windowData) => {
     const id = `window-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    const newWindow: WindowState = {
+    
+    // Check if we're on mobile
+    const isMobile = window.innerWidth < 768
+    
+    // Adjust window properties for mobile
+    const adjustedWindowData = isMobile ? {
       ...windowData,
+      position: { x: 10, y: 10 },
+      size: { 
+        width: Math.min(windowData.size.width, window.innerWidth - 20), 
+        height: Math.min(windowData.size.height, window.innerHeight - 80) 
+      },
+      isMaximized: false // Start non-maximized so users can see it's a window
+    } : windowData
+    
+    const newWindow: WindowState = {
+      ...adjustedWindowData,
       id,
       zIndex: get().nextZIndex,
     }

@@ -35,14 +35,14 @@ export const AboutApp: React.FC<AboutAppProps> = () => {
           <div className="grid grid-cols-2 gap-4">
             <a 
               href="mailto:hello@example.com" 
-              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800"
+              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 cursor-pointer"
             >
               <Mail size={20} />
               <span>Email</span>
             </a>
             <a 
               href="https://github.com" 
-              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800"
+              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 cursor-pointer"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -51,7 +51,7 @@ export const AboutApp: React.FC<AboutAppProps> = () => {
             </a>
             <a 
               href="https://linkedin.com" 
-              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800"
+              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 cursor-pointer"
               target="_blank"
               rel="noopener noreferrer"
             >

@@ -22,24 +22,32 @@ export const useDraggable = ({ initialPosition, onDrag, bounds }: UseDraggablePr
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const elementRef = useRef<HTMLDivElement>(null)
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+  const handleStart = useCallback((clientX: number, clientY: number) => {
     if (!elementRef.current) return
     
     setIsDragging(true)
-    const rect = elementRef.current.getBoundingClientRect()
     setDragStart({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: clientX - position.x,
+      y: clientY - position.y
     })
-    
-    e.preventDefault()
-  }, [])
+  }, [position])
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    handleStart(e.clientX, e.clientY)
+    e.preventDefault()
+  }, [handleStart])
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    handleStart(touch.clientX, touch.clientY)
+    e.preventDefault()
+  }, [handleStart])
+
+  const handleMove = useCallback((clientX: number, clientY: number) => {
     if (!isDragging) return
 
-    let newX = e.clientX - dragStart.x
-    let newY = e.clientY - dragStart.y
+    let newX = clientX - dragStart.x
+    let newY = clientY - dragStart.y
 
     // Apply bounds if provided
     if (bounds) {
@@ -52,21 +60,37 @@ export const useDraggable = ({ initialPosition, onDrag, bounds }: UseDraggablePr
     onDrag?.(newPosition)
   }, [isDragging, dragStart, bounds, onDrag])
 
-  const handleMouseUp = useCallback(() => {
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    handleMove(e.clientX, e.clientY)
+  }, [handleMove])
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (e.touches.length === 1) {
+      const touch = e.touches[0]
+      handleMove(touch.clientX, touch.clientY)
+      e.preventDefault() // Prevent scrolling
+    }
+  }, [handleMove])
+
+  const handleEnd = useCallback(() => {
     setIsDragging(false)
   }, [])
 
-  // Attach global mouse events when dragging
+  // Attach global events when dragging
   useEffect(() => {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
+      document.addEventListener('mouseup', handleEnd)
+      document.addEventListener('touchmove', handleTouchMove, { passive: false })
+      document.addEventListener('touchend', handleEnd)
       return () => {
         document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
+        document.removeEventListener('mouseup', handleEnd)
+        document.removeEventListener('touchmove', handleTouchMove)
+        document.removeEventListener('touchend', handleEnd)
       }
     }
-  }, [isDragging, handleMouseMove, handleMouseUp])
+  }, [isDragging, handleMouseMove, handleTouchMove, handleEnd])
 
   return {
     ref: elementRef,
@@ -74,7 +98,11 @@ export const useDraggable = ({ initialPosition, onDrag, bounds }: UseDraggablePr
     isDragging,
     dragHandleProps: {
       onMouseDown: handleMouseDown,
-      style: { cursor: isDragging ? 'grabbing' : 'grab' }
+      onTouchStart: handleTouchStart,
+      style: { 
+        cursor: isDragging ? 'grabbing' : 'grab',
+        touchAction: 'none' // Prevent scrolling during drag
+      }
     }
   }
 }

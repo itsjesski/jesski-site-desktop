@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Jess's Desktop</title>
     <style>
       html, body, #root {
@@ -12,6 +14,41 @@
         height: 100%;
         width: 100%;
         overflow: hidden;
+        touch-action: manipulation;
+      }
+      
+      /* Prevent text selection on mobile */
+      @media (max-width: 767px) {
+        * {
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          user-select: none;
+          -webkit-touch-callout: none;
+        }
+        
+        /* Allow text selection in windows */
+        .window-content * {
+          -webkit-user-select: text;
+          -moz-user-select: text;
+          user-select: text;
+        }
+      }
+      
+      /* Touch optimization for all devices */
+      button, [role="button"] {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      /* Smooth touch interactions */
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      /* Better touch targets for interactive elements */
+      .desktop-icon, .taskbar-button, .window-controls button {
+        min-height: 44px;
+        min-width: 44px;
       }
     </style>
   </head>
