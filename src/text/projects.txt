@@ -1,0 +1,22 @@
+My Projects
+
+1. Desktop Website
+   - This very website you're looking at!
+   - Built with React, TypeScript, and Tailwind CSS
+   - Features window management and desktop simulation
+
+2. Future Project Ideas
+   - Add more applications (calculator, notepad, file explorer)
+   - Implement right-click context menus
+   - Add system notifications
+   - Create a proper file system simulation
+   - Add themes and customization options
+
+3. Technologies I Work With
+   - React & TypeScript
+   - Node.js & Express
+   - Python & Django
+   - Database: PostgreSQL, MongoDB
+   - Cloud: AWS, Docker
+
+Feel free to reach out if you'd like to collaborate!

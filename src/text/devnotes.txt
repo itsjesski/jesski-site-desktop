@@ -1,0 +1,44 @@
+Development Notes
+
+=== JessOS Desktop Environment ===
+
+Version: 1.0.0
+Last Updated: June 19, 2025
+
+Technical Implementation:
+- React 19 with TypeScript for type safety
+- Zustand for state management (lighter than Redux)
+- Tailwind CSS v4 for styling with custom CSS variables
+- Custom drag & drop implementation for React 19 compatibility
+- Responsive design that works on desktop and mobile
+
+Architecture:
+- Component-based window system
+- Centralized store for window management
+- Dynamic application loading
+- Theme system with CSS custom properties
+
+Recent Features:
+- Twitch stream integration with live detection
+- Boot loader animation with stickers
+- Drag & drop sticker pack application
+- File-based text content system
+- Desktop icon management with responsive layout
+
+TODO:
+- Add right-click context menus
+- Implement file explorer application
+- Add system notifications
+- Create calculator app
+- Add theme customization panel
+
+Known Issues:
+- Window dragging on mobile could be improved
+- Need better error handling for failed API calls
+- Twitch embed sizing in maximized mode
+
+Performance Optimizations:
+- Lazy loading of applications
+- Memoized components to prevent unnecessary re-renders
+- Efficient window z-index management
+- Optimized sticker animations
