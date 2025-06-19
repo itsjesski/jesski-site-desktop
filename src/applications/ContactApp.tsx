@@ -50,8 +50,8 @@ export const ContactApp: React.FC<ContactAppProps> = () => {
   }
 
   return (
-    <div className="h-full p-6 overflow-auto">
-      <div className="max-w-md mx-auto">
+    <div className="h-full p-6 overflow-y-auto overflow-x-hidden">
+      <div className="max-w-md mx-auto min-h-full">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center">
             <Mail size={32} className="text-white" />

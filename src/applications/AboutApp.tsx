@@ -8,8 +8,8 @@ interface AboutAppProps {
 
 export const AboutApp: React.FC<AboutAppProps> = () => {
   return (
-    <div className="h-full p-6 overflow-auto">
-      <div className="max-w-2xl mx-auto">
+    <div className="h-full p-6 overflow-y-auto overflow-x-hidden">
+      <div className="max-w-2xl mx-auto min-h-full">
         <div className="text-center mb-8">
           <div className="w-32 h-32 bg-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center">
             <User size={64} className="text-white" />

@@ -1,15 +1,18 @@
 import React, { useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 
 interface DesktopIconProps {
   icon: LucideIcon
   label: string
+  isExternalLink?: boolean
   onDoubleClick: () => void
 }
 
 export const DesktopIcon: React.FC<DesktopIconProps> = ({ 
   icon: Icon, 
   label, 
+  isExternalLink = false,
   onDoubleClick 
 }) => {
   const [isSelected, setIsSelected] = useState(false)
@@ -21,13 +24,13 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
 
   return (
     <div
-      className={`cursor-pointer select-none group desktop-icon touch-manipulation flex justify-center flex-shrink-0`}
+      className={`cursor-pointer select-none group desktop-icon touch-manipulation flex justify-center flex-shrink-0 relative`}
       style={{ minHeight: '44px', minWidth: '44px', width: '90px' }}
       onClick={handleClick}
       onDoubleClick={onDoubleClick}
       role="button"
       tabIndex={2}
-      aria-label={`Open ${label}`}
+      aria-label={`${isExternalLink ? 'Open link to' : 'Open'} ${label}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
@@ -54,13 +57,22 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
       }}
       >
         <div 
-          className="p-3 rounded-lg shadow-md mb-2 border"
+          className="p-3 rounded-lg shadow-md mb-2 border relative"
           style={{
             backgroundColor: 'var(--icon-bg)',
             borderColor: 'var(--icon-border)'
           }}
         >
           <Icon size={32} style={{ color: 'var(--icon-text)' }} aria-hidden="true" />
+          {/* External link indicator */}
+          {isExternalLink && (
+            <div 
+              className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-sm"
+              style={{ backgroundColor: 'var(--color-accent-600)' }}
+            >
+              <ExternalLink size={10} className="text-white" />
+            </div>
+          )}
         </div>
         <span 
           className="text-xs font-medium text-center leading-tight break-words drop-shadow-sm"
