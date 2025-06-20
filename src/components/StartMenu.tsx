@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { User, FileText } from 'lucide-react'
+import { User, FileText, Trophy } from 'lucide-react'
 import type { WindowState } from '../store/desktopStore'
 
 interface StartMenuProps {
@@ -52,6 +52,19 @@ Use the taskbar to switch between open applications.
 
 Enjoy exploring!`
       }
+    })
+  },
+  {
+    id: 'games',
+    label: 'Games Library',
+    icon: Trophy,
+    action: () => ({
+      title: 'Games Library',
+      component: 'games-library',
+      isMinimized: false,
+      isMaximized: false,
+      position: { x: 150, y: 150 },
+      size: { width: 1000, height: 700 }
     })
   }
 ]

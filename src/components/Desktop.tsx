@@ -4,7 +4,7 @@ import { useDesktopStore } from '../store/desktopStore'
 import { Window, Taskbar, DesktopIcon, TwitchStream, Notification } from '.'
 import { StartMenu } from './StartMenu'
 import { DesktopStickers } from './DesktopStickers'
-import { FileText, Globe, User, Folder, Palette, Video, MessageCircle } from 'lucide-react'
+import { FileText, Globe, User, Folder, Palette, Video, MessageCircle, Trophy } from 'lucide-react'
 import BackgroundImage from '../images/Background.png'
 import { twitchAPI } from '../services/twitchAPI'
 import { useNotificationManager } from '../hooks/useNotificationManager'
@@ -84,6 +84,17 @@ const desktopIcons = [
       isMaximized: false,
       position: { x: 400, y: 100 },
       size: { width: 900, height: 650 }
+    })  },  {
+    id: 'games',
+    label: 'Games',
+    icon: Trophy,
+    action: () => ({
+      title: 'Games Library',
+      component: 'games-library',
+      isMinimized: false,
+      isMaximized: false,
+      position: { x: 150, y: 150 },
+      size: { width: 1000, height: 700 }
     })
   },
   {
@@ -294,7 +305,6 @@ export const Desktop: React.FC = () => {
             >              <Notification
                 title={notification.title}
                 message={notification.message}
-                icon={notification.icon}
                 onClose={() => dismissNotification(notification.id)}
               />
             </div>

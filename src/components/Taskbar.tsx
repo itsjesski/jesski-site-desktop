@@ -1,7 +1,8 @@
 import React from 'react'
 import { useDesktopStore } from '../store/desktopStore'
 import { format } from 'date-fns'
-import { Menu, FileText, Globe, User, Folder, X, VolumeX, Volume2 } from 'lucide-react'
+import { Menu, FileText, Globe, User, Folder, X } from 'lucide-react'
+import { SystemTray } from './SystemTray'
 
 interface TaskbarProps {
   isStartMenuOpen: boolean
@@ -141,33 +142,11 @@ export const Taskbar: React.FC<TaskbarProps> = ({
 
         {/* System Tray - Right Section */}
         <div className="flex-shrink-0 ml-2 sm:ml-4 flex items-center gap-2">
-          {/* Notification Mute Button */}
-          {onToggleMute && (
-            <button
-              onClick={onToggleMute}
-              className="p-2 rounded transition-colors cursor-pointer flex items-center justify-center"
-              style={{
-                minHeight: '32px',
-                minWidth: '32px',
-                backgroundColor: isMuted ? 'var(--color-accent-600)' : 'transparent',
-                color: 'var(--taskbar-text)'
-              }}
-              onMouseEnter={(e) => {
-                if (!isMuted) {
-                  e.currentTarget.style.backgroundColor = 'var(--taskbar-hover)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isMuted) {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                }
-              }}
-              title={isMuted ? 'Unmute notifications' : 'Mute notifications'}
-              aria-label={isMuted ? 'Unmute notifications' : 'Mute notifications'}
-            >
-              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-            </button>
-          )}
+          {/* System Tray */}
+          <SystemTray 
+            isMuted={isMuted}
+            onToggleMute={onToggleMute}
+          />
           
           {/* Date and Time */}
           <div className="text-right px-1 sm:px-3 py-2 text-xs sm:text-sm" style={{ color: 'var(--taskbar-text)' }}>

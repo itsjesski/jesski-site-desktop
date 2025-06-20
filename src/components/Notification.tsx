@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { X } from 'lucide-react'
+import { X, Heart } from 'lucide-react'
 
 interface NotificationProps {
   message: string
   title: string
-  icon: React.ReactNode
   onClose: () => void
   duration?: number
 }
@@ -12,7 +11,6 @@ interface NotificationProps {
 export const Notification: React.FC<NotificationProps> = ({ 
   message, 
   title, 
-  icon, 
   onClose, 
   duration = 17000  // Increased to 17 seconds (was 12 seconds)
 }) => {
@@ -63,10 +61,23 @@ export const Notification: React.FC<NotificationProps> = ({
         }}
       >
         <div className="flex items-center space-x-2 flex-1">
-          <div style={{ color: 'var(--window-header-text)' }}>
-            {icon}
+          <div 
+            className="p-1 rounded"
+            style={{ 
+              backgroundColor: 'var(--color-accent-500)',
+              color: 'white'
+            }}
+          >
+            <Heart size={12} />
           </div>
-          <h3 className="text-sm font-medium" style={{ color: 'var(--window-header-text)' }}>{title}</h3>
+          <div className="flex flex-col">
+            <h3 className="text-sm font-medium leading-tight" style={{ color: 'var(--window-header-text)' }}>
+              {title}
+            </h3>
+            <span className="text-xs opacity-75" style={{ color: 'var(--window-header-text)' }}>
+              Affirmations.exe
+            </span>
+          </div>
         </div>
         <div className="flex items-center" role="group" aria-label="Notification controls">
           {/* Close Button */}
