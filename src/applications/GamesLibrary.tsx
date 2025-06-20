@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Search, Play, Star, Monitor, Trophy, ChevronLeft, ChevronRight, Gamepad2, Smartphone, Tv } from 'lucide-react'
+import { Search, Play, Star, Monitor, Trophy, ChevronLeft, ChevronRight, Gamepad2, Smartphone, Tv, BarChart3, Award, Target, Zap, Calendar } from 'lucide-react'
 
 interface Game {
   Game: string
@@ -28,6 +28,7 @@ export const GamesLibrary: React.FC = () => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'Played', direction: 'desc' })
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
+  const [activeTab, setActiveTab] = useState<'games' | 'stats'>('games')
   const [windowWidth, setWindowWidth] = useState(1000)
   const containerRef = React.useRef<HTMLDivElement>(null)
   
@@ -189,6 +190,90 @@ export const GamesLibrary: React.FC = () => {
     return new Date(Math.min(...validDates.map(date => date.getTime())))
   }, [games])
 
+  // Calculate stats
+  const gameStats = useMemo(() => {
+    if (games.length === 0) return null
+
+    // Debug: Check what completion values we have
+    const completionValues = [...new Set(games.map(game => game.Completed).filter(Boolean))]
+    console.log('Completion values found:', completionValues)
+
+    const totalGames = games.length
+    const completedGames = games.filter(game => {
+      if (!game.Completed) return false
+      const completed = game.Completed.toLowerCase().trim()
+      // Check for various ways "completed" might be indicated
+      return completed === 'yes' || completed === 'y' || completed === 'true' || 
+             completed === 'completed' || completed === 'done' || completed === '1'
+    }).length
+    
+    const ratedGames = games.filter(game => game.Rating > 0)
+    const averageRating = ratedGames.length > 0 
+      ? ratedGames.reduce((sum, game) => sum + game.Rating, 0) / ratedGames.length
+      : 0
+
+    // Get GOTY winners
+    const gotyWinners = games.filter(game => 
+      game.GOTY && game.GOTY.toLowerCase() === 'yes'
+    )
+
+    // Random best and worst games (from rated games)
+    const bestGames = ratedGames.filter(game => game.Rating >= 9)
+    const worstGames = ratedGames.filter(game => game.Rating <= 4)
+    
+    const randomBestGame = bestGames.length > 0 
+      ? bestGames[Math.floor(Math.random() * bestGames.length)]
+      : null
+    
+    const randomWorstGame = worstGames.length > 0 
+      ? worstGames[Math.floor(Math.random() * worstGames.length)]
+      : null
+
+    // Platform breakdown
+    const platformStats = games.reduce((acc, game) => {
+      const platform = game.Platform || 'Unknown'
+      acc[platform] = (acc[platform] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    // Genre breakdown
+    const genreStats = games.reduce((acc, game) => {
+      const genre = game.Genre || 'Unknown'
+      acc[genre] = (acc[genre] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    // Rating distribution
+    const ratingDistribution = ratedGames.reduce((acc, game) => {
+      const rating = Math.floor(game.Rating)
+      acc[rating] = (acc[rating] || 0) + 1
+      return acc
+    }, {} as Record<number, number>)
+
+    // Time-based stats
+    const currentYear = new Date().getFullYear()
+    const thisYearGames = games.filter(game => {
+      const playedDate = new Date(game.Played)
+      return !isNaN(playedDate.getTime()) && playedDate.getFullYear() === currentYear
+    }).length
+
+    return {
+      totalGames,
+      completedGames,
+      completionRate: totalGames > 0 ? (completedGames / totalGames) * 100 : 0,
+      averageRating: Number(averageRating.toFixed(1)),
+      ratedGames: ratedGames.length,
+      gotyWinners,
+      randomBestGame,
+      randomWorstGame,
+      platformStats,
+      genreStats,
+      ratingDistribution,
+      thisYearGames,
+      earliestYear: earliestDate?.getFullYear() || currentYear
+    }
+  }, [games, earliestDate])
+
   const handleSort = (key: keyof Game) => {
     setSortConfig(prev => ({
       key,
@@ -293,7 +378,54 @@ export const GamesLibrary: React.FC = () => {
           </div>
         </div>
 
-        {/* Search and Filters */}
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setActiveTab('games')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'games' 
+                ? 'text-white' 
+                : 'hover:opacity-80'
+            }`}
+            style={{
+              backgroundColor: activeTab === 'games' 
+                ? 'var(--color-accent-500)' 
+                : 'var(--color-accent-100)',
+              color: activeTab === 'games' 
+                ? 'white' 
+                : 'var(--color-accent-700)'
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <Play size={16} />
+              Games
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('stats')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'stats' 
+                ? 'text-white' 
+                : 'hover:opacity-80'
+            }`}
+            style={{
+              backgroundColor: activeTab === 'stats' 
+                ? 'var(--color-accent-500)' 
+                : 'var(--color-accent-100)',
+              color: activeTab === 'stats' 
+                ? 'white' 
+                : 'var(--color-accent-700)'
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <BarChart3 size={16} />
+              Stats
+            </div>
+          </button>
+        </div>
+
+        {/* Search and Filters - Only show on Games tab */}
+        {activeTab === 'games' && (
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-64">
             <div className="relative">
@@ -352,10 +484,14 @@ export const GamesLibrary: React.FC = () => {
             ))}
           </select>
         </div>
+        )}
       </div>
 
-      {/* Games Content - Table View */}
-      <div className="flex-1 overflow-auto games-content-area">
+      {/* Main Content */}
+      {activeTab === 'games' ? (
+        <>
+          {/* Games Content - Table View */}
+          <div className="flex-1 overflow-auto games-content-area">
         <table className="w-full border-collapse" style={{ minWidth: '600px' }}>
           <thead>
             <tr className="border-b-2" style={{ 
@@ -581,6 +717,175 @@ export const GamesLibrary: React.FC = () => {
               <ChevronRight size={16} />
             </button>
           </div>
+        </div>
+      )}
+        </>
+      ) : (
+        /* Stats Content */
+        <div className="flex-1 overflow-auto p-6">
+          {gameStats ? (
+            <div className="max-w-4xl mx-auto space-y-6">
+              {/* Overview Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-primary-50)', border: '1px solid var(--window-border)' }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Trophy size={20} style={{ color: 'var(--color-accent-500)' }} />
+                    <h3 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Total Games</h3>
+                  </div>
+                  <p className="text-2xl font-bold" style={{ color: 'var(--color-accent-600)' }}>{gameStats.totalGames}</p>
+                </div>
+
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-primary-50)', border: '1px solid var(--window-border)' }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target size={20} style={{ color: 'var(--color-green-500)' }} />
+                    <h3 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Completion Rate</h3>
+                  </div>
+                  <p className="text-2xl font-bold" style={{ color: 'var(--color-green-600)' }}>
+                    {gameStats.completionRate.toFixed(1)}%
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {gameStats.completedGames} of {gameStats.totalGames} completed
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-primary-50)', border: '1px solid var(--window-border)' }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Star size={20} style={{ color: 'var(--color-yellow-500)' }} />
+                    <h3 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Average Rating</h3>
+                  </div>
+                  <p className="text-2xl font-bold" style={{ color: 'var(--color-yellow-600)' }}>
+                    {gameStats.averageRating}/10
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {gameStats.ratedGames} games rated
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-primary-50)', border: '1px solid var(--window-border)' }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar size={20} style={{ color: 'var(--color-blue-500)' }} />
+                    <h3 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>This Year</h3>
+                  </div>
+                  <p className="text-2xl font-bold" style={{ color: 'var(--color-blue-600)' }}>{gameStats.thisYearGames}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    Games played in {new Date().getFullYear()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Random Highlights */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {gameStats.randomBestGame && (
+                  <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-green-50)', border: '1px solid var(--color-green-200)' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap size={20} style={{ color: 'var(--color-green-500)' }} />
+                      <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Random Great Game</h3>
+                    </div>
+                    <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{gameStats.randomBestGame.Game}</p>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                      Rating: {gameStats.randomBestGame.Rating}/10 • {gameStats.randomBestGame.Platform}
+                    </p>
+                  </div>
+                )}
+
+                {gameStats.randomWorstGame && (
+                  <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-red-50)', border: '1px solid var(--color-red-200)' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap size={20} style={{ color: 'var(--color-red-500)' }} />
+                      <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Random Poor Game</h3>
+                    </div>
+                    <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{gameStats.randomWorstGame.Game}</p>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                      Rating: {gameStats.randomWorstGame.Rating}/10 • {gameStats.randomWorstGame.Platform}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* GOTY Winners */}
+              {gameStats.gotyWinners.length > 0 && (
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-primary-50)', border: '1px solid var(--window-border)' }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Award size={20} style={{ color: 'var(--color-gold-500)' }} />
+                    <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Game of the Year Winners</h3>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {gameStats.gotyWinners.map((game, index) => (
+                      <div key={index} className="px-3 py-1 rounded text-sm" style={{ backgroundColor: 'var(--color-gold-100)', color: 'var(--color-gold-700)' }}>
+                        {game.Game}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Platform & Genre Breakdown */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-primary-50)', border: '1px solid var(--window-border)' }}>
+                  <h3 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Platform Breakdown</h3>
+                  <div className="space-y-2">
+                    {Object.entries(gameStats.platformStats)
+                      .sort(([,a], [,b]) => b - a)
+                      .slice(0, 5)
+                      .map(([platform, count]) => (
+                        <div key={platform} className="flex justify-between items-center">
+                          <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{platform}</span>
+                          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{count}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-primary-50)', border: '1px solid var(--window-border)' }}>
+                  <h3 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Top Genres</h3>
+                  <div className="space-y-2">
+                    {Object.entries(gameStats.genreStats)
+                      .sort(([,a], [,b]) => b - a)
+                      .slice(0, 5)
+                      .map(([genre, count]) => (
+                        <div key={genre} className="flex justify-between items-center">
+                          <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{genre}</span>
+                          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{count}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Rating Distribution */}
+              <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-primary-50)', border: '1px solid var(--window-border)' }}>
+                <h3 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Rating Distribution</h3>
+                <div className="flex items-end gap-1 h-32">
+                  {[0,1,2,3,4,5,6,7,8,9,10].map(rating => {
+                    const count = gameStats.ratingDistribution[rating] || 0
+                    const maxCount = Math.max(...Object.values(gameStats.ratingDistribution))
+                    const height = maxCount > 0 ? (count / maxCount) * 100 : 0
+                    
+                    return (
+                      <div key={rating} className="flex-1 flex flex-col items-center gap-1">
+                        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{count || ''}</div>
+                        <div 
+                          className="w-full rounded-t"
+                          style={{ 
+                            height: `${height}%`,
+                            backgroundColor: getRatingColor(rating),
+                            minHeight: count > 0 ? '4px' : '0px',
+                            opacity: count > 0 ? 1 : 0.3
+                          }}
+                        />
+                        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{rating}</div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <BarChart3 size={48} style={{ color: 'var(--color-accent-500)' }} className="mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Loading Statistics...</h2>
+            </div>
+          )}
         </div>
       )}
 
