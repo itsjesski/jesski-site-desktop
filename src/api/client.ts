@@ -1,7 +1,28 @@
-// API configuration for future server integration
-export const API_BASE_URL = import.meta.env.PROD 
-  ? '' // Use relative URLs in production
-  : 'http://localhost:8080'; // Use localhost in development
+// API configuration for different environments
+const getApiBaseUrl = () => {
+  // In production, determine base URL from current host
+  if (import.meta.env.PROD) {
+    const currentHost = window.location.host;
+    
+    // If we're on the main domain, use that
+    if (currentHost.includes('jesski.com')) {
+      return `https://${currentHost}`;
+    }
+    
+    // If we're on Digital Ocean, use that
+    if (currentHost.includes('ondigitalocean.app')) {
+      return `https://${currentHost}`;
+    }
+    
+    // Fallback to relative URLs
+    return '';
+  }
+  
+  // Development - use localhost
+  return 'http://localhost:8080';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export const API_ENDPOINTS = {
   health: '/api/health',
