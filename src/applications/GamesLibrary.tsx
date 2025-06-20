@@ -855,28 +855,34 @@ export const GamesLibrary: React.FC = () => {
               {/* Rating Distribution */}
               <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-primary-50)', border: '1px solid var(--window-border)' }}>
                 <h3 className="font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Rating Distribution</h3>
-                <div className="flex items-end gap-1 h-32">
+                <div className="flex items-end justify-center gap-1" style={{ height: '120px' }}>
                   {[0,1,2,3,4,5,6,7,8,9,10].map(rating => {
                     const count = gameStats.ratingDistribution[rating] || 0
                     const maxCount = Math.max(...Object.values(gameStats.ratingDistribution))
-                    const height = maxCount > 0 ? (count / maxCount) * 100 : 0
+                    const heightPx = maxCount > 0 ? Math.max((count / maxCount) * 100, count > 0 ? 8 : 0) : 0
                     
                     return (
-                      <div key={rating} className="flex-1 flex flex-col items-center gap-1">
-                        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{count || ''}</div>
+                      <div key={rating} className="flex flex-col items-center justify-end gap-1" style={{ height: '120px', flex: '1' }}>
+                        {count > 0 && (
+                          <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{count}</div>
+                        )}
                         <div 
                           className="w-full rounded-t"
                           style={{ 
-                            height: `${height}%`,
+                            height: `${heightPx}px`,
                             backgroundColor: getRatingColor(rating),
-                            minHeight: count > 0 ? '4px' : '0px',
-                            opacity: count > 0 ? 1 : 0.3
+                            opacity: count > 0 ? 1 : 0.2,
+                            minWidth: '12px',
+                            transition: 'height 0.3s ease'
                           }}
                         />
-                        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{rating}</div>
+                        <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>{rating}</div>
                       </div>
                     )
                   })}
+                </div>
+                <div className="text-xs text-center mt-2" style={{ color: 'var(--text-muted)' }}>
+                  Rating (0-10)
                 </div>
               </div>
             </div>
