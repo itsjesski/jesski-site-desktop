@@ -6,7 +6,7 @@ import { StartMenu } from './StartMenu'
 import { DesktopStickers } from './DesktopStickers'
 import { FileText, User, Folder, Palette, Video, MessageCircle, Trophy, Monitor } from 'lucide-react'
 import BackgroundImage from '../images/Background.png'
-import { twitchAPI } from '../services/twitchAPI'
+import { twitchAPI } from '../services/twitchAPIClient'
 import { useNotificationManager } from '../hooks/useNotificationManager'
 
 // Helper function to create window action with defaults
@@ -165,17 +165,16 @@ export const Desktop: React.FC = () => {
     calculateColumns()
     window.addEventListener('resize', calculateColumns)
     return () => window.removeEventListener('resize', calculateColumns)
-  }, [])
-  // Check for live stream status
-  React.useEffect(() => {
-    const checkStreamStatus = async () => {
+  }, [])  // Check for live stream status
+  React.useEffect(() => {    const checkStreamStatus = async () => {
       try {
+        // Refresh Twitch connection before checking
+        await twitchAPI.refreshConnection()
+        
         const twitchChannel = import.meta.env.VITE_TWITCH_CHANNEL || 'jesski'
         const result = await twitchAPI.isStreamLive(twitchChannel)
-        console.log(`Stream status check: ${result.isLive ? 'LIVE' : 'OFFLINE'}`)
         setTwitchStreamVisible(result.isLive)
-      } catch (error) {
-        console.error('Failed to check stream status:', error)
+      } catch {
         setTwitchStreamVisible(false)
       }
     }

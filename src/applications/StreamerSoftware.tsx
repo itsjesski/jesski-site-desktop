@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Monitor, Video, Mic, MicOff, VideoOff, Settings, Play, Square, Camera, Volume2, VolumeX } from 'lucide-react'
 import type { WindowState } from '../store/desktopStore'
-import { twitchAPI, type TwitchStreamData } from '../services/twitchAPI'
+import { twitchAPI, type TwitchStreamData } from '../services/twitchAPIClient'
 
 interface StreamerSoftwareProps {
   window: WindowState
@@ -24,11 +24,14 @@ export const StreamerSoftware: React.FC<StreamerSoftwareProps> = () => {
   useEffect(() => {
     const checkTwitchStatus = async () => {
       try {
+        // Refresh connection before checking status
+        await twitchAPI.refreshConnection()
+        
         const status = await twitchAPI.isStreamLive(TWITCH_CHANNEL)
         setTwitchLive(status.isLive)
         setTwitchStreamData(status.streamData || null)
-      } catch (error) {
-        console.error('Failed to check Twitch status:', error)
+      } catch {
+        // Silently fail - not critical for the app
       }
     }
 

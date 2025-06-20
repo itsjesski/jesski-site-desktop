@@ -5,15 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "build": "tsc && vite build",
+    "build:optimized": "bash scripts/optimize-build.sh",
+    "build:production": "NODE_ENV=production npm run build:optimized",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "start": "vite preview --port 8080 --host 0.0.0.0",
-    "start:express": "node server.js"
+    "start": "node server.js",
+    "deploy:prepare": "npm run build:production && echo 'Ready for Digital Ocean deployment'"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.10",
     "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "lucide-react": "^0.518.0",
     "motion": "^12.18.1",
