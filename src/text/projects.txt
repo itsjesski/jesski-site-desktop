@@ -1,22 +1,48 @@
 My Projects
 
-1. Desktop Website
-   - This very website you're looking at!
-   - Built with React, TypeScript, and Tailwind CSS
-   - Features window management and desktop simulation
+Open Source Contributions:
 
-2. Future Project Ideas
-   - Add more applications (calculator, notepad, file explorer)
-   - Implement right-click context menus
-   - Add system notifications
-   - Create a proper file system simulation
-   - Add themes and customization options
+1. Firebot (Major Contributor)
+   - A powerful all-in-one desktop bot for Twitch streamers
+   - Features chat commands, events, timers, currencies, and third-party integrations
+   - Built with JavaScript/TypeScript and Electron
+   - 396+ stars, 109+ forks, 43+ contributors
+   - One of the most popular Twitch bot solutions
+   - GitHub: crowbartools/Firebot
 
-3. Technologies I Work With
-   - React & TypeScript
-   - Node.js & Express
-   - Python & Django
-   - Database: PostgreSQL, MongoDB
-   - Cloud: AWS, Docker
+2. Firebot RPG
+   - A text-based RPG system designed specifically for Firebot
+   - Allows streamers to create interactive RPG experiences in their chat
+   - Built with TypeScript
+   - GitHub: itsjesski/firebot-rpg
 
-Feel free to reach out if you'd like to collaborate!
+3. Personal Website
+   - Modern personal website built with Next.js, Tailwind CSS, and TypeScript
+   - Showcases my work and streaming content
+   - GitHub: itsjesski/jesski-website
+
+4. VRC Event Manager
+   - VRChat Dancer Slot Bot for managing virtual events
+   - Helps coordinate and organize VRChat community events
+   - Built with TypeScript
+   - GitHub: itsjesski/VRC-Event-Manager
+
+5. Discord Activity Overlay
+   - Simple Discord Voice Activity Overlay for streaming teams
+   - Fork and enhancement of existing overlay system
+   - Built with TypeScript
+   - GitHub: itsjesski/ph-discord-activity-overlay
+
+Professional Experience:
+Over 15 years of professional web development, I've created numerous applications 
+and systems for various companies, ranging from e-commerce platforms to internal 
+business tools. This work includes full-stack development with technologies like 
+React, TypeScript, PHP, Node.js, and various database systems.
+
+Technologies I Work With:
+- Frontend: React, TypeScript, Next.js, Tailwind CSS
+- Backend: Node.js, PHP, Python
+- Databases: PostgreSQL, MongoDB, MySQL
+- Tools: Git, Docker, AWS, Electron
+
+Feel free to check out my GitHub or reach out if you'd like to collaborate!

@@ -4,7 +4,7 @@ import { useDesktopStore } from '../store/desktopStore'
 import { Window, Taskbar, DesktopIcon, TwitchStream, Notification } from '.'
 import { StartMenu } from './StartMenu'
 import { DesktopStickers } from './DesktopStickers'
-import { FileText, Globe, User, Folder, Palette, Video, MessageCircle, Trophy } from 'lucide-react'
+import { FileText, User, Folder, Palette, Video, MessageCircle, Trophy } from 'lucide-react'
 import BackgroundImage from '../images/Background.png'
 import { twitchAPI } from '../services/twitchAPI'
 import { useNotificationManager } from '../hooks/useNotificationManager'
@@ -30,20 +30,9 @@ const desktopIcons = [
     id: 'about',
     label: 'About Me',
     icon: User,
-    action: createWindowAction('About Me', 'text-viewer', { x: 100, y: 100 }, {
+    action: createWindowAction('About Me', 'about', { x: 100, y: 100 }, {
       fileName: 'about.txt'
     })
-  },
-  {
-    id: 'portfolio',
-    label: 'Portfolio',
-    icon: Globe,
-    isExternalLink: true,
-    url: 'https://github.com',
-    action: () => {
-      window.open('https://github.com', '_blank', 'noopener,noreferrer')
-      return null
-    }
   },
   {
     id: 'readme',
@@ -61,13 +50,6 @@ const desktopIcons = [
       fileName: 'projects.txt'
     })
   },
-  {
-    id: 'devnotes',
-    label: 'Dev Notes',
-    icon: FileText,
-    action: createWindowAction('Development Notes', 'text-viewer', { x: 350, y: 250 }, {
-      fileName: 'devnotes.txt'
-    })  },
   {
     id: 'stickers',
     label: 'Stickers',
