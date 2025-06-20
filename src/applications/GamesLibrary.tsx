@@ -28,8 +28,47 @@ export const GamesLibrary: React.FC = () => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'Played', direction: 'desc' })
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
+  const [windowWidth, setWindowWidth] = useState(1000)
+  const containerRef = React.useRef<HTMLDivElement>(null)
   
   const itemsPerPage = 20
+
+  // Track container width for responsive columns
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const updateWidth = () => {
+      // Get the actual content area width (subtract padding)
+      const contentArea = container.querySelector('.games-content-area')
+      if (contentArea) {
+        setWindowWidth(contentArea.clientWidth)
+      } else {
+        // Fallback to container width minus padding
+        setWindowWidth(container.clientWidth - 32) // Account for 16px padding on each side
+      }
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateWidth()
+    })
+
+    resizeObserver.observe(container)
+    
+    // Set initial width
+    updateWidth()
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
+
+  // Determine which columns to show based on width
+  // More conservative breakpoints to ensure proper column dropping
+  const showStatus = windowWidth >= 950    // Drop status first at narrower widths
+  const showPlayed = windowWidth >= 800    // Drop played date next
+  const showGenre = windowWidth >= 650     // Drop genre next  
+  const showPlatform = windowWidth >= 500  // Drop platform last (before only game + rating remain)
 
   // Load and parse CSV data
   useEffect(() => {
@@ -229,7 +268,7 @@ export const GamesLibrary: React.FC = () => {
   }
 
   return (
-    <div className="h-full flex flex-col" style={{ backgroundColor: 'var(--window-content-bg)' }}>
+    <div ref={containerRef} className="h-full flex flex-col games-library-container" style={{ backgroundColor: 'var(--window-content-bg)' }}>
       {/* Header */}
       <div className="p-4 border-b" style={{ borderColor: 'var(--window-border)' }}>
         <div className="flex items-center justify-between mb-4">
@@ -315,125 +354,193 @@ export const GamesLibrary: React.FC = () => {
         </div>
       </div>
 
-      {/* Games Content - List View Only */}
-      <div className="flex-1 overflow-auto p-4">
-        <div className="space-y-2">
-          {/* List Header */}
-          <div className="grid grid-cols-12 gap-4 p-3 text-xs font-medium border-b" style={{ 
-            backgroundColor: 'var(--color-primary-100)', 
-            color: 'var(--text-secondary)',
-            borderColor: 'var(--window-border)'
-          }}>
-            <div className="col-span-4">
-              <button 
-                onClick={() => handleSort('Game')}
-                className="flex items-center gap-1 hover:text-primary transition-colors"
-              >
-                Game
-                {sortConfig.key === 'Game' && (
-                  <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </button>
-            </div>
-            <div className="col-span-2">
-              <button 
-                onClick={() => handleSort('Platform')}
-                className="flex items-center gap-1 hover:text-primary transition-colors"
-              >
-                Platform
-                {sortConfig.key === 'Platform' && (
-                  <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </button>
-            </div>
-            <div className="col-span-2">
-              <button 
-                onClick={() => handleSort('Genre')}
-                className="flex items-center gap-1 hover:text-primary transition-colors"
-              >
-                Genre
-                {sortConfig.key === 'Genre' && (
-                  <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </button>
-            </div>
-            <div className="col-span-1">
-              <button 
-                onClick={() => handleSort('Rating')}
-                className="flex items-center gap-1 hover:text-primary transition-colors"
-              >
-                Rating
-                {sortConfig.key === 'Rating' && (
-                  <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </button>
-            </div>
-            <div className="col-span-2">
-              <button 
-                onClick={() => handleSort('Played')}
-                className="flex items-center gap-1 hover:text-primary transition-colors"
-              >
-                Played
-                {sortConfig.key === 'Played' && (
-                  <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </button>
-            </div>
-            <div className="col-span-1">Status</div>
-          </div>
-
-          {/* List Items */}
-          {paginatedGames.map((game, index) => (
-            <div
-              key={`${game.Game}-${index}`}
-              onClick={() => handleGameClick(game)}
-              className="grid grid-cols-12 gap-4 p-3 border rounded cursor-pointer hover:shadow-md transition-all group"
-              style={{
-                backgroundColor: 'var(--window-bg)',
-                borderColor: 'var(--window-border)',
-              }}
-            >
-              <div className="col-span-4 flex items-center gap-2">
-                <div className="w-8 h-8 rounded flex items-center justify-center group-hover:opacity-80 transition-opacity"
-                     style={{ backgroundColor: 'var(--color-primary-200)' }}>
-                  {getPlatformIcon(game.Platform)}
-                </div>
-                <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{game.Game}</span>
-              </div>
-              <div className="col-span-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
-                {getPlatformIcon(game.Platform)}
-                {game.Platform}
-              </div>
-              <div className="col-span-2 flex items-center" style={{ color: 'var(--text-secondary)' }}>
-                {game.Genre}
-              </div>
-              <div className="col-span-1 flex items-center">
-                <div 
-                  className="px-2 py-1 rounded text-xs font-medium flex items-center gap-1"
-                  style={{ 
-                    backgroundColor: getRatingColor(game.Rating),
-                    color: 'white'
-                  }}
+      {/* Games Content - Table View */}
+      <div className="flex-1 overflow-auto games-content-area">
+        <table className="w-full border-collapse" style={{ minWidth: '600px' }}>
+          <thead>
+            <tr className="border-b-2" style={{ 
+              backgroundColor: 'var(--color-primary-100)', 
+              borderColor: 'var(--window-border)'
+            }}>
+              <th className="text-left p-3 font-medium text-xs" style={{ 
+                color: 'var(--text-secondary)',
+                minWidth: '200px',
+                width: '40%'
+              }}>
+                <button 
+                  onClick={() => handleSort('Game')}
+                  className="flex items-center gap-1 hover:text-primary transition-colors"
+                  style={{ color: 'inherit' }}
                 >
-                  <Star size={10} />
-                  {game.Rating}/10
-                </div>
-              </div>
-              <div className="col-span-2 flex items-center" style={{ color: 'var(--text-secondary)' }}>
-                {new Date(game.Played).toLocaleDateString()}
-              </div>
-              <div className="col-span-1 flex items-center">
-                <span className={`px-2 py-1 rounded text-xs ${
-                  game.Completed === 'TRUE' ? 'bg-green-100 text-green-700' : 
-                  game.Completed === 'FALSE' ? 'bg-red-100 text-red-700' : 
-                  'bg-gray-100 text-gray-700'
-                }`}>
-                  {game.Completed === 'TRUE' ? '✓' : game.Completed === 'FALSE' ? '○' : '—'}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+                  Game
+                  {sortConfig.key === 'Game' && (
+                    <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                  )}
+                </button>
+              </th>
+              {showPlatform && (
+                <th className="text-center p-3 font-medium text-xs" style={{ 
+                  color: 'var(--text-secondary)',
+                  minWidth: '100px',
+                  width: '15%'
+                }}>
+                  <button 
+                    onClick={() => handleSort('Platform')}
+                    className="flex items-center gap-1 hover:text-primary transition-colors mx-auto"
+                    style={{ color: 'inherit' }}
+                  >
+                    Platform
+                    {sortConfig.key === 'Platform' && (
+                      <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </button>
+                </th>
+              )}
+              {showGenre && (
+                <th className="text-center p-3 font-medium text-xs" style={{ 
+                  color: 'var(--text-secondary)',
+                  minWidth: '120px',
+                  width: '15%'
+                }}>
+                  <button 
+                    onClick={() => handleSort('Genre')}
+                    className="flex items-center gap-1 hover:text-primary transition-colors mx-auto"
+                    style={{ color: 'inherit' }}
+                  >
+                    Genre
+                    {sortConfig.key === 'Genre' && (
+                      <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </button>
+                </th>
+              )}
+              <th className="text-center p-3 font-medium text-xs" style={{ 
+                color: 'var(--text-secondary)',
+                minWidth: '80px',
+                width: '10%'
+              }}>
+                <button 
+                  onClick={() => handleSort('Rating')}
+                  className="flex items-center gap-1 hover:text-primary transition-colors mx-auto"
+                  style={{ color: 'inherit' }}
+                >
+                  Rating
+                  {sortConfig.key === 'Rating' && (
+                    <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                  )}
+                </button>
+              </th>
+              {showPlayed && (
+                <th className="text-center p-3 font-medium text-xs" style={{ 
+                  color: 'var(--text-secondary)',
+                  minWidth: '100px',
+                  width: '12%'
+                }}>
+                  <button 
+                    onClick={() => handleSort('Played')}
+                    className="flex items-center gap-1 hover:text-primary transition-colors mx-auto"
+                    style={{ color: 'inherit' }}
+                  >
+                    Played
+                    {sortConfig.key === 'Played' && (
+                      <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </button>
+                </th>
+              )}
+              {showStatus && (
+                <th className="text-center p-3 font-medium text-xs" style={{ 
+                  color: 'var(--text-secondary)',
+                  minWidth: '60px',
+                  width: '8%'
+                }}>
+                  Status
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedGames.map((game, index) => (
+              <tr
+                key={`${game.Game}-${index}`}
+                onClick={() => handleGameClick(game)}
+                className="border-b cursor-pointer hover:shadow-sm transition-all group hover:bg-opacity-50"
+                style={{
+                  backgroundColor: 'var(--window-bg)',
+                  borderColor: 'var(--window-border)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-50)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--window-bg)'
+                }}
+              >
+                <td className="p-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded flex items-center justify-center group-hover:opacity-80 transition-opacity flex-shrink-0"
+                         style={{ backgroundColor: 'var(--color-primary-200)' }}>
+                      {getPlatformIcon(game.Platform)}
+                    </div>
+                    <span 
+                      className="font-medium" 
+                      style={{ 
+                        color: 'var(--text-primary)',
+                        wordBreak: 'break-word',
+                        hyphens: 'auto',
+                        lineHeight: '1.3'
+                      }}
+                      title={game.Game}
+                    >
+                      {game.Game}
+                    </span>
+                  </div>
+                </td>
+                {showPlatform && (
+                  <td className="p-3 text-center" style={{ color: 'var(--text-secondary)' }}>
+                    <div className="flex items-center justify-center gap-1">
+                      <div className="flex-shrink-0">{getPlatformIcon(game.Platform)}</div>
+                      <span className="text-sm" title={game.Platform}>{game.Platform}</span>
+                    </div>
+                  </td>
+                )}
+                {showGenre && (
+                  <td className="p-3 text-center" style={{ color: 'var(--text-secondary)' }}>
+                    <span className="text-sm" title={game.Genre}>{game.Genre}</span>
+                  </td>
+                )}
+                <td className="p-3 text-center">
+                  <div 
+                    className="px-2 py-1 rounded text-xs font-medium inline-flex items-center gap-1"
+                    style={{ 
+                      backgroundColor: getRatingColor(game.Rating),
+                      color: 'white'
+                    }}
+                  >
+                    <Star size={10} />
+                    {game.Rating}/10
+                  </div>
+                </td>
+                {showPlayed && (
+                  <td className="p-3 text-center" style={{ color: 'var(--text-secondary)' }}>
+                    <span className="text-sm">{new Date(game.Played).toLocaleDateString()}</span>
+                  </td>
+                )}
+                {showStatus && (
+                  <td className="p-3 text-center">
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      game.Completed === 'TRUE' ? 'bg-green-100 text-green-700' : 
+                      game.Completed === 'FALSE' ? 'bg-red-100 text-red-700' : 
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {game.Completed === 'TRUE' ? '✓' : game.Completed === 'FALSE' ? '○' : '—'}
+                    </span>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination */}
