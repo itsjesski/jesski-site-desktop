@@ -194,10 +194,6 @@ export const GamesLibrary: React.FC = () => {
   const gameStats = useMemo(() => {
     if (games.length === 0) return null
 
-    // Debug: Check what completion values we have
-    const completionValues = [...new Set(games.map(game => game.Completed).filter(Boolean))]
-    console.log('Completion values found:', completionValues)
-
     const totalGames = games.length
     const completedGames = games.filter(game => {
       if (!game.Completed) return false

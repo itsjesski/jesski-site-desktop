@@ -4,7 +4,7 @@ import { useDesktopStore } from '../store/desktopStore'
 import { Window, Taskbar, DesktopIcon, TwitchStream, Notification } from '.'
 import { StartMenu } from './StartMenu'
 import { DesktopStickers } from './DesktopStickers'
-import { FileText, User, Folder, Palette, Video, MessageCircle, Trophy } from 'lucide-react'
+import { FileText, User, Folder, Palette, Video, MessageCircle, Trophy, Monitor } from 'lucide-react'
 import BackgroundImage from '../images/Background.png'
 import { twitchAPI } from '../services/twitchAPI'
 import { useNotificationManager } from '../hooks/useNotificationManager'
@@ -13,15 +13,14 @@ import { useNotificationManager } from '../hooks/useNotificationManager'
 const createWindowAction = (
   title: string,
   component: string,
-  position: { x: number; y: number },
   data?: Record<string, unknown>
 ) => () => ({
   title,
   component,
   isMinimized: false,
   isMaximized: false,
-  position,
-  size: { width: 600, height: 500 }, // Will be auto-sized by store
+  position: { x: 0, y: 0 }, // Will be auto-centered by store
+  size: { width: 750, height: 550 }, // Will be auto-sized by store
   ...(data && { data })
 })
 
@@ -30,7 +29,7 @@ const desktopIcons = [
     id: 'about',
     label: 'About Me',
     icon: User,
-    action: createWindowAction('About Me', 'about', { x: 100, y: 100 }, {
+    action: createWindowAction('About Me', 'about', {
       fileName: 'about.txt'
     })
   },
@@ -38,7 +37,7 @@ const desktopIcons = [
     id: 'readme',
     label: 'README.txt',
     icon: FileText,
-    action: createWindowAction('README.txt', 'text-viewer', { x: 250, y: 200 }, {
+    action: createWindowAction('README.txt', 'text-viewer', {
       fileName: 'README.txt'
     })
   },
@@ -46,7 +45,7 @@ const desktopIcons = [
     id: 'projects',
     label: 'Projects',
     icon: Folder,
-    action: createWindowAction('My Projects', 'text-viewer', { x: 300, y: 150 }, {
+    action: createWindowAction('My Projects', 'text-viewer', {
       fileName: 'projects.txt'
     })
   },
@@ -54,7 +53,7 @@ const desktopIcons = [
     id: 'stickers',
     label: 'Stickers',
     icon: Palette,
-    action: createWindowAction('Cute Stickers', 'sticker-pack', { x: 200, y: 50 })
+    action: createWindowAction('Cute Stickers', 'sticker-pack')
   },  {
     id: 'chat',
     label: 'Chat',
@@ -64,7 +63,7 @@ const desktopIcons = [
       component: 'twitch-chat',
       isMinimized: false,
       isMaximized: false,
-      position: { x: 400, y: 100 },
+      position: { x: 0, y: 0 }, // Will be auto-centered
       size: { width: 900, height: 650 }
     })  },  {
     id: 'games',
@@ -75,8 +74,21 @@ const desktopIcons = [
       component: 'games-library',
       isMinimized: false,
       isMaximized: false,
-      position: { x: 150, y: 150 },
+      position: { x: 0, y: 0 }, // Will be auto-centered
       size: { width: 1000, height: 700 }
+    })
+  },
+  {
+    id: 'streamer',
+    label: 'Streamer Software',
+    icon: Monitor,
+    action: () => ({
+      title: 'Streamer Software',
+      component: 'streamer-software',
+      isMinimized: false,
+      isMaximized: false,
+      position: { x: 0, y: 0 }, // Will be auto-centered
+      size: { width: 900, height: 650 }
     })
   },
   {

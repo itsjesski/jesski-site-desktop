@@ -19,8 +19,8 @@ const startMenuItems = [
       component: 'text-viewer',
       isMinimized: false,
       isMaximized: false,
-      position: { x: 250, y: 200 },
-      size: { width: 600, height: 400 },
+      position: { x: 0, y: 0 }, // Will be auto-centered
+      size: { width: 750, height: 500 },
       data: {
         fileName: 'README.txt',
         content: `Welcome to Jess's Desktop!
@@ -50,8 +50,8 @@ Enjoy exploring!`
       component: 'about',
       isMinimized: false,
       isMaximized: false,
-      position: { x: 100, y: 100 },
-      size: { width: 600, height: 500 }
+      position: { x: 0, y: 0 }, // Will be auto-centered
+      size: { width: 750, height: 600 }
     })
   },
   {
@@ -63,8 +63,8 @@ Enjoy exploring!`
       component: 'text-viewer',
       isMinimized: false,
       isMaximized: false,
-      position: { x: 300, y: 150 },
-      size: { width: 600, height: 500 },
+      position: { x: 0, y: 0 }, // Will be auto-centered
+      size: { width: 750, height: 550 },
       data: {
         fileName: 'projects.txt'
       }
@@ -79,7 +79,7 @@ Enjoy exploring!`
       component: 'games-library',
       isMinimized: false,
       isMaximized: false,
-      position: { x: 150, y: 150 },
+      position: { x: 0, y: 0 }, // Will be auto-centered
       size: { width: 1000, height: 700 }
     })
   },
@@ -92,7 +92,7 @@ Enjoy exploring!`
       component: 'twitch-chat',
       isMinimized: false,
       isMaximized: false,
-      position: { x: 400, y: 100 },
+      position: { x: 0, y: 0 }, // Will be auto-centered
       size: { width: 900, height: 650 }
     })
   }
