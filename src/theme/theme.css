@@ -127,6 +127,28 @@
   z-index: 1;
 }
 
+/* Games Library specific responsive improvements */
+.games-library-container .games-content-area {
+  overflow-x: hidden; /* Prevent horizontal overflow */
+}
+
+.games-library-container .grid {
+  min-width: 0; /* Allow grid items to shrink below content size */
+}
+
+.games-library-container .grid > * {
+  min-width: 0; /* Ensure all grid children can shrink */
+  overflow: hidden; /* Prevent individual cell overflow */
+}
+
+/* Better text truncation for responsive columns */
+.games-library-container .truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
 /* When background image is set, overlay the gradient for better contrast */
 .desktop-background[style*="background-image"]:not([style*="background-image: none"])::before {
   content: '';

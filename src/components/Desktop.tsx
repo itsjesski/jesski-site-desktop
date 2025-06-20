@@ -89,7 +89,7 @@ const desktopIcons = [
     label: 'Games',
     icon: Trophy,
     action: () => ({
-      title: 'Games Library',
+      title: 'Games',
       component: 'games-library',
       isMinimized: false,
       isMaximized: false,
