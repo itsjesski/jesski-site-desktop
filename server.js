@@ -13,9 +13,50 @@ const port = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Allowed hosts for security
+const allowedHosts = [
+  'jesski-desktop-site-emrcm.ondigitalocean.app',
+  'jesski.com',
+  'www.jesski.com',
+  'localhost',
+  '127.0.0.1'
+];
+
+// Host validation middleware
+app.use((req, res, next) => {
+  const host = req.get('host');
+  
+  // Allow requests without host header (like health checks)
+  if (!host) {
+    return next();
+  }
+  
+  // Remove port from host for comparison
+  const hostWithoutPort = host.split(':')[0];
+  
+  if (allowedHosts.includes(hostWithoutPort)) {
+    next();
+  } else {
+    console.warn(`Blocked request from unauthorized host: ${host}`);
+    res.status(403).json({ error: 'Forbidden - Invalid host' });
+  }
+});
+
 // CORS for development (Digital Ocean will handle this in production)
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.get('origin');
+  const allowedOrigins = [
+    'https://jesski-desktop-site-emrcm.ondigitalocean.app',
+    'https://jesski.com',
+    'https://www.jesski.com',
+    'http://localhost:5173',
+    'http://localhost:8080'
+  ];
+  
+  if (!origin || allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+  }
+  
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   if (req.method === 'OPTIONS') {
@@ -100,4 +141,5 @@ app.listen(port, '0.0.0.0', () => {
   console.log(`❤️  Health: http://localhost:${port}/health`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`⏱️  Started at: ${new Date().toISOString()}`);
+  console.log(`🏠 Allowed hosts: ${allowedHosts.join(', ')}`);
 });
