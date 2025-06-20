@@ -2,6 +2,7 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readFileSync } from 'fs';
+import { twitchService } from './src/services/backend/twitchService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -85,17 +86,27 @@ app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
 
-// Future Twitch API endpoints
-app.get('/api/twitch/auth', (req, res) => {
-  res.json({ message: 'Twitch auth endpoint - to be implemented' });
+// Twitch API endpoints
+app.get('/api/twitch/stream/:channel', async (req, res) => {
+  try {
+    const { channel } = req.params;
+    const streamStatus = await twitchService.getStreamStatus(channel);
+    res.json(streamStatus);
+  } catch (error) {
+    console.error('Error getting stream status:', error);
+    res.status(500).json({ error: 'Failed to get stream status' });
+  }
 });
 
-app.get('/api/twitch/token', (req, res) => {
-  res.json({ message: 'Twitch token endpoint - to be implemented' });
-});
-
-app.get('/api/twitch/stream/:channel', (req, res) => {
-  res.json({ message: `Stream status for ${req.params.channel} - to be implemented` });
+app.get('/api/twitch/user/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const userInfo = await twitchService.getUserInfo(username);
+    res.json(userInfo);
+  } catch (error) {
+    console.error('Error getting user info:', error);
+    res.status(500).json({ error: 'Failed to get user info' });
+  }
 });
 
 // Serve static files from the dist directory

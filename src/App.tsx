@@ -8,11 +8,6 @@ function App() {
   const [isBooting, setIsBooting] = React.useState(true)
   const [hasBooted, setHasBooted] = React.useState(false)
 
-  // Always show boot animation on every visit
-  React.useEffect(() => {
-    // Boot loader will handle its own timing and call handleBootComplete
-  }, [])
-
   const handleBootComplete = () => {
     setIsBooting(false)
     

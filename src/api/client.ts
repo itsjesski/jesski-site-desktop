@@ -18,7 +18,17 @@ const getApiBaseUrl = () => {
     return '';
   }
   
-  // Development - use localhost
+  // Development - check if we're running on Vite dev server
+  const currentPort = window.location.port;
+  if (currentPort === '5173') {
+    // Vite dev server - API server is on 8080
+    return 'http://localhost:8080';
+  } else if (currentPort === '8080') {
+    // Express server serving static files - API is on same port
+    return '';
+  }
+  
+  // Default fallback
   return 'http://localhost:8080';
 };
 
@@ -27,9 +37,8 @@ export const API_BASE_URL = getApiBaseUrl();
 export const API_ENDPOINTS = {
   health: '/api/health',
   twitch: {
-    auth: '/api/twitch/auth',
-    token: '/api/twitch/token',
     stream: (channel: string) => `/api/twitch/stream/${channel}`,
+    user: (username: string) => `/api/twitch/user/${username}`,
   }
 };
 

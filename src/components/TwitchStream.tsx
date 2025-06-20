@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ExternalLink, VideoOff, Minus, Maximize, X } from 'lucide-react'
-import { twitchAPI, type TwitchStreamData } from '../services/twitchAPI'
+import { twitchAPI, type TwitchStreamData } from '../services/twitchAPIClient'
 
 interface TwitchStreamProps {
   onClose: () => void
@@ -22,10 +22,8 @@ export const TwitchStream: React.FC<TwitchStreamProps> = ({ onClose }) => {
         const result = await twitchAPI.isStreamLive(twitchChannel)
         
         if (result.isLive && result.streamData) {
-          setStreamData(result.streamData)
-        }
-      } catch (error) {
-        console.error('Failed to fetch stream data:', error)
+          setStreamData(result.streamData)        }
+      } catch {
         setError('Failed to load stream info')
       } finally {
         setIsLoading(false)
@@ -174,10 +172,9 @@ export const TwitchStream: React.FC<TwitchStreamProps> = ({ onClose }) => {
                 Visit Twitch Channel
               </button>            </div>
           ) : (
-            <>
-              {/* Twitch Embed */}
+            <>              {/* Twitch Embed */}
               <iframe
-                src={`https://player.twitch.tv/?channel=${twitchChannel}&parent=${window.location.hostname}&autoplay=false&muted=true`}
+                src={`https://player.twitch.tv/?channel=${twitchChannel}&parent=${window.location.hostname}&autoplay=false&muted=false`}
                 height="100%"
                 width="100%"
                 allowFullScreen
