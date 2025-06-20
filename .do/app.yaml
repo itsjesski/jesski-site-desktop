@@ -6,8 +6,8 @@ services:
     repo: itsjesski/jesski-site-desktop
     branch: main
   
-  # Optimized build command
-  build_command: npm run build:production
+  # Use regular build command (buildpack environment doesn't support bash scripts)
+  build_command: npm ci && npm run build
   run_command: npm run start:express
   
   environment_slug: node-js

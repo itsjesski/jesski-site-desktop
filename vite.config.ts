@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Optimize for production deployment
     target: 'es2020',
-    minify: 'terser',
+    minify: mode === 'production' ? 'esbuild' : false,
     sourcemap: mode === 'development',
     
     // Chunk splitting for better caching
@@ -23,14 +23,6 @@ export default defineConfig(({ mode }) => ({
     // Build performance optimizations
     chunkSizeWarningLimit: 1000,
     reportCompressedSize: false,
-    
-    // Terser options for better compression
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: true,
-      },
-    },
   },
   
   // Development server optimizations
