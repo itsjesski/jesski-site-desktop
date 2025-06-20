@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:prod": "NODE_ENV=production npm run build",
     "build:optimized": "bash scripts/optimize-build.sh",
     "build:production": "NODE_ENV=production npm run build:optimized",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",

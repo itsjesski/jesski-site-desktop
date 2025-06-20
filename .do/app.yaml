@@ -6,8 +6,8 @@ services:
     repo: itsjesski/jesski-site-desktop
     branch: main
   
-  # Use regular build command (buildpack environment doesn't support bash scripts)
-  build_command: npm ci && npm run build
+  # Use production build script that sets NODE_ENV
+  build_command: npm ci && npm run build:prod
   run_command: npm run start:express
   
   environment_slug: node-js
