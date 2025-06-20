@@ -1,0 +1,11 @@
+name: jesski-desktop
+static_sites:
+- name: frontend
+  source_dir: /
+  github:
+    repo: itsjesski/jesski-site-desktop
+    branch: main
+  build_command: npm run build
+  output_dir: dist
+  index_document: index.html
+  error_document: index.html
