@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { User, FileText, Trophy } from 'lucide-react'
+import { User, FileText, Trophy, Folder, Video } from 'lucide-react'
 import type { WindowState } from '../store/desktopStore'
 
 interface StartMenuProps {
@@ -10,20 +10,7 @@ interface StartMenuProps {
 }
 
 const startMenuItems = [
-  {
-    id: 'about',
-    label: 'About Me',
-    icon: User,
-    action: () => ({
-      title: 'About Me',
-      component: 'about',
-      isMinimized: false,
-      isMaximized: false,
-      position: { x: 100, y: 100 },
-      size: { width: 600, height: 500 }
-    })
-  },
-  {
+    {
     id: 'readme',
     label: 'README',
     icon: FileText,
@@ -55,6 +42,35 @@ Enjoy exploring!`
     })
   },
   {
+    id: 'about',
+    label: 'About Me',
+    icon: User,
+    action: () => ({
+      title: 'About Me',
+      component: 'about',
+      isMinimized: false,
+      isMaximized: false,
+      position: { x: 100, y: 100 },
+      size: { width: 600, height: 500 }
+    })
+  },
+  {
+    id: 'projects',
+    label: 'Projects',
+    icon: Folder,
+    action: () => ({
+      title: 'My Projects',
+      component: 'text-viewer',
+      isMinimized: false,
+      isMaximized: false,
+      position: { x: 300, y: 150 },
+      size: { width: 600, height: 500 },
+      data: {
+        fileName: 'projects.txt'
+      }
+    })
+  },
+  {
     id: 'games',
     label: 'Games',
     icon: Trophy,
@@ -65,6 +81,19 @@ Enjoy exploring!`
       isMaximized: false,
       position: { x: 150, y: 150 },
       size: { width: 1000, height: 700 }
+    })
+  },
+  {
+    id: 'twitch',
+    label: 'Twitch',
+    icon: Video,
+    action: () => ({
+      title: 'Twitch Chat',
+      component: 'twitch-chat',
+      isMinimized: false,
+      isMaximized: false,
+      position: { x: 400, y: 100 },
+      size: { width: 900, height: 650 }
     })
   }
 ]
