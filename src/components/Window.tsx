@@ -195,7 +195,7 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
         height={window.size.height}
         onResize={handleResize}
         minConstraints={[300, 200]}
-        maxConstraints={[1200, 800]}
+        maxConstraints={[1400, 900]}
         resizeHandles={['se', 'e', 's']}
       >
         <div

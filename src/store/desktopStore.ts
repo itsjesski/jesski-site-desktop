@@ -18,23 +18,49 @@ const calculateOptimalWindowSize = (
   viewportWidth: number,
   viewportHeight: number
 ): { width: number; height: number } => {
-  const maxWidth = Math.min(viewportWidth - 100, 1200) // Leave some margin
-  const maxHeight = Math.min(viewportHeight - 150, 800) // Account for taskbar and title bar
+  const maxWidth = Math.min(viewportWidth - 100, 1400) // Leave some margin
+  const maxHeight = Math.min(viewportHeight - 150, 900) // Account for taskbar and title bar
   
   // Define content-based sizes for different components
   const componentSizes: Record<string, { width: number; height: number }> = {
-    'about': { width: 650, height: 600 },
-    'text-viewer': { width: 700, height: 500 },
-    'website-viewer': { width: 900, height: 700 },
-    'sticker-pack': { width: 650, height: 550 }
+    'about': { width: 800, height: 650 },
+    'text-viewer': { width: 850, height: 600 },
+    'website-viewer': { width: 1000, height: 750 },
+    'sticker-pack': { width: 750, height: 600 },
+    'twitch-chat': { width: 900, height: 650 },
+    'games-library': { width: 1000, height: 700 },
+    'streamer-software': { width: 900, height: 650 }
   }
   
-  const defaultSize = { width: 600, height: 500 }
+  const defaultSize = { width: 750, height: 550 }
   const contentSize = componentSizes[component] || defaultSize
   
   return {
     width: Math.min(contentSize.width, maxWidth),
     height: Math.min(contentSize.height, maxHeight)
+  }
+}
+
+// Utility function to calculate centered window position
+const calculateCenteredPosition = (
+  windowWidth: number,
+  windowHeight: number,
+  viewportWidth: number,
+  viewportHeight: number
+): { x: number; y: number } => {
+  // Calculate center position
+  const centerX = (viewportWidth - windowWidth) / 2
+  const centerY = (viewportHeight - windowHeight - 100) / 2 // Account for taskbar (48px) + extra margin
+  
+  // Ensure the window doesn't go off-screen or too close to edges
+  const minX = 20
+  const minY = 20
+  const maxX = Math.max(minX, viewportWidth - windowWidth - 20)
+  const maxY = Math.max(minY, viewportHeight - windowHeight - 120) // Account for taskbar
+  
+  return {
+    x: Math.max(minX, Math.min(centerX, maxX)),
+    y: Math.max(minY, Math.min(centerY, maxY))
   }
 }
 
@@ -69,9 +95,13 @@ export const useDesktopStore = create<DesktopState>((set, get) => ({
       const windowWidth = 700
       const windowHeight = 500
       
-      // Position in center-right area to avoid left-side desktop icons
-      const centerX = Math.max(300, (viewportWidth - windowWidth) / 2)
-      const centerY = Math.max(50, (viewportHeight - windowHeight - 100) / 2) // Account for taskbar
+      // Use the centralized positioning function
+      const centeredPosition = calculateCenteredPosition(
+        windowWidth,
+        windowHeight,
+        viewportWidth,
+        viewportHeight
+      )
       
       // Open the README.txt welcome window
       const welcomeWindowData = {
@@ -79,7 +109,7 @@ export const useDesktopStore = create<DesktopState>((set, get) => ({
         component: 'text-viewer',
         isMinimized: false,
         isMaximized: false,
-        position: { x: centerX, y: centerY },
+        position: centeredPosition,
         size: { width: windowWidth, height: windowHeight },
         data: {
           fileName: 'README.txt',
@@ -129,7 +159,15 @@ Enjoy exploring!`
       window.innerHeight
     )
     
-    // Adjust window properties for mobile or use optimal sizing
+    // Calculate centered position based on the optimal size
+    const centeredPosition = calculateCenteredPosition(
+      optimalSize.width,
+      optimalSize.height,
+      window.innerWidth,
+      window.innerHeight
+    )
+    
+    // Adjust window properties for mobile or use optimal sizing and centered positioning
     const adjustedWindowData = isMobile ? {
       ...windowData,
       position: { x: 10, y: 10 },
@@ -140,7 +178,8 @@ Enjoy exploring!`
       isMaximized: false // Start non-maximized so users can see it's a window
     } : {
       ...windowData,
-      size: optimalSize
+      size: optimalSize,
+      position: centeredPosition // Use centered position instead of provided position
     }
     
     const newWindow: WindowState = {
