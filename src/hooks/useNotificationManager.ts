@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getRandomNotification, type NotificationMessage } from '../data/notifications'
+import { affirmationsService } from '../services/affirmationsService'
+
+interface NotificationMessage {
+  title: string
+  message: string
+  type: 'default' | 'success' | 'info' | 'warning' | 'error'
+  duration?: number
+}
 
 interface ActiveNotification extends NotificationMessage {
   id: string
@@ -35,13 +42,33 @@ export const useNotificationManager = () => {
   const [activeNotifications, setActiveNotifications] = useState<ActiveNotification[]>([])
   const [isMuted, setIsMuted] = useState<boolean>(loadMuteStatus)
 
-  const showNotification = useCallback((notification?: NotificationMessage) => {
+  const showNotification = useCallback(async (notification?: NotificationMessage) => {
     if (isMuted) return // Don't show notifications when muted
     
     // Only show one notification at a time - if one is active, skip this one
     if (activeNotifications.length > 0) return
     
-    const notificationToShow = notification || getRandomNotification()
+    let notificationToShow: NotificationMessage
+    
+    if (notification) {
+      notificationToShow = notification
+    } else {
+      // Get a random affirmation from the API
+      try {
+        const affirmation = await affirmationsService.getRandomAffirmation()
+        notificationToShow = {
+          title: 'Daily Affirmation',
+          message: affirmation,
+          type: 'success',
+          duration: 5000
+        }
+      } catch (error) {
+        console.error('Failed to get affirmation:', error)
+        // If API fails, don't show notification
+        return
+      }
+    }
+    
     const id = `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     
     const activeNotification: ActiveNotification = {
