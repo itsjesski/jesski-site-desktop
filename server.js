@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readFileSync } from 'fs';
 import { twitchService } from './src/services/backend/twitchService.js';
+import { affirmationsAPI } from './src/services/backend/affirmationsAPI.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -108,6 +109,11 @@ app.get('/api/twitch/user/:username', async (req, res) => {
     res.status(500).json({ error: 'Failed to get user info' });
   }
 });
+
+// Affirmations API endpoints
+app.get('/api/affirmations/info', affirmationsAPI.getInfo);
+app.get('/api/affirmations/random', affirmationsAPI.getRandom);
+app.get('/api/affirmations/multiple', affirmationsAPI.getMultiple);
 
 // Serve static files from the dist directory
 app.use(express.static(join(__dirname, 'dist')));
