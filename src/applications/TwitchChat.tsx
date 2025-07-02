@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Users, MessageCircle, UserPlus, Crown, Gift } from 'lucide-react'
-import { twitchAPI, type TwitchFollower, type TwitchSubscriber } from '../services/twitchAPIClient'
+import { twitchAPI, type TwitchFollower, type TwitchSubscriber } from '../services/api/twitchAPIClient'
 
 export const TwitchChat: React.FC = () => {
   const [activityItems, setActivityItems] = useState<Array<{

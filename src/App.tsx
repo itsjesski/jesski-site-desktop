@@ -1,7 +1,7 @@
 import React from 'react'
-import { Desktop } from './components'
-import { BootLoader } from './components/BootLoader'
-import { ErrorBoundary } from './components/ErrorBoundary'
+import { Desktop } from './components/desktop/Desktop'
+import { BootLoader } from './components/ui/BootLoader'
+import { ErrorBoundary } from './components/ui/ErrorBoundary'
 import './App.css'
 
 function App() {

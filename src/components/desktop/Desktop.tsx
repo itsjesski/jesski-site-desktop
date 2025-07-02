@@ -1,13 +1,17 @@
 import React from 'react'
-import type { WindowState } from '../store/desktopStore'
-import { useDesktopStore } from '../store/desktopStore'
-import { Window, Taskbar, DesktopIcon, TwitchStream, Notification } from '.'
+import type { WindowState } from '../../store/desktopStore'
+import { useDesktopStore } from '../../store/desktopStore'
+import { Window } from '../windows/Window'
+import { Taskbar } from './Taskbar'
+import { DesktopIcon } from './DesktopIcon'
+import { TwitchStream } from '../ui/TwitchStream'
+import { Notification } from '../ui/Notification'
 import { StartMenu } from './StartMenu'
 import { DesktopStickers } from './DesktopStickers'
-import { FileText, User, Folder, Palette, Video, MessageCircle, Trophy, Monitor } from 'lucide-react'
-import BackgroundImage from '../images/Background.png'
-import { twitchAPI } from '../services/twitchAPIClient'
-import { useNotificationManager } from '../hooks/useNotificationManager'
+import { FileText, User, Folder, Palette, Video, MessageCircle, Monitor, Gamepad2 } from 'lucide-react'
+import BackgroundImage from '../../assets/Background.png'
+import { twitchAPI } from '../../services/api/twitchAPIClient'
+import { useNotificationManager } from '../../hooks/useNotificationManager'
 
 // Helper function to create window action with defaults
 const createWindowAction = (
@@ -68,14 +72,14 @@ const desktopIcons = [
     })  },  {
     id: 'games',
     label: 'Games',
-    icon: Trophy,
+    icon: Gamepad2,
     action: () => ({
       title: 'Games',
-      component: 'games-library',
+      component: 'games-hub',
       isMinimized: false,
       isMaximized: false,
       position: { x: 0, y: 0 }, // Will be auto-centered
-      size: { width: 1000, height: 700 }
+      size: { width: 900, height: 750 }
     })
   },
   {
@@ -187,6 +191,39 @@ export const Desktop: React.FC = () => {
     
     return () => clearInterval(interval)
   }, [setTwitchStreamVisible])
+
+  // Listen for custom events from GamesHubWindow to open apps
+  React.useEffect(() => {
+    function handleGardenApp() {
+      openWindow({
+        title: 'Community Garden',
+        component: 'garden-app',
+        isMinimized: false,
+        isMaximized: false,
+        position: { x: 0, y: 0 },
+        size: { width: 900, height: 650 }
+      });
+    }
+    
+    function handleGameReviews() {
+      openWindow({
+        title: 'Games Library',
+        component: 'games-library',
+        isMinimized: false,
+        isMaximized: false,
+        position: { x: 0, y: 0 },
+        size: { width: 1000, height: 700 }
+      });
+    }
+    
+    globalThis.window.addEventListener('open-garden-app', handleGardenApp);
+    globalThis.window.addEventListener('open-game-reviews', handleGameReviews);
+    
+    return () => {
+      globalThis.window.removeEventListener('open-garden-app', handleGardenApp);
+      globalThis.window.removeEventListener('open-game-reviews', handleGameReviews);
+    };
+  }, [openWindow]);
 
   return (
     <div 

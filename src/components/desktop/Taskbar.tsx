@@ -1,8 +1,8 @@
 import React from 'react'
-import { useDesktopStore } from '../store/desktopStore'
+import { useDesktopStore } from '../../store/desktopStore'
 import { format } from 'date-fns'
 import { Menu, FileText, Globe, User, Folder, X } from 'lucide-react'
-import { SystemTray } from './SystemTray'
+import { SystemTray } from '../ui/SystemTray'
 
 interface TaskbarProps {
   isStartMenuOpen: boolean

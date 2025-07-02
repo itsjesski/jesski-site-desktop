@@ -12,6 +12,14 @@ class TwitchService {
     this.accessToken = null;
     this.tokenExpiration = 0;
     this.refreshToken = null;
+    
+    // Internal caching for API responses
+    this.cache = new Map();
+    this.CACHE_TTL = {
+      stream: 30 * 1000,    // 30 seconds for stream data
+      user: 300 * 1000,     // 5 minutes for user data
+      token: 3600 * 1000    // 1 hour for tokens
+    };
 
     console.log('🔧 Twitch Service initialized:');
     console.log('   Client ID:', this.clientId ? `${this.clientId.slice(0, 8)}...` : 'NOT SET');
@@ -19,6 +27,29 @@ class TwitchService {
     if (!this.clientId || !this.clientSecret) {
       console.warn('⚠️ Twitch Client ID or Secret not configured. Twitch features will use demo mode.');
     }
+    
+    // Periodic cache cleanup
+    setInterval(() => {
+      const now = Date.now();
+      for (const [key, value] of this.cache.entries()) {
+        if (now - value.timestamp > value.ttl) {
+          this.cache.delete(key);
+        }
+      }
+    }, 5 * 60 * 1000); // Clean every 5 minutes
+  }
+  
+  // Generic cache helper
+  getCached(key, ttl) {
+    const cached = this.cache.get(key);
+    if (cached && Date.now() - cached.timestamp < ttl) {
+      return cached.data;
+    }
+    return null;
+  }
+  
+  setCache(key, data, ttl) {
+    this.cache.set(key, { data, timestamp: Date.now(), ttl });
   }
 
   // Get app access token using client credentials flow (for public data)
@@ -100,14 +131,22 @@ class TwitchService {
     }
   }
 
-  // Get stream status for a channel
+  // Get stream status for a channel with caching
   async getStreamStatus(username) {
+    const cacheKey = `stream_${username}`;
+    const cached = this.getCached(cacheKey, this.CACHE_TTL.stream);
+    if (cached) {
+      return { ...cached, cached: true };
+    }
+    
     try {
       // First get user ID
       const userResponse = await this.makeApiCall(`/users?login=${username}`);
       
       if (!userResponse.data || userResponse.data.length === 0) {
-        return { isLive: false, error: 'User not found' };
+        const result = { isLive: false, error: 'User not found' };
+        this.setCache(cacheKey, result, this.CACHE_TTL.stream);
+        return result;
       }
 
       const userId = userResponse.data[0].id;
@@ -115,9 +154,10 @@ class TwitchService {
       // Check stream status
       const streamResponse = await this.makeApiCall(`/streams?user_id=${userId}`);
       
+      let result;
       if (streamResponse.data && streamResponse.data.length > 0) {
         const stream = streamResponse.data[0];
-        return {
+        result = {
           isLive: true,
           streamData: {
             id: stream.id,
@@ -136,23 +176,38 @@ class TwitchService {
             is_mature: stream.is_mature
           }
         };
+      } else {
+        result = { isLive: false };
       }
       
-      return { isLive: false };
+      this.setCache(cacheKey, result, this.CACHE_TTL.stream);
+      return result;
     } catch (error) {
       console.error('Error getting stream status:', error);
-      return { isLive: false, error: error.message };
+      const result = { isLive: false, error: error.message };
+      this.setCache(cacheKey, result, this.CACHE_TTL.stream);
+      return result;
     }
   }
 
-  // Get user information
+  // Get user information with caching
   async getUserInfo(username) {
+    const cacheKey = `user_${username}`;
+    const cached = this.getCached(cacheKey, this.CACHE_TTL.user);
+    if (cached) {
+      return { ...cached, cached: true };
+    }
+    
     try {
       const response = await this.makeApiCall(`/users?login=${username}`);
-      return response.data && response.data.length > 0 ? response.data[0] : null;
+      const result = response.data && response.data.length > 0 ? response.data[0] : null;
+      this.setCache(cacheKey, result, this.CACHE_TTL.user);
+      return result;
     } catch (error) {
       console.error('Error getting user info:', error);
-      return null;
+      const result = null;
+      this.setCache(cacheKey, result, this.CACHE_TTL.user);
+      return result;
     }
   }
 
