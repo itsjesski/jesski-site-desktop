@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Monitor, Video, Mic, MicOff, VideoOff, Settings, Play, Square, Camera, Volume2, VolumeX } from 'lucide-react'
-import type { WindowState } from '../store/desktopStore'
-import { twitchAPI, type TwitchStreamData } from '../services/twitchAPIClient'
-
-interface StreamerSoftwareProps {
-  window: WindowState
-}
+import { twitchAPI, type TwitchStreamData } from '../services/api/twitchAPIClient'
+import type { StreamerSoftwareProps } from '../types/streamer'
 
 export const StreamerSoftware: React.FC<StreamerSoftwareProps> = () => {
   const [isStreaming, setIsStreaming] = useState(false)

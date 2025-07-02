@@ -1,47 +1,6 @@
 // Frontend Twitch API service that uses backend endpoints
-import { API_ENDPOINTS, apiCall } from '../api/client'
-
-interface TwitchStreamData {
-  id: string
-  user_id: string
-  user_login: string
-  user_name: string
-  game_id: string
-  game_name: string
-  type: string
-  title: string
-  viewer_count: number
-  started_at: string
-  language: string
-  thumbnail_url: string
-  tag_ids: string[]
-  is_mature: boolean
-}
-
-interface TwitchFollower {
-  user_id: string
-  user_name: string
-  user_login: string
-  followed_at: string
-}
-
-interface TwitchSubscriber {
-  user_id: string
-  user_name: string
-  user_login: string
-  tier: string
-  is_gift: boolean
-  gifter_id?: string
-  gifter_name?: string
-  subscribed_at?: string
-}
-
-interface TwitchUser {
-  id: string
-  login: string
-  display_name: string
-  profile_image_url: string
-}
+import { API_ENDPOINTS, apiCall } from './client'
+import type { TwitchStreamData, TwitchFollower, TwitchSubscriber, TwitchUser } from '../../types/twitch'
 
 class TwitchAPIClient {
   private isConnected: boolean = false

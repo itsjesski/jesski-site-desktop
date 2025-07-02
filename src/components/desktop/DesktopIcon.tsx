@@ -10,7 +10,7 @@ interface DesktopIconProps {
 }
 
 export const DesktopIcon: React.FC<DesktopIconProps> = ({ 
-  icon: Icon, 
+  icon: IconComponent, 
   label, 
   isExternalLink = false,
   onDoubleClick 
@@ -63,7 +63,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
             borderColor: 'var(--icon-border)'
           }}
         >
-          <Icon size={32} style={{ color: 'var(--icon-text)' }} aria-hidden="true" />
+          <IconComponent size={32} style={{ color: 'var(--icon-text)' }} aria-hidden="true" />
           {/* External link indicator */}
           {isExternalLink && (
             <div 

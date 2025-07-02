@@ -1,16 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { affirmationsService } from '../services/affirmationsService'
-
-interface NotificationMessage {
-  title: string
-  message: string
-  type: 'default' | 'success' | 'info' | 'warning' | 'error'
-  duration?: number
-}
-
-interface ActiveNotification extends NotificationMessage {
-  id: string
-}
+import { affirmationsService } from '../services/api/affirmationsService'
+import type { NotificationMessage, ActiveNotification } from '../types/notifications'
 
 const NOTIFICATION_MUTE_KEY = 'jesski-notifications-muted'
 

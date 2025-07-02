@@ -28,9 +28,19 @@ export default defineConfig(({ mode }) => ({
   
   // Development server optimizations
   server: {
-    hmr: {
-      overlay: false,
-    },
+    port: 5173,
+    host: 'localhost',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      },
+      '/garden/ws': {
+        target: 'http://localhost:8080',
+        ws: true,
+        changeOrigin: true
+      }
+    }
   },
   
   // Dependency optimization

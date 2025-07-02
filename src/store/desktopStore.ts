@@ -1,16 +1,5 @@
 import { create } from 'zustand'
-
-export interface WindowState {
-  id: string
-  title: string
-  component: string
-  isMinimized: boolean
-  isMaximized: boolean
-  position: { x: number; y: number }
-  size: { width: number; height: number }
-  zIndex: number
-  data?: Record<string, unknown>
-}
+import type { WindowState, DesktopState } from '../types/window'
 
 // Utility function to calculate optimal window size
 const calculateOptimalWindowSize = (
@@ -62,22 +51,6 @@ const calculateCenteredPosition = (
     x: Math.max(minX, Math.min(centerX, maxX)),
     y: Math.max(minY, Math.min(centerY, maxY))
   }
-}
-
-interface DesktopState {
-  windows: WindowState[]
-  nextZIndex: number
-  hasShownWelcome: boolean
-  showTwitchStream: boolean
-  openWindow: (window: Omit<WindowState, 'id' | 'zIndex'>) => void
-  closeWindow: (id: string) => void
-  minimizeWindow: (id: string) => void
-  maximizeWindow: (id: string) => void
-  focusWindow: (id: string) => void
-  updateWindowPosition: (id: string, position: { x: number; y: number }) => void
-  updateWindowSize: (id: string, size: { width: number; height: number }) => void
-  initializeWelcomeWindow: () => void
-  setTwitchStreamVisible: (visible: boolean) => void
 }
 
 export const useDesktopStore = create<DesktopState>((set, get) => ({
@@ -147,6 +120,19 @@ Enjoy exploring!`
   },
   
   openWindow: (windowData) => {
+    // Check if a window with the same component and title already exists (including minimized ones)
+    const state = get();
+    const existingWindow = state.windows.find(w => 
+      w.component === windowData.component && 
+      w.title === windowData.title
+    );
+    
+    // If window exists (even if minimized), restore and focus it instead of creating a new one
+    if (existingWindow) {
+      state.focusWindow(existingWindow.id); // This will also un-minimize if needed
+      return;
+    }
+    
     const id = `window-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     
     // Check if we're on mobile
@@ -182,16 +168,22 @@ Enjoy exploring!`
       position: centeredPosition // Use centered position instead of provided position
     }
     
+    const currentZIndex = get().nextZIndex;
     const newWindow: WindowState = {
       ...adjustedWindowData,
       id,
-      zIndex: get().nextZIndex,
+      zIndex: currentZIndex,
     }
     
     set((state) => ({
       windows: [...state.windows, newWindow],
-      nextZIndex: state.nextZIndex + 1,
+      nextZIndex: currentZIndex + 1,
     }))
+    
+    // Use setTimeout to ensure the window is added to state before focusing
+    setTimeout(() => {
+      get().focusWindow(id);
+    }, 0);
   },
   
   closeWindow: (id) => {

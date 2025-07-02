@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import sticker4 from '../images/stickers/4.png'
-import sticker5 from '../images/stickers/5.png'
-import sticker6 from '../images/stickers/6.png'
-import sticker7 from '../images/stickers/7.png'
-import sticker8 from '../images/stickers/8.png'
+import sticker4 from '../../assets/stickers/4.png'
+import sticker5 from '../../assets/stickers/5.png'
+import sticker6 from '../../assets/stickers/6.png'
+import sticker7 from '../../assets/stickers/7.png'
+import sticker8 from '../../assets/stickers/8.png'
 
 const stickers = [
   { id: 'sticker4', src: sticker4, x: '85%', y: '10%', size: 60 },
