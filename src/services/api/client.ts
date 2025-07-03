@@ -49,6 +49,30 @@ let cachedToken: string | null = null;
 let tokenExpiry: number | null = null;
 let tokenInitialized = false;
 let tokenInitializePromise: Promise<string> | null = null;
+let tokenRefreshTimer: number | null = null;
+
+// Proactive token refresh - refresh when 15 minutes remain
+const TOKEN_REFRESH_THRESHOLD = 15 * 60 * 1000; // 15 minutes in ms
+
+function scheduleTokenRefresh(expiryTime: number) {
+  if (tokenRefreshTimer) {
+    clearTimeout(tokenRefreshTimer);
+  }
+  
+  const refreshTime = expiryTime - TOKEN_REFRESH_THRESHOLD;
+  const now = Date.now();
+  
+  if (refreshTime > now) {
+    tokenRefreshTimer = setTimeout(async () => {
+      try {
+        console.log('Proactively refreshing token...');
+        await getAuthToken(); // This will refresh the token
+      } catch (err) {
+        console.error('Failed to proactively refresh token:', err);
+      }
+    }, refreshTime - now);
+  }
+}
 
 export function initializeAuthToken(): Promise<string> {
   if (tokenInitialized) {
@@ -74,6 +98,12 @@ export function initializeAuthToken(): Promise<string> {
       cachedToken = data.token;
       tokenExpiry = Date.now() + (data.expiresIn * 1000 || 3600000);
       tokenInitialized = true;
+      
+      // Schedule proactive refresh
+      if (tokenExpiry) {
+        scheduleTokenRefresh(tokenExpiry);
+      }
+      
       resolve(data.token);
     })
     .catch(err => {
@@ -119,6 +149,11 @@ export async function getAuthToken(): Promise<string> {
     
     cachedToken = data.token;
     tokenExpiry = now + (data.expiresIn * 1000 || 3600000);
+    
+    // Schedule proactive refresh
+    if (tokenExpiry) {
+      scheduleTokenRefresh(tokenExpiry);
+    }
     
     return data.token;
   } catch (error) {

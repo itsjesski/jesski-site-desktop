@@ -112,28 +112,11 @@ export default function StatsPanel({ garden, communityStats, totalPlants, harves
             <div className="flex justify-between">
               <span>🧺 Total Harvested:</span>
               <span className="font-medium">
-                {(communityStats?.totalHarvested || 
-                  (garden.stats.totalHarvested ? Object.values(garden.stats.totalHarvested).reduce((sum, count) => sum + count, 0) : 0)
-                ).toLocaleString()}
+                {(communityStats?.totalHarvested || garden.stats.totalHarvested || 0).toLocaleString()}
               </span>
             </div>
           </div>
         </div>
-
-        {/* Recent Harvests */}
-        {garden.stats.totalHarvested && Object.keys(garden.stats.totalHarvested).length > 0 && (
-          <div className="p-3 bg-yellow-50 rounded-lg">
-            <h3 className="font-semibold mb-2 text-yellow-800">🧺 Recent Harvests</h3>
-            <div className="text-sm space-y-1">
-              {Object.entries(garden.stats.totalHarvested).map(([date, count]) => (
-                <div key={date} className="flex justify-between">
-                  <span>{new Date(date).toLocaleDateString()}:</span>
-                  <span className="font-medium">{count} plants</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

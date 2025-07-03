@@ -1,88 +1,77 @@
 import crypto from 'crypto';
+import { GARDEN_CONFIG } from '../config/gardenConfig.js';
 
-const TOKEN_EXPIRY_MS = 60 * 60 * 1000;
-const RATE_LIMIT_WINDOW_MS = 1000;
-const RATE_LIMIT_MAX = 3;
+const {
+  tokenExpiryMs,
+  rateLimitWindowMs,
+  rateLimitMax,
+  tokenGenerationLimit,
+  tokenGenerationWindowMs,
+  maxActiveTokens,
+  maxApiCallsPerMinute,
+  maxBehaviorActions,
+  behaviorTrackingTimeMs,
+  suspiciousPatterns
+} = GARDEN_CONFIG.limits;
+
 const tokens = new Map();
 
-// Token generation rate limiting (privacy-safe, no persistent storage)
-const tokenRequestLimiter = new Map(); // IP -> { requests: [], lastCleanup }
-const TOKEN_REQUEST_LIMIT = 10; // Max 10 token requests per hour per IP
-const TOKEN_REQUEST_WINDOW = 60 * 60 * 1000; // 1 hour
+// Global token generation rate limiting (no IP tracking for privacy)
+let tokenGenerationCount = 0;
+let lastTokenGenerationReset = Date.now();
 
-// Global resource limits (optimized for 512MB RAM environment)
+// Global resource limits
 const globalLimits = {
-  maxActiveTokens: 50, // Reduced from 200 for low-memory environment
-  maxApiCallsPerMinute: 500, // Reduced from 1000
+  maxActiveTokens,
+  maxApiCallsPerMinute,
   currentApiCalls: 0,
   lastApiCallReset: Date.now()
 };
 
 // Basic behavioral analysis (memory-optimized)
 const behaviorTracker = new Map(); // token -> { actions: [], patterns: {} }
-const SUSPICIOUS_PATTERNS = {
-  rapidActions: 8, // Reduced from 10
-  identicalTimings: 4, // Reduced from 5
-};
-
-// Memory limits
-const MEMORY_LIMITS = {
-  maxBehaviorActions: 10, // Keep only last 10 actions per token
-  maxTrackedIPs: 100, // Limit IP tracking
-  behaviorTrackingTime: 120000, // Reduced from 5 minutes to 2 minutes
-};
 
 export function generateEphemeralToken(clientIP = null) {
-  // Check global token limit
+  // Check global token generation rate limit
+  const now = Date.now();
+  if (now - lastTokenGenerationReset >= tokenGenerationWindowMs) {
+    tokenGenerationCount = 0;
+    lastTokenGenerationReset = now;
+  }
+  
+  if (tokenGenerationCount >= tokenGenerationLimit) {
+    // Expire oldest tokens to make room
+    expireOldestTokens(1);
+  }
+  
+  // Check global token limit after cleanup
   if (tokens.size >= globalLimits.maxActiveTokens) {
     cleanupTokens(); // Try cleanup first
     if (tokens.size >= globalLimits.maxActiveTokens) {
-      throw new Error('Server at capacity, please try again later');
+      // Force expire oldest tokens
+      expireOldestTokens(Math.ceil(globalLimits.maxActiveTokens * 0.1)); // Remove 10%
     }
   }
 
-  // Rate limit token generation per IP (if IP provided)
-  if (clientIP && !canRequestToken(clientIP)) {
-    throw new Error('Too many token requests, please try again later');
-  }
-
   const token = crypto.randomBytes(24).toString('hex');
-  tokens.set(token, { expires: Date.now() + TOKEN_EXPIRY_MS, lastActions: [] });
+  tokens.set(token, { expires: Date.now() + tokenExpiryMs, lastActions: [] });
   
   // Initialize behavior tracking
   behaviorTracker.set(token, { actions: [], patterns: {} });
   
+  tokenGenerationCount++;
   return token;
 }
 
-function canRequestToken(ip) {
-  const now = Date.now();
+function expireOldestTokens(count) {
+  const tokenEntries = Array.from(tokens.entries())
+    .sort((a, b) => a[1].expires - b[1].expires) // Sort by expiry time (oldest first)
+    .slice(0, count);
   
-  // Limit number of tracked IPs to prevent memory bloat
-  if (tokenRequestLimiter.size >= MEMORY_LIMITS.maxTrackedIPs) {
-    // Remove oldest entries
-    const sortedEntries = Array.from(tokenRequestLimiter.entries())
-      .sort((a, b) => a[1].lastCleanup - b[1].lastCleanup);
-    const toRemove = sortedEntries.slice(0, Math.floor(MEMORY_LIMITS.maxTrackedIPs * 0.2));
-    toRemove.forEach(([key]) => tokenRequestLimiter.delete(key));
-  }
-  
-  const entry = tokenRequestLimiter.get(ip);
-  
-  if (!entry) {
-    tokenRequestLimiter.set(ip, { requests: [now], lastCleanup: now });
-    return true;
-  }
-  
-  entry.requests = entry.requests.filter(time => now - time < TOKEN_REQUEST_WINDOW);
-  
-  if (entry.requests.length >= TOKEN_REQUEST_LIMIT) {
-    return false;
-  }
-  
-  entry.requests.push(now);
-  entry.lastCleanup = now;
-  return true;
+  tokenEntries.forEach(([token]) => {
+    tokens.delete(token);
+    behaviorTracker.delete(token);
+  });
 }
 
 export function validateToken(token) {
@@ -90,6 +79,8 @@ export function validateToken(token) {
   const entry = tokens.get(token);
   if (!entry) return false;
   if (Date.now() > entry.expires) {
+    tokens.delete(token);
+    behaviorTracker.delete(token);
     return false;
   }
   return true;
@@ -110,8 +101,8 @@ export function rateLimitToken(token) {
   const entry = tokens.get(token);
   if (!entry) return false;
   
-  entry.lastActions = entry.lastActions.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
-  if (entry.lastActions.length >= RATE_LIMIT_MAX) return false;
+  entry.lastActions = entry.lastActions.filter(ts => now - ts < rateLimitWindowMs);
+  if (entry.lastActions.length >= rateLimitMax) return false;
   
   // Check for suspicious behavior
   if (isSuspiciousBehavior(token, now)) {
@@ -166,8 +157,8 @@ function updateBehaviorTracking(token, timestamp) {
   
   // Keep only recent actions and limit array size for memory efficiency
   behavior.actions = behavior.actions
-    .filter(time => timestamp - time < MEMORY_LIMITS.behaviorTrackingTime)
-    .slice(-MEMORY_LIMITS.maxBehaviorActions); // Keep only last N actions
+    .filter(time => timestamp - time < behaviorTrackingTimeMs)
+    .slice(-maxBehaviorActions); // Keep only last N actions
 }
 
 export function refreshToken(token) {

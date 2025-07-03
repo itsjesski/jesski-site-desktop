@@ -1,9 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { getAuthToken, initializeAuthToken } from '../../../services/api/client';
+import { GARDEN_CONFIG } from '../../../config/gardenConfig.js';
 
 const WS_URL = process.env.NODE_ENV === 'production'
   ? (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/garden/ws'
   : 'ws://localhost:8080/garden/ws';
+
+// Get timing configuration from centralized config
+const REFRESH_INTERVAL_MS = GARDEN_CONFIG.timing.refreshIntervalMs;
+const MAX_IDLE_TIME = GARDEN_CONFIG.timing.maxIdleTimeMs;
 
 const usePageVisibility = () => {
   const [isVisible, setIsVisible] = useState(!document.hidden);
@@ -35,8 +40,6 @@ export function useGardenWebSocket() {
   const lastActivityRef = useRef(Date.now());
   const rateLimitTimeoutRef = useRef(null);
   const isVisible = usePageVisibility();
-  const REFRESH_INTERVAL_MS = 5000;
-  const MAX_IDLE_TIME = 120000;
 
   useEffect(() => {
     if (tokenFetched) return;

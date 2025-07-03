@@ -6,55 +6,44 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { validateToken, rateLimitToken, refreshToken } from '../tokenManager.js';
+import { GARDEN_CONFIG, DEFAULT_GARDEN_STATE, DEFAULT_COMMUNITY_STATS } from '../../config/gardenConfig.js';
+import { batchWriteJSON } from '../../utils/batchedFileWriter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '../../../..');
-const GARDEN_STATE_PATH = path.join(projectRoot, 'public/data/gardenState.json');
-const COMMUNITY_STATS_PATH = path.join(projectRoot, 'public/data/communityStats.json');
 
-// Default garden state structure
-const DEFAULT_GARDEN_STATE = {
-  plants: [],
-  magic: [],
-  stats: {
-    totalPlanted: 0,
-    totalHarvested: {},
-    totalWatered: 0,
-    totalFertilized: 0,
-    totalWeedsPulled: 0,
-    totalMagicPlaced: 0,
-    totalMagicFaded: 0
-  },
-  recentHarvests: []
-};
+// Construct paths from config
+const GARDEN_STATE_PATH = path.join(projectRoot, GARDEN_CONFIG.paths.gardenState);
+const COMMUNITY_STATS_PATH = path.join(projectRoot, GARDEN_CONFIG.paths.communityStats);
 
-// Community stats structure (permanent, never reset)
-const DEFAULT_COMMUNITY_STATS = {
-  totalPlanted: 0,
-  totalHarvested: 0,
-  totalWatered: 0,
-  totalFertilized: 0,
-  totalWeedsPulled: 0,
-  totalMagicPlaced: 0,
-  totalMagicFaded: 0,
-  lastUpdated: new Date().toISOString()
-};
+// Extract configuration values
+const {
+  maxPlants,
+  maxMagicItems,
+  maxRecentHarvests,
+  maxWebSocketClients,
+  connectionTimeoutMs,
+  inactiveTimeoutMs
+} = GARDEN_CONFIG.limits;
+
+const {
+  stateCacheTtlMs,
+  plantWaterLossDelayMs,
+  plantDiseaseLossDelayMs,
+  fertilizerCooldownMs,
+  connectionCleanupIntervalMs,
+  magicCleanupIntervalMs
+} = GARDEN_CONFIG.timing;
+
+const { types: plantTypes, fertilizerGrowthMultiplier } = GARDEN_CONFIG.plants;
+const { maxActiveMagic, types: magicTypes } = GARDEN_CONFIG.magic;
 
 // State caching to reduce file I/O (memory-optimized)
 let stateCache = null;
 let lastStateRead = 0;
 let communityStatsCache = null;
 let lastStatsRead = 0;
-const STATE_CACHE_TTL = 2000; // Increased from 1s to 2s to reduce I/O
-
-// Memory limits for garden state
-const GARDEN_LIMITS = {
-  maxPlants: 100, // Limit total plants in garden
-  maxMagicItems: 10, // Limit total magic items (reduced from unlimited)
-  maxRecentHarvests: 20, // Limit harvest history
-  maxHarvestHistory: 30 // Limit days of harvest history
-};
 
 function ensureDataDirectory() {
   const dataDir = path.dirname(GARDEN_STATE_PATH);
@@ -65,7 +54,7 @@ function ensureDataDirectory() {
 
 function readGardenState() {
   const now = Date.now();
-  if (stateCache && (now - lastStateRead) < STATE_CACHE_TTL) {
+  if (stateCache && (now - lastStateRead) < stateCacheTtlMs) {
     return stateCache;
   }
   
@@ -102,56 +91,42 @@ function readGardenState() {
 }
 
 function writeGardenState(state) {
-  // Apply memory limits before saving
+  // Apply memory limits and cleanup before saving
   const optimizedState = optimizeGardenState(state);
   
   stateCache = optimizedState;
   lastStateRead = Date.now();
   
-  setImmediate(() => {
-    try {
-      ensureDataDirectory();
-      fs.writeFileSync(GARDEN_STATE_PATH, JSON.stringify(optimizedState, null, 2), 'utf-8');
-    } catch (err) {
-      console.error('Failed to write garden state:', err);
-    }
+  // Use batched file writer to reduce I/O
+  batchWriteJSON(GARDEN_STATE_PATH, optimizedState).catch(err => {
+    console.error('Failed to write garden state:', err);
   });
 }
 
 function optimizeGardenState(state) {
   const optimized = { ...state };
   
+  // Clean up expired magic items first
+  const currentTime = Date.now();
+  optimized.magic = optimized.magic.filter(magic => currentTime < magic.expiresAt);
+  
   // Limit total plants (remove oldest if exceeded)
-  if (optimized.plants.length > GARDEN_LIMITS.maxPlants) {
+  if (optimized.plants.length > maxPlants) {
     optimized.plants = optimized.plants
       .sort((a, b) => b.plantedAt - a.plantedAt) // Sort by newest first
-      .slice(0, GARDEN_LIMITS.maxPlants);
+      .slice(0, maxPlants);
   }
   
   // Limit magic items (remove oldest if exceeded)
-  if (optimized.magic.length > GARDEN_LIMITS.maxMagicItems) {
+  if (optimized.magic.length > maxMagicItems) {
     optimized.magic = optimized.magic
       .sort((a, b) => b.placedAt - a.placedAt) // Sort by newest first
-      .slice(0, GARDEN_LIMITS.maxMagicItems);
+      .slice(0, maxMagicItems);
   }
   
   // Limit recent harvests
-  if (optimized.recentHarvests && optimized.recentHarvests.length > GARDEN_LIMITS.maxRecentHarvests) {
-    optimized.recentHarvests = optimized.recentHarvests.slice(0, GARDEN_LIMITS.maxRecentHarvests);
-  }
-  
-  // Limit harvest history (keep only recent days)
-  if (optimized.stats.totalHarvested) {
-    const harvestDates = Object.keys(optimized.stats.totalHarvested);
-    if (harvestDates.length > GARDEN_LIMITS.maxHarvestHistory) {
-      const sortedDates = harvestDates.sort((a, b) => new Date(b) - new Date(a));
-      const recentDates = sortedDates.slice(0, GARDEN_LIMITS.maxHarvestHistory);
-      const newHarvestStats = {};
-      recentDates.forEach(date => {
-        newHarvestStats[date] = optimized.stats.totalHarvested[date];
-      });
-      optimized.stats.totalHarvested = newHarvestStats;
-    }
+  if (optimized.recentHarvests && optimized.recentHarvests.length > maxRecentHarvests) {
+    optimized.recentHarvests = optimized.recentHarvests.slice(0, maxRecentHarvests);
   }
   
   return optimized;
@@ -188,12 +163,10 @@ export function attachGardenWebSocketServer(server) {
     server, 
     path: '/garden/ws',
     // Memory optimization: limit concurrent connections for 512MB environment
-    maxClients: 25 // Reduced from unlimited to 25 concurrent connections
+    maxClients: maxWebSocketClients
   });
   
   // Connection timeout and cleanup (optimized for low memory)
-  const CONNECTION_TIMEOUT_MS = 20 * 60 * 1000; // Reduced from 30 to 20 minutes
-  const INACTIVE_TIMEOUT_MS = 3 * 60 * 1000; // Reduced from 5 to 3 minutes
   const connections = new Map(); // track connection metadata
 
   wss.on('connection', (ws, req) => {
@@ -246,7 +219,7 @@ export function attachGardenWebSocketServer(server) {
         ws.close(4004, 'Connection timeout');
       }
       connections.delete(connectionId);
-    }, CONNECTION_TIMEOUT_MS);
+    }, connectionTimeoutMs);
     
     // Set inactivity timeout (reset on each message)
     let inactivityTimeout = setTimeout(() => {
@@ -254,7 +227,7 @@ export function attachGardenWebSocketServer(server) {
         ws.close(4005, 'Inactive timeout');
       }
       connections.delete(connectionId);
-    }, INACTIVE_TIMEOUT_MS);
+    }, inactiveTimeoutMs);
     
     // Send initial state with community stats
     const gardenState = readGardenState();
@@ -277,7 +250,7 @@ export function attachGardenWebSocketServer(server) {
           ws.close(4005, 'Inactive timeout');
         }
         connections.delete(connectionId);
-      }, INACTIVE_TIMEOUT_MS);
+      }, inactiveTimeoutMs);
       
       let data;
       try {
@@ -322,13 +295,6 @@ export function attachGardenWebSocketServer(server) {
         switch (data.action) {
           case 'plant':
             // Add a new plant with growth stages
-            const plantTypes = [
-              { name: 'sunflower', stages: ['🌱', '🌿', '🌻'], growthTime: 120000, waterNeeded: 2 }, // 2 min
-              { name: 'rose', stages: ['🌱', '🥀', '🌹'], growthTime: 180000, waterNeeded: 3 }, // 3 min
-              { name: 'tulip', stages: ['🌱', '🌿', '🌷'], growthTime: 150000, waterNeeded: 2 }, // 2.5 min
-              { name: 'daisy', stages: ['🌱', '🌿', '🌼'], growthTime: 90000, waterNeeded: 1 }, // 1.5 min
-              { name: 'cherry', stages: ['🌱', '🌿', '🌸'], growthTime: 200000, waterNeeded: 3 }, // 3.3 min  
-            ];
             const randomPlantType = plantTypes[Math.floor(Math.random() * plantTypes.length)];
             state.plants.push({ 
               type: randomPlantType.name,
@@ -367,16 +333,15 @@ export function attachGardenWebSocketServer(server) {
             
           case 'fertilize':
             if (state.plants.length > 0) {
-              // Fertilize plants that need it (similar to watering)
+              // Fertilize plants that need it (more generous conditions)
               let fertilizedCount = 0;
               state.plants.forEach(plant => {
-                // Only fertilize healthy plants that haven't been fertilized recently
-                if (plant.health === 'healthy' && 
-                    plant.currentStage < plant.stages.length - 1 &&
-                    (!plant.lastFertilized || Date.now() - plant.lastFertilized > 300000)) { // 5 min cooldown
+                // Fertilize any plant that hasn't been fertilized recently
+                if (plant.currentStage < plant.stages.length - 1 &&
+                    (!plant.lastFertilized || Date.now() - plant.lastFertilized > fertilizerCooldownMs)) {
                   plant.lastFertilized = Date.now();
-                  // Speed up growth by 25% for this plant
-                  plant.growthTime = Math.floor(plant.growthTime * 0.75);
+                  // Speed up growth by configured multiplier
+                  plant.growthTime = Math.floor(plant.growthTime * fertilizerGrowthMultiplier);
                   fertilizedCount++;
                 }
               });
@@ -411,34 +376,14 @@ export function attachGardenWebSocketServer(server) {
             break;
             
             case 'magic':
-            // Check magic limit (max 5 active magic items)
+            // Check magic limit (max active magic items from config)
             const activeMagicCount = state.magic.filter(magic => Date.now() < magic.expiresAt).length;
-            if (activeMagicCount >= 5) {
-              // Don't add new magic if we already have 5 active items
+            if (activeMagicCount >= maxActiveMagic) {
+              // Don't add new magic if we already have max active items
               break;
             }
             
             // Add magic elements with gameplay effects
-            const magicTypes = [
-              // Growth boosters
-              { emoji: '🦋', effect: 'growth_boost', strength: 0.2, duration: 300000 }, // 5 min, 20% faster growth
-              { emoji: '🐝', effect: 'harvest_boost', strength: 0.5, duration: 300000 }, // 5 min, 50% more harvest
-              { emoji: '💚', effect: 'health_boost', strength: 1, duration: 300000 }, // 5 min, prevents disease
-              // Protection magic
-              { emoji: '🛡️', effect: 'disease_protection', strength: 1, duration: 600000 }, // 10 min, disease immunity
-              { emoji: '💧', effect: 'water_retention', strength: 0.5, duration: 600000 }, // 10 min, 50% slower water loss
-              // Garden-themed magical items
-              { emoji: '🌙', effect: 'none', strength: 0, duration: 300000 }, // Moonlight blessing
-              { emoji: '☀️', effect: 'none', strength: 0, duration: 300000 }, // Sunshine blessing
-              { emoji: '🌟', effect: 'none', strength: 0, duration: 300000 }, // Starlight blessing
-              { emoji: '✨', effect: 'happiness', strength: 0.1, duration: 300000 }, // 10% general boost
-              { emoji: '🍄', effect: 'none', strength: 0, duration: 300000 }, // Magical mushroom
-              { emoji: '🌈', effect: 'none', strength: 0, duration: 300000 }, // Rainbow blessing
-              { emoji: '🐞', effect: 'pest_control', strength: 1, duration: 300000 }, // Prevents some diseases
-              { emoji: '🦔', effect: 'none', strength: 0, duration: 300000 }, // Garden hedgehog
-              { emoji: '🐿️', effect: 'none', strength: 0, duration: 300000 }, // Garden squirrel
-            ];
-            
             const randomMagic = magicTypes[Math.floor(Math.random() * magicTypes.length)];
             state.magic.push({ 
               emoji: randomMagic.emoji,
@@ -468,11 +413,9 @@ export function attachGardenWebSocketServer(server) {
               // Remove harvested plants
               state.plants = state.plants.filter(plant => !plant.isHarvestReady);
               
-              // Update harvest stats
-              if (!state.stats.totalHarvested) state.stats.totalHarvested = {};
-              const today = new Date().toDateString();
-              state.stats.totalHarvested[today] = (state.stats.totalHarvested[today] || 0) + totalHarvested;
-              updateCommunityStats('harvest', { type: today, count: totalHarvested });
+              // Update harvest stats (simplified)
+              state.stats.totalHarvested += totalHarvested;
+              updateCommunityStats('harvest', { count: totalHarvested });
               updated = true;
             }
             break;
@@ -536,11 +479,11 @@ export function attachGardenWebSocketServer(server) {
           const age = currentTime - plant.plantedAt;
           const timeSinceWater = currentTime - plant.lastWatered;
           
-          // Apply water retention effect
+          // Apply water retention effect (more generous timing)
           const waterLossDelay = effects.waterRetention > 0 ? 
-            60000 * (1 + effects.waterRetention) : 60000;
+            plantWaterLossDelayMs * (1 + effects.waterRetention) : plantWaterLossDelayMs;
           const diseaseLossDelay = effects.waterRetention > 0 ? 
-            120000 * (1 + effects.waterRetention) : 120000;
+            plantDiseaseLossDelayMs * (1 + effects.waterRetention) : plantDiseaseLossDelayMs;
           
           // Check if plant needs water (with magic effects)
           if (timeSinceWater > waterLossDelay) {
@@ -669,28 +612,48 @@ export function attachGardenWebSocketServer(server) {
     console.error('WebSocket server error:', err);
   });
   
-  // Periodic cleanup of expired connections and optimize broadcasts
+  // Periodic cleanup of expired connections and magic items
   setInterval(() => {
     const now = Date.now();
     for (const [id, data] of connections.entries()) {
       // Clean up stale connection data
-      if (now - data.lastActivity > INACTIVE_TIMEOUT_MS * 2) {
+      if (now - data.lastActivity > inactiveTimeoutMs * 2) {
         connections.delete(id);
       }
+    }
+    
+    // Clean up expired magic items to prevent memory growth
+    const state = readGardenState();
+    const originalMagicCount = state.magic.length;
+    state.magic = state.magic.filter(magic => now < magic.expiresAt);
+    
+    if (state.magic.length < originalMagicCount) {
+      // Update magic faded count
+      const fadedCount = originalMagicCount - state.magic.length;
+      state.stats.totalMagicFaded += fadedCount;
+      updateCommunityStats('magic_fade', { count: fadedCount });
+      writeGardenState(state);
+      
+      // Broadcast updated state to all clients
+      broadcast(wss, { 
+        type: 'update', 
+        state: state,
+        communityStats: readCommunityStats()
+      });
     }
     
     // Log connection stats (optional, for monitoring)
     if (connections.size > 0) {
       console.log(`Active connections: ${connections.size}, Active WebSocket clients: ${wss.clients.size}`);
     }
-  }, 60000); // Check every minute
+  }, connectionCleanupIntervalMs);
 
   return wss;
 }
 
 function readCommunityStats() {
   const now = Date.now();
-  if (communityStatsCache && (now - lastStatsRead) < STATE_CACHE_TTL) {
+  if (communityStatsCache && (now - lastStatsRead) < stateCacheTtlMs) {
     return communityStatsCache;
   }
   
@@ -726,13 +689,9 @@ function writeCommunityStats(stats) {
   communityStatsCache = { ...stats, lastUpdated: new Date().toISOString() };
   lastStatsRead = Date.now();
   
-  setImmediate(() => {
-    try {
-      ensureDataDirectory();
-      fs.writeFileSync(COMMUNITY_STATS_PATH, JSON.stringify(communityStatsCache, null, 2), 'utf-8');
-    } catch (err) {
-      console.error('Failed to write community stats:', err);
-    }
+  // Use batched file writer to reduce I/O
+  batchWriteJSON(COMMUNITY_STATS_PATH, communityStatsCache).catch(err => {
+    console.error('Failed to write community stats:', err);
   });
 }
 
@@ -761,7 +720,8 @@ function updateCommunityStats(action, data = {}) {
       communityStats.totalMagicPlaced++;
       break;
     case 'magic_fade':
-      communityStats.totalMagicFaded++;
+      const fadeCount = data.count || 1;
+      communityStats.totalMagicFaded += fadeCount;
       break;
   }
   
