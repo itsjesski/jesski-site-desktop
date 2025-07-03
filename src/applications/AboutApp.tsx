@@ -1,7 +1,7 @@
 import React from 'react'
-import type { WindowState } from '../store/desktopStore'
+import type { WindowState } from '../types/window'
 import { Github, Twitch } from 'lucide-react'
-import ProfilePic from '../images/profilepic.png'
+import ProfilePic from '../assets/profilepic.png'
 
 interface AboutAppProps {
   window: WindowState

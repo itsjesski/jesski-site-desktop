@@ -1,6 +1,6 @@
 import { affirmations } from '../../data/affirmations.js';
+import { validateToken } from '../websocket/tokenManager.js';
 
-// Get valid API keys from environment variable (required)
 const getValidApiKeys = () => {
   const envKeys = process.env.AFFIRMATIONS_API_KEYS;
   if (!envKeys) {
@@ -14,14 +14,6 @@ const validApiKeys = getValidApiKeys();
 
 export const affirmationsAPI = {
   getRandom: (req, res) => {
-    const apiKey = req.headers['x-api-key'] || req.query.apiKey;
-    
-    if (!apiKey || !validApiKeys.includes(apiKey)) {
-      return res.status(401).json({
-        error: 'Unauthorized: Invalid or missing API key'
-      });
-    }
-
     const randomIndex = Math.floor(Math.random() * affirmations.length);
     
     res.json({
@@ -33,13 +25,7 @@ export const affirmationsAPI = {
   },
 
   getMultiple: (req, res) => {
-    const apiKey = req.headers['x-api-key'] || req.query.apiKey;
-    
-    if (!apiKey || !validApiKeys.includes(apiKey)) {
-      return res.status(401).json({
-        error: 'Unauthorized: Invalid or missing API key'
-      });
-    }
+    // Authentication is now handled by global middleware
 
     const count = Math.min(parseInt(req.query.count) || 5, 20);
     const selectedAffirmations = [];

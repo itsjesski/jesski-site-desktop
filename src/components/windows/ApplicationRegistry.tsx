@@ -1,5 +1,5 @@
 import React from 'react'
-import type { WindowState } from '../store/desktopStore'
+import type { WindowState } from '../../types/window'
 import { 
   TextViewer, 
   WebsiteViewer, 
@@ -8,7 +8,9 @@ import {
   TwitchChat,
   GamesLibrary,
   StreamerSoftware
-} from '../applications'
+} from '../../applications'
+import GardenApp from '../garden/GardenApp';
+import { GamesHubWindow } from './GamesHubWindow';
 
 interface ApplicationRegistryProps {
   window: WindowState
@@ -30,6 +32,10 @@ export const ApplicationRegistry: React.FC<ApplicationRegistryProps> = ({ window
       return <GamesLibrary />
     case 'streamer-software':
       return <StreamerSoftware window={window} />
+    case 'garden-app':
+      return <GardenApp />;
+    case 'games-hub':
+      return <GamesHubWindow />;
     default:
       return (
         <div className="p-4">
@@ -38,6 +44,6 @@ export const ApplicationRegistry: React.FC<ApplicationRegistryProps> = ({ window
           <p>Title: {window.title}</p>
           <p>This application component was not found.</p>
         </div>
-      )
+      );
   }
-}
+};
