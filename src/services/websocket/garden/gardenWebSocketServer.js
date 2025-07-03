@@ -6,7 +6,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { validateToken, rateLimitToken, refreshToken } from '../tokenManager.js';
-import { GARDEN_CONFIG, DEFAULT_GARDEN_STATE, DEFAULT_COMMUNITY_STATS } from '../../config/gardenConfig.js';
+import { GARDEN_CONFIG, DEFAULT_GARDEN_STATE, DEFAULT_COMMUNITY_STATS } from '../../config/garden.js';
+import { SYSTEM_CONFIG } from '../../config/system.js';
 import { batchWriteJSON } from '../../utils/batchedFileWriter.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -21,20 +22,29 @@ const COMMUNITY_STATS_PATH = path.join(projectRoot, GARDEN_CONFIG.paths.communit
 const {
   maxPlants,
   maxMagicItems,
-  maxRecentHarvests,
-  maxWebSocketClients,
-  connectionTimeoutMs,
-  inactiveTimeoutMs
+  maxRecentHarvests
 } = GARDEN_CONFIG.limits;
 
+// System-wide WebSocket and caching settings
 const {
-  stateCacheTtlMs,
+  maxConnections: maxWebSocketClients,
+  connectionTimeoutMs,
+  inactiveTimeoutMs
+} = SYSTEM_CONFIG.websocket.limits;
+
+const {
+  stateCacheTtlMs
+} = SYSTEM_CONFIG.cache.timing;
+
+// Garden-specific timing settings
+const {
   plantWaterLossDelayMs,
   plantDiseaseLossDelayMs,
   fertilizerCooldownMs,
-  connectionCleanupIntervalMs,
   magicCleanupIntervalMs
 } = GARDEN_CONFIG.timing;
+
+const { connectionCleanupIntervalMs } = SYSTEM_CONFIG.websocket.timing;
 
 const { types: plantTypes, fertilizerGrowthMultiplier } = GARDEN_CONFIG.plants;
 const { maxActiveMagic, types: magicTypes } = GARDEN_CONFIG.magic;

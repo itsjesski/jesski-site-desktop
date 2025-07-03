@@ -1,44 +1,102 @@
-# 🌱 Jesski Community Virtual Garden
+# 🖥️ Jesski's Desktop
 
-Welcome to the **Jesski Community Virtual Garden** — a real-time, collaborative garden grown by everyone! Plant, water, decorate, and watch the garden bloom with emoji visuals. All actions update live for all users, creating a fun, interactive experience.
+A nostalgic desktop environment built as a web application, featuring a retro Windows-style interface with interactive applications and a collaborative virtual garden game.
 
 ---
 
-## 🚀 Features
+## 🌟 Features
 
-- **Emoji Garden**: Plant, water, fertilize, weed, decorate, and harvest — all with adorable emoji visuals.
-- **Global Actions**: Every action affects the whole garden. See changes in real time as the community collaborates.
-- **Live Updates**: Powered by a WebSocket-only backend for instant, multi-user updates.
-- **Global Stats**: Track total plants, waterings, decorations, and more.
-- **Item Limits & Expiry**: The garden enforces limits on plants and decorations. Decorations fade after a set time.
-- **No Accounts, No Personal Data**: Access is anonymous, using ephemeral tokens for security and rate limiting.
-- **Admin Controls**: Permanent admin token (from environment) for moderation and management.
-- **Flat File Storage**: All garden state and stats are stored in a simple JSON file for transparency and easy backup.
+### 🖥️ Desktop Environment
+- **Retro Windows Interface**: Drag-and-drop windows, taskbar, start menu, and desktop icons
+- **Multiple Applications**: Text viewer, games library, Twitch integration, garden game, and more
+- **Responsive Design**: Works on both desktop and mobile devices
+- **Desktop Stickers**: Interactive sticker system with drag-and-drop functionality
+
+### 🌱 Virtual Garden Game
+- **Collaborative Garden**: Real-time multiplayer garden where everyone contributes
+- **Emoji Visuals**: Plant, water, fertilize, and decorate with emoji-based graphics
+- **Live Updates**: WebSocket-powered real-time synchronization across all users
+- **Global Stats**: Community-wide statistics and shared progress
+- **Anonymous Access**: No accounts needed, uses ephemeral tokens for security
+
+### 📺 Live Streaming Integration
+- **Twitch Integration**: Real-time stream status and information display
+- **Stream Embed**: Watch live streams directly in the desktop environment
+- **Automatic Updates**: Stream status updates every few minutes
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React + TypeScript + Vite, TailwindCSS, Zustand (state), Lucide Icons, modern UI/UX.
-- **Backend**: Node.js, Express, WebSocket (ws), flat file (JSON) storage.
-- **Security**: Ephemeral token system for all endpoints and WebSocket connections, with rate limiting. Permanent admin token from environment for admin actions.
-- **No Databases**: All persistent data is stored in `public/data/gardenState.json` (auto-created if missing, publicly accessible for transparency).
+### Frontend
+- **React 19** with TypeScript for type safety and modern features
+- **Vite** for fast development and optimized builds
+- **Tailwind CSS v4** with custom CSS variables for theming
+- **Zustand** for lightweight state management
+- **Lucide React** for consistent iconography
+- **Custom Drag & Drop** implementation for React 19 compatibility
+
+### Backend
+- **Node.js** with Express for the API server
+- **WebSocket (ws)** for real-time communication
+- **Flat File Storage** using JSON files for simplicity and transparency
+- **Token-based Security** with ephemeral tokens and rate limiting
+
+### Development & Deployment
+- **TypeScript** for type safety across the entire codebase
+- **ESLint** for code quality and consistency
+- **PostCSS** for CSS processing
+- **Docker** for containerized deployment
+- **Digital Ocean** for cloud hosting
 
 ---
 
-## 🌍 How It Works
+## Architecture
 
-1. **Get a Token**: The frontend requests an ephemeral token from `/api/garden/token` (no login, no personal info).
-2. **Connect via WebSocket**: The app connects to `/garden/ws?token=...` for real-time updates. If WebSockets are unsupported, an error is shown.
-3. **Take Action**: Users can plant, water, fertilize, weed, decorate, or harvest. All actions are broadcast to everyone instantly.
-4. **Global State**: The garden state is shared by all users and stored in a flat JSON file. Stats and limits are enforced server-side.
-5. **Admin**: Admins use a permanent token (from `ADMIN_API_TOKEN` env variable) for moderation and special actions.
+### Frontend Applications
+- **Desktop Environment**: Window management, taskbar, start menu
+- **Text Viewer**: Display markdown and text files
+- **Games Library**: Showcase of games and projects
+- **Twitch Integration**: Live stream status and embedded player
+- **Virtual Garden**: Real-time collaborative garden game
+- **Sticker Pack**: Interactive desktop decorations
+
+### Configuration System
+- **Organized Configs**: Separated concerns for garden, system, server, and token settings
+- **Type Safety**: Full TypeScript support with proper typing
+- **Environment Handling**: Development and production configurations
+
+### Real-time Features
+- **WebSocket Garden**: Real-time multiplayer garden updates
+- **Token Management**: Ephemeral tokens for security without accounts
+- **Rate Limiting**: Protection against abuse and spam
+- **Live Stream Updates**: Automatic Twitch stream status checking
 
 ---
 
-## ✨ Example UI
+## 🚀 Getting Started
 
-![Community Garden Screenshot](docs/garden-screenshot.png)
+### Development
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+### Environment Variables
+Create a `.env` file for Twitch integration:
+```env
+VITE_TWITCH_CHANNEL=your_channel_name
+TWITCH_CLIENT_ID=your_client_id
+```
 
 ---
 

@@ -1,5 +1,7 @@
-// Garden-specific configuration only
-// For system-wide configs like file I/O, WebSocket, and caching, see system.ts
+/**
+ * Garden-specific configuration only
+ * For system-wide configs like file I/O, WebSocket, and caching, see system.ts
+ */
 
 export const GARDEN_CONFIG = {
   // File paths (garden-specific)
@@ -40,7 +42,7 @@ export const GARDEN_CONFIG = {
       { name: 'cherry', stages: ['🌱', '🌿', '🌸'], growthTime: 200000, waterNeeded: 3 }
     ],
     fertilizerGrowthMultiplier: 0.5, // 50% faster growth when fertilized
-    healthStates: ['healthy', 'wilted', 'diseased']
+    healthStates: ['healthy', 'wilted', 'diseased'] as const
   },
 
   // Magic system configuration
@@ -65,8 +67,22 @@ export const GARDEN_CONFIG = {
       { emoji: '🦔', effect: 'none', strength: 0, duration: 300000 },
       { emoji: '🐿️', effect: 'none', strength: 0, duration: 300000 }
     ]
+  },
+
+  // Frontend garden configuration
+  frontend: {
+    maxPlantsPerUser: 50,
+    maxMagicEffects: 5,
+    plantGrowthStages: 4,
+    
+    timings: {
+      plantGrowth: 24 * 60 * 60 * 1000, // 24 hours per stage
+      waterDuration: 60 * 60 * 1000,    // 1 hour
+      fertilizerDuration: 2 * 60 * 60 * 1000, // 2 hours
+      magicDuration: 30 * 1000,         // 30 seconds
+    },
   }
-};
+} as const;
 
 // Default state structures
 export const DEFAULT_GARDEN_STATE = {
@@ -82,7 +98,7 @@ export const DEFAULT_GARDEN_STATE = {
     totalMagicFaded: 0
   },
   recentHarvests: []
-};
+} as const;
 
 export const DEFAULT_COMMUNITY_STATS = {
   totalPlanted: 0,
@@ -93,4 +109,4 @@ export const DEFAULT_COMMUNITY_STATS = {
   totalMagicPlaced: 0,
   totalMagicFaded: 0,
   lastUpdated: new Date().toISOString()
-};
+} as const;

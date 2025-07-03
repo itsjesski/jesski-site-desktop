@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { TOKEN_CONFIG } from '../../config/tokenConfig.js';
+import { TOKEN_CONFIG } from '../../config/token.js';
 
 const {
   tokenExpiryMs,
