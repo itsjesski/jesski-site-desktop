@@ -1,4 +1,6 @@
 import express from 'express';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readFileSync } from 'fs';
@@ -7,6 +9,7 @@ import { affirmationsAPI } from './src/services/backend/affirmationsAPI.js';
 import { createServer } from 'http';
 import { attachGardenWebSocketServer } from './src/services/websocket/garden/gardenWebSocketServer.js';
 import { generateEphemeralToken, validateToken, getSystemStatus } from './src/services/websocket/tokenManager.js';
+import { SYSTEM_CONFIG } from './src/config/system.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -211,8 +214,36 @@ const memoryMonitor = {
 
 
 // Middleware
-app.use(express.json({ limit: '1mb' })); // Limit request body size
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(compression()); // Enable gzip compression
+
+// Rate limiting for production using system config
+const { rateLimiting } = SYSTEM_CONFIG;
+
+const limiter = rateLimit({
+  windowMs: rateLimiting.perIP.windowMs,
+  max: process.env.NODE_ENV === 'production' ? rateLimiting.perIP.maxRequests : rateLimiting.global.maxRequests,
+  message: {
+    error: 'Too many requests from this IP, please try again later.',
+    retryAfter: `${rateLimiting.perIP.windowMs / 1000 / 60} minutes`
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// API-specific rate limiting (stricter)
+const apiLimiter = rateLimit({
+  windowMs: rateLimiting.api.windowMs,
+  max: process.env.NODE_ENV === 'production' ? rateLimiting.api.maxRequests : rateLimiting.global.maxRequests,
+  message: {
+    error: 'Too many API requests from this IP, please try again later.',
+    retryAfter: `${rateLimiting.api.windowMs / 1000 / 60} minutes`
+  }
+});
+
+// Apply rate limiter to all API routes
+app.use('/api/', apiLimiter);
+
+app.use(limiter); // Apply rate limiting to all requests
 
 // Memory monitoring middleware
 app.use((req, res, next) => {
@@ -221,17 +252,7 @@ app.use((req, res, next) => {
 });
 
 // Compression middleware for better performance
-app.use((req, res, next) => {
-  // Simple compression for JSON responses
-  const originalJson = res.json;
-  res.json = function(data) {
-    res.set('Content-Type', 'application/json; charset=utf-8');
-    // Remove undefined values to reduce payload size
-    const cleanData = JSON.parse(JSON.stringify(data));
-    return originalJson.call(this, cleanData);
-  };
-  next();
-});
+app.use(compression());
 
 // Allowed hosts for security
 const allowedHosts = [
@@ -284,6 +305,29 @@ app.use((req, res, next) => {
   } else {
     next();
   }
+});
+
+// Security headers for production
+app.use((req, res, next) => {
+  // Basic security headers
+  res.header('X-Content-Type-Options', 'nosniff');
+  res.header('X-Frame-Options', 'DENY');
+  res.header('X-XSS-Protection', '1; mode=block');
+  res.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Content Security Policy (relaxed for Twitch embeds and WebSockets)
+  if (process.env.NODE_ENV === 'production') {
+    res.header('Content-Security-Policy', 
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' https://embed.twitch.tv; " +
+      "connect-src 'self' wss: ws: https://api.twitch.tv; " +
+      "frame-src https://embed.twitch.tv https://www.twitch.tv; " +
+      "img-src 'self' data: https:; " +
+      "style-src 'self' 'unsafe-inline';"
+    );
+  }
+  
+  next();
 });
 
 // API Routes with caching (health endpoint moved to top)

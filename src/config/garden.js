@@ -1,6 +1,6 @@
 /**
  * Garden-specific configuration only
- * For system-wide configs like file I/O, WebSocket, and caching, see system.ts
+ * For system-wide configs like file I/O, WebSocket, and caching, see system.js
  */
 
 export const GARDEN_CONFIG = {
@@ -42,7 +42,7 @@ export const GARDEN_CONFIG = {
       { name: 'cherry', stages: ['🌱', '🌿', '🌸'], growthTime: 200000, waterNeeded: 3 }
     ],
     fertilizerGrowthMultiplier: 0.5, // 50% faster growth when fertilized
-    healthStates: ['healthy', 'wilted', 'diseased'] as const
+    healthStates: ['healthy', 'wilted', 'diseased']
   },
 
   // Magic system configuration
@@ -82,7 +82,7 @@ export const GARDEN_CONFIG = {
       magicDuration: 30 * 1000,         // 30 seconds
     },
   }
-} as const;
+};
 
 // Default state structures
 export const DEFAULT_GARDEN_STATE = {
@@ -98,7 +98,7 @@ export const DEFAULT_GARDEN_STATE = {
     totalMagicFaded: 0
   },
   recentHarvests: []
-} as const;
+};
 
 export const DEFAULT_COMMUNITY_STATS = {
   totalPlanted: 0,
@@ -109,4 +109,4 @@ export const DEFAULT_COMMUNITY_STATS = {
   totalMagicPlaced: 0,
   totalMagicFaded: 0,
   lastUpdated: new Date().toISOString()
-} as const;
+};
