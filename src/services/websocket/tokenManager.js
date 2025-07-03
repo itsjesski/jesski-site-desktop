@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { GARDEN_CONFIG } from '../config/gardenConfig.js';
+import { TOKEN_CONFIG } from '../../config/tokenConfig.js';
 
 const {
   tokenExpiryMs,
@@ -12,7 +12,7 @@ const {
   maxBehaviorActions,
   behaviorTrackingTimeMs,
   suspiciousPatterns
-} = GARDEN_CONFIG.limits;
+} = TOKEN_CONFIG.limits;
 
 const tokens = new Map();
 
@@ -126,7 +126,7 @@ function isSuspiciousBehavior(token, timestamp) {
   // Use smaller time window to reduce memory usage
   const recentActions = behavior.actions.filter(time => timestamp - time < 8000); // Reduced from 10 seconds
   
-  if (recentActions.length >= SUSPICIOUS_PATTERNS.rapidActions) {
+  if (recentActions.length >= suspiciousPatterns.rapidActions) {
     return true;
   }
   
@@ -138,10 +138,10 @@ function isSuspiciousBehavior(token, timestamp) {
     }
     
     const identicalIntervals = intervals.filter(interval => 
-      intervals.filter(i => Math.abs(i - interval) < 100).length >= SUSPICIOUS_PATTERNS.identicalTimings
+      intervals.filter(i => Math.abs(i - interval) < 100).length >= suspiciousPatterns.identicalTimings
     );
     
-    if (identicalIntervals.length >= SUSPICIOUS_PATTERNS.identicalTimings) {
+    if (identicalIntervals.length >= suspiciousPatterns.identicalTimings) {
       return true;
     }
   }

@@ -1,4 +1,4 @@
-// Central configuration for the garden system and server limits
+// Central configuration for the garden system only
 
 export const GARDEN_CONFIG = {
   // File paths
@@ -14,29 +14,10 @@ export const GARDEN_CONFIG = {
     maxMagicItems: 10,
     maxRecentHarvests: 20,
     
-    // WebSocket connection limits
+    // WebSocket connection limits (garden-specific)
     maxWebSocketClients: 25,
     connectionTimeoutMs: 20 * 60 * 1000, // 20 minutes
-    inactiveTimeoutMs: 3 * 60 * 1000, // 3 minutes
-    
-    // Token system limits
-    maxActiveTokens: 50,
-    maxApiCallsPerMinute: 500,
-    tokenGenerationLimit: 30, // per minute
-    tokenGenerationWindowMs: 60 * 1000, // 1 minute
-    tokenExpiryMs: 60 * 60 * 1000, // 1 hour
-    
-    // Rate limiting
-    rateLimitWindowMs: 1000,
-    rateLimitMax: 3,
-    
-    // Behavioral analysis limits
-    maxBehaviorActions: 10,
-    behaviorTrackingTimeMs: 120000, // 2 minutes
-    suspiciousPatterns: {
-      rapidActions: 8,
-      identicalTimings: 4
-    }
+    inactiveTimeoutMs: 3 * 60 * 1000 // 3 minutes
   },
 
   // Timing configuration
@@ -56,8 +37,7 @@ export const GARDEN_CONFIG = {
     
     // Client-side timing
     refreshIntervalMs: 5000,
-    maxIdleTimeMs: 120000, // 2 minutes
-    tokenRefreshThresholdMs: 15 * 60 * 1000 // 15 minutes
+    maxIdleTimeMs: 120000 // 2 minutes
   },
 
   // Plant configuration
