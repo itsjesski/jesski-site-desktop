@@ -1,4 +1,6 @@
-// Token and authentication system configuration
+/**
+ * Token and authentication system configuration
+ */
 
 export const TOKEN_CONFIG = {
   // Token system limits
@@ -27,4 +29,4 @@ export const TOKEN_CONFIG = {
     tokenRefreshThresholdMs: 15 * 60 * 1000, // 15 minutes
     tokenCleanupIntervalMs: 10 * 60 * 1000 // 10 minutes
   }
-};
+} as const;

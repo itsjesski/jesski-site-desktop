@@ -1,9 +1,10 @@
 // Reusable batched file I/O utility to reduce disk operations
 import fs from 'fs';
 import path from 'path';
+import { SYSTEM_CONFIG } from '../config/system.js';
 
 class BatchedFileWriter {
-  constructor(batchDelayMs = 1000) {
+  constructor(batchDelayMs = SYSTEM_CONFIG.fileIO.timing.writeBatchDelayMs) {
     this.batchDelayMs = batchDelayMs;
     this.pendingWrites = new Map(); // filePath -> { data, resolve, reject }
     this.writeTimers = new Map(); // filePath -> timer
@@ -124,8 +125,8 @@ class BatchedFileWriter {
   }
 }
 
-// Create a default instance for common use
-export const defaultBatchWriter = new BatchedFileWriter(1000);
+// Create a default instance using system config
+export const defaultBatchWriter = new BatchedFileWriter(SYSTEM_CONFIG.fileIO.timing.writeBatchDelayMs);
 
 // Export the class for creating custom instances
 export { BatchedFileWriter };

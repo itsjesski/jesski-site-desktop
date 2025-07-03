@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { getAuthToken, initializeAuthToken } from '../../../services/api/client';
-import { GARDEN_CONFIG } from '../../../config/gardenConfig.js';
+import { GARDEN_CONFIG } from '../../../config/garden.js';
 
 const WS_URL = process.env.NODE_ENV === 'production'
   ? (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/garden/ws'

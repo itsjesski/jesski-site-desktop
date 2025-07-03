@@ -1,8 +1,15 @@
 /**
  * Application configuration
- * Centralizes environment-dependent settings
+ * Centralizes environment-dependent settings for the frontend
  */
 
+// Re-export organized config modules
+export { GARDEN_CONFIG, DEFAULT_GARDEN_STATE, DEFAULT_COMMUNITY_STATS } from './garden.js'
+export { TOKEN_CONFIG } from './token.js'
+export { SYSTEM_CONFIG } from './system.js'
+export { SERVER_CONFIG } from './server.js'
+
+// Frontend-specific configuration
 export const config = {
   // Environment
   isDevelopment: import.meta.env.DEV,
@@ -65,20 +72,6 @@ export const config = {
 
     notifications: {
       defaultDuration: 5000, // 5 seconds
-    },
-  },
-
-  // Garden game configuration
-  garden: {
-    maxPlantsPerUser: 50,
-    maxMagicEffects: 5,
-    plantGrowthStages: 4,
-    
-    timings: {
-      plantGrowth: 24 * 60 * 60 * 1000, // 24 hours per stage
-      waterDuration: 60 * 60 * 1000,    // 1 hour
-      fertilizerDuration: 2 * 60 * 60 * 1000, // 2 hours
-      magicDuration: 30 * 1000,         // 30 seconds
     },
   },
 } as const;
