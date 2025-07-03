@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { User, FileText, Trophy, Folder, Video } from 'lucide-react'
-import type { WindowState } from '../store/desktopStore'
+import type { WindowState } from '../../types/window'
 
 interface StartMenuProps {
   isOpen: boolean

@@ -75,7 +75,7 @@ export const GamesLibrary: React.FC = () => {
   useEffect(() => {
     const loadGames = async () => {
       try {
-        const response = await fetch('/games.csv')
+        const response = await fetch('/data/games.csv')
         const csvText = await response.text()
         
         // Parse CSV (basic implementation)

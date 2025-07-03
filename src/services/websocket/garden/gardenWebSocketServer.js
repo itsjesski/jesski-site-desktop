@@ -5,51 +5,164 @@ import { WebSocketServer } from 'ws';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { validateToken, rateLimitToken } from '../tokenManager.js';
+import { validateToken, rateLimitToken, refreshToken } from '../tokenManager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const GARDEN_STATE_PATH = path.join(__dirname, '../../../data/garden/gardenState.json');
+const projectRoot = path.resolve(__dirname, '../../../..');
+const GARDEN_STATE_PATH = path.join(projectRoot, 'public/data/gardenState.json');
+const COMMUNITY_STATS_PATH = path.join(projectRoot, 'public/data/communityStats.json');
 
-// State caching to reduce file I/O
+// Default garden state structure
+const DEFAULT_GARDEN_STATE = {
+  plants: [],
+  magic: [],
+  stats: {
+    totalPlanted: 0,
+    totalHarvested: {},
+    totalWatered: 0,
+    totalFertilized: 0,
+    totalWeedsPulled: 0,
+    totalMagicPlaced: 0,
+    totalMagicFaded: 0
+  },
+  recentHarvests: []
+};
+
+// Community stats structure (permanent, never reset)
+const DEFAULT_COMMUNITY_STATS = {
+  totalPlanted: 0,
+  totalHarvested: 0,
+  totalWatered: 0,
+  totalFertilized: 0,
+  totalWeedsPulled: 0,
+  totalMagicPlaced: 0,
+  totalMagicFaded: 0,
+  lastUpdated: new Date().toISOString()
+};
+
+// State caching to reduce file I/O (memory-optimized)
 let stateCache = null;
 let lastStateRead = 0;
-const STATE_CACHE_TTL = 1000; // Cache for 1 second
+let communityStatsCache = null;
+let lastStatsRead = 0;
+const STATE_CACHE_TTL = 2000; // Increased from 1s to 2s to reduce I/O
 
-// Helper to read/write garden state with caching
+// Memory limits for garden state
+const GARDEN_LIMITS = {
+  maxPlants: 100, // Limit total plants in garden
+  maxMagicItems: 10, // Limit total magic items (reduced from unlimited)
+  maxRecentHarvests: 20, // Limit harvest history
+  maxHarvestHistory: 30 // Limit days of harvest history
+};
+
+function ensureDataDirectory() {
+  const dataDir = path.dirname(GARDEN_STATE_PATH);
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+}
+
 function readGardenState() {
   const now = Date.now();
   if (stateCache && (now - lastStateRead) < STATE_CACHE_TTL) {
     return stateCache;
   }
   
-  stateCache = JSON.parse(fs.readFileSync(GARDEN_STATE_PATH, 'utf-8'));
-  lastStateRead = now;
-  return stateCache;
+  try {
+    ensureDataDirectory();
+    
+    if (!fs.existsSync(GARDEN_STATE_PATH)) {
+      writeGardenState(DEFAULT_GARDEN_STATE);
+      stateCache = DEFAULT_GARDEN_STATE;
+      lastStateRead = now;
+      return stateCache;
+    }
+    
+    const fileContent = fs.readFileSync(GARDEN_STATE_PATH, 'utf-8');
+    const parsedState = JSON.parse(fileContent);
+    
+    stateCache = {
+      ...DEFAULT_GARDEN_STATE,
+      ...parsedState,
+      stats: {
+        ...DEFAULT_GARDEN_STATE.stats,
+        ...(parsedState.stats || {})
+      }
+    };
+    
+    lastStateRead = now;
+    return stateCache;
+  } catch (err) {
+    console.error('Error reading garden state, using defaults:', err);
+    stateCache = DEFAULT_GARDEN_STATE;
+    lastStateRead = now;
+    return stateCache;
+  }
 }
 
 function writeGardenState(state) {
-  // Update cache immediately
-  stateCache = state;
+  // Apply memory limits before saving
+  const optimizedState = optimizeGardenState(state);
+  
+  stateCache = optimizedState;
   lastStateRead = Date.now();
   
-  // Write to file asynchronously to avoid blocking
   setImmediate(() => {
     try {
-      fs.writeFileSync(GARDEN_STATE_PATH, JSON.stringify(state, null, 2), 'utf-8');
+      ensureDataDirectory();
+      fs.writeFileSync(GARDEN_STATE_PATH, JSON.stringify(optimizedState, null, 2), 'utf-8');
     } catch (err) {
       console.error('Failed to write garden state:', err);
     }
   });
 }
 
-// Broadcast to all clients with optimization
+function optimizeGardenState(state) {
+  const optimized = { ...state };
+  
+  // Limit total plants (remove oldest if exceeded)
+  if (optimized.plants.length > GARDEN_LIMITS.maxPlants) {
+    optimized.plants = optimized.plants
+      .sort((a, b) => b.plantedAt - a.plantedAt) // Sort by newest first
+      .slice(0, GARDEN_LIMITS.maxPlants);
+  }
+  
+  // Limit magic items (remove oldest if exceeded)
+  if (optimized.magic.length > GARDEN_LIMITS.maxMagicItems) {
+    optimized.magic = optimized.magic
+      .sort((a, b) => b.placedAt - a.placedAt) // Sort by newest first
+      .slice(0, GARDEN_LIMITS.maxMagicItems);
+  }
+  
+  // Limit recent harvests
+  if (optimized.recentHarvests && optimized.recentHarvests.length > GARDEN_LIMITS.maxRecentHarvests) {
+    optimized.recentHarvests = optimized.recentHarvests.slice(0, GARDEN_LIMITS.maxRecentHarvests);
+  }
+  
+  // Limit harvest history (keep only recent days)
+  if (optimized.stats.totalHarvested) {
+    const harvestDates = Object.keys(optimized.stats.totalHarvested);
+    if (harvestDates.length > GARDEN_LIMITS.maxHarvestHistory) {
+      const sortedDates = harvestDates.sort((a, b) => new Date(b) - new Date(a));
+      const recentDates = sortedDates.slice(0, GARDEN_LIMITS.maxHarvestHistory);
+      const newHarvestStats = {};
+      recentDates.forEach(date => {
+        newHarvestStats[date] = optimized.stats.totalHarvested[date];
+      });
+      optimized.stats.totalHarvested = newHarvestStats;
+    }
+  }
+  
+  return optimized;
+}
+
 function broadcast(wss, data) {
   const msg = JSON.stringify(data);
   const deadConnections = [];
   
   wss.clients.forEach(client => {
-    if (client.readyState === 1) { // WebSocket.OPEN
+    if (client.readyState === 1) {
       try {
         client.send(msg);
       } catch (err) {
@@ -61,7 +174,6 @@ function broadcast(wss, data) {
     }
   });
   
-  // Clean up dead connections
   deadConnections.forEach(client => {
     try {
       client.terminate();
@@ -72,11 +184,16 @@ function broadcast(wss, data) {
 }
 
 export function attachGardenWebSocketServer(server) {
-  const wss = new WebSocketServer({ server, path: '/garden/ws' });
+  const wss = new WebSocketServer({ 
+    server, 
+    path: '/garden/ws',
+    // Memory optimization: limit concurrent connections for 512MB environment
+    maxClients: 25 // Reduced from unlimited to 25 concurrent connections
+  });
   
-  // Connection timeout and cleanup
-  const CONNECTION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
-  const INACTIVE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes of inactivity
+  // Connection timeout and cleanup (optimized for low memory)
+  const CONNECTION_TIMEOUT_MS = 20 * 60 * 1000; // Reduced from 30 to 20 minutes
+  const INACTIVE_TIMEOUT_MS = 3 * 60 * 1000; // Reduced from 5 to 3 minutes
   const connections = new Map(); // track connection metadata
 
   wss.on('connection', (ws, req) => {
@@ -88,14 +205,30 @@ export function attachGardenWebSocketServer(server) {
       ws.close(4001, 'Invalid connection URL');
       return;
     }
-    if (!token || !validateToken(token)) {
-      ws.close(4002, 'Invalid or missing token');
+    // For WebSocket connections, be a bit more lenient with token validation
+    // This prevents unexpected disconnections
+    if (!token) {
+      console.log('WebSocket connection attempt with no token');
+      ws.close(4002, 'Missing token');
       return;
     }
+    
+    // Validate the token
+    if (!validateToken(token)) {
+      console.log('WebSocket connection attempt with invalid token');
+      ws.close(4002, 'Invalid token');
+      return;
+    }
+    
+    // Check rate limiting but don't apply it to refresh operations
     if (!rateLimitToken(token)) {
+      console.log('WebSocket connection rate limit exceeded');
       ws.close(4003, 'Rate limit exceeded');
       return;
     }
+    
+    // Refresh the token on successful connection to prevent expiry
+    refreshToken(token);
     
     // Track connection metadata
     const connectionId = Date.now() + Math.random();
@@ -123,8 +256,14 @@ export function attachGardenWebSocketServer(server) {
       connections.delete(connectionId);
     }, INACTIVE_TIMEOUT_MS);
     
-    // Send initial state
-    ws.send(JSON.stringify({ type: 'init', state: readGardenState() }));
+    // Send initial state with community stats
+    const gardenState = readGardenState();
+    const communityStats = readCommunityStats();
+    ws.send(JSON.stringify({ 
+      type: 'init', 
+      state: gardenState,
+      communityStats: communityStats
+    }));
 
     ws.on('message', (msg) => {
       // Update activity tracking
@@ -147,10 +286,21 @@ export function attachGardenWebSocketServer(server) {
         ws.send(JSON.stringify({ type: 'error', error: 'Invalid JSON' }));
         return;
       }
-      if (!rateLimitToken(token)) {
-        ws.send(JSON.stringify({ type: 'error', error: 'Rate limit exceeded' }));
-        return;
+      // Apply rate limiting for all actions except refresh
+      if (data.type === 'action') {
+        // Refresh actions don't count towards rate limit
+        if (data.action !== 'refresh') {
+          // All other actions are subject to rate limiting
+          if (!rateLimitToken(token)) {
+            ws.send(JSON.stringify({ type: 'error', error: 'Rate limit exceeded' }));
+            return;
+          }
+        }
+        
+        // But regardless of action type, refresh the token to prevent expiry
+        refreshToken(token);
       }
+      
       // Handle garden actions
       // { type: 'action', action: 'plant'|'water'|'fertilize'|'weed'|'magic'|'harvest', ... }
       if (data.type === 'action') {
@@ -195,6 +345,7 @@ export function attachGardenWebSocketServer(server) {
               isHarvestReady: false
             });
             state.stats.totalPlanted++;
+            updateCommunityStats('plant');
             updated = true;
             break;
             
@@ -209,6 +360,7 @@ export function attachGardenWebSocketServer(server) {
                 }
               });
               state.stats.totalWatered++;
+              updateCommunityStats('water');
               updated = true;
             }
             break;
@@ -230,6 +382,7 @@ export function attachGardenWebSocketServer(server) {
               });
               if (fertilizedCount > 0) {
                 state.stats.totalFertilized++;
+                updateCommunityStats('fertilize');
                 updated = true;
               }
             }
@@ -251,6 +404,7 @@ export function attachGardenWebSocketServer(server) {
               
               if (treatedCount > 0) {
                 state.stats.totalWeedsPulled++;
+                updateCommunityStats('weed');
                 updated = true;
               }
             }
@@ -294,6 +448,7 @@ export function attachGardenWebSocketServer(server) {
               expiresAt: Date.now() + randomMagic.duration
             });
             state.stats.totalMagicPlaced++;
+            updateCommunityStats('magic_place');
             updated = true;
             break;
             
@@ -317,6 +472,7 @@ export function attachGardenWebSocketServer(server) {
               if (!state.stats.totalHarvested) state.stats.totalHarvested = {};
               const today = new Date().toDateString();
               state.stats.totalHarvested[today] = (state.stats.totalHarvested[today] || 0) + totalHarvested;
+              updateCommunityStats('harvest', { type: today, count: totalHarvested });
               updated = true;
             }
             break;
@@ -474,12 +630,21 @@ export function attachGardenWebSocketServer(server) {
         const removedMagic = initialMagicCount - state.magic.length;
         if (removedMagic > 0) {
           state.stats.totalMagicFaded += removedMagic;
+          // Update community stats for each magic item that faded
+          for (let i = 0; i < removedMagic; i++) {
+            updateCommunityStats('magic_fade');
+          }
           updated = true;
         }
         
         if (updated) {
           writeGardenState(state);
-          broadcast(wss, { type: 'update', state });
+          const communityStats = readCommunityStats();
+          broadcast(wss, { 
+            type: 'update', 
+            state,
+            communityStats 
+          });
         }
         
         ws.send(JSON.stringify({ type: 'ack', action: data.action }));
@@ -521,4 +686,84 @@ export function attachGardenWebSocketServer(server) {
   }, 60000); // Check every minute
 
   return wss;
+}
+
+function readCommunityStats() {
+  const now = Date.now();
+  if (communityStatsCache && (now - lastStatsRead) < STATE_CACHE_TTL) {
+    return communityStatsCache;
+  }
+  
+  try {
+    ensureDataDirectory();
+    
+    if (!fs.existsSync(COMMUNITY_STATS_PATH)) {
+      writeCommunityStats(DEFAULT_COMMUNITY_STATS);
+      communityStatsCache = DEFAULT_COMMUNITY_STATS;
+      lastStatsRead = now;
+      return communityStatsCache;
+    }
+    
+    const fileContent = fs.readFileSync(COMMUNITY_STATS_PATH, 'utf-8');
+    const parsedStats = JSON.parse(fileContent);
+    
+    communityStatsCache = {
+      ...DEFAULT_COMMUNITY_STATS,
+      ...parsedStats
+    };
+    
+    lastStatsRead = now;
+    return communityStatsCache;
+  } catch (err) {
+    console.error('Error reading community stats, using defaults:', err);
+    communityStatsCache = DEFAULT_COMMUNITY_STATS;
+    lastStatsRead = now;
+    return communityStatsCache;
+  }
+}
+
+function writeCommunityStats(stats) {
+  communityStatsCache = { ...stats, lastUpdated: new Date().toISOString() };
+  lastStatsRead = Date.now();
+  
+  setImmediate(() => {
+    try {
+      ensureDataDirectory();
+      fs.writeFileSync(COMMUNITY_STATS_PATH, JSON.stringify(communityStatsCache, null, 2), 'utf-8');
+    } catch (err) {
+      console.error('Failed to write community stats:', err);
+    }
+  });
+}
+
+// Update community stats whenever garden stats change
+function updateCommunityStats(action, data = {}) {
+  const communityStats = readCommunityStats();
+  
+  switch (action) {
+    case 'plant':
+      communityStats.totalPlanted++;
+      break;
+    case 'harvest':
+      const count = data.count || 1;
+      communityStats.totalHarvested += count;
+      break;
+    case 'water':
+      communityStats.totalWatered++;
+      break;
+    case 'fertilize':
+      communityStats.totalFertilized++;
+      break;
+    case 'weed':
+      communityStats.totalWeedsPulled++;
+      break;
+    case 'magic_place':
+      communityStats.totalMagicPlaced++;
+      break;
+    case 'magic_fade':
+      communityStats.totalMagicFaded++;
+      break;
+  }
+  
+  writeCommunityStats(communityStats);
 }

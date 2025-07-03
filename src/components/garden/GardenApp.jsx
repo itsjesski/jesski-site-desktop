@@ -7,14 +7,7 @@ import { useGardenWebSocket } from './hooks/useGardenWebSocket.js';
 import { gardenStyles } from './GardenStyles.js';
 
 export default function GardenApp() {
-  const { garden, error, isLoading, actionLoading, rateLimited, handleAction } = useGardenWebSocket();
-
-  // Prevent any form submission
-  function handleFormSubmit(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    return false;
-  }
+  const { garden, communityStats, error, isLoading, actionLoading, rateLimited, handleAction } = useGardenWebSocket();
 
   if (isLoading) return <div className="p-4">Loading garden...</div>;
   // Only show errors that aren't rate limits, and only if we don't have garden data yet
@@ -41,7 +34,6 @@ export default function GardenApp() {
       
       <div 
         className="h-full p-2 lg:p-4 bg-green-50"
-        onSubmit={handleFormSubmit}
       >
         <div className="flex flex-col lg:flex-row gap-6 h-full">
           {/* Main Garden Area */}
@@ -92,6 +84,7 @@ export default function GardenApp() {
           {/* Right Column - Stats Panel */}
           <StatsPanel 
             garden={garden}
+            communityStats={communityStats}
             totalPlants={totalPlants}
             harvestReady={harvestReady}
             needWater={needWater}

@@ -1,0 +1,453 @@
+{
+  "plants": [
+    {
+      "type": "cherry",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌸"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751501658740,
+      "lastWatered": 1751504868936,
+      "lastFertilized": 1751505264994,
+      "growthTime": 63281,
+      "waterNeeded": 3,
+      "timesWatered": 2,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 100,
+      "stagePercent": 100
+    },
+    {
+      "type": "rose",
+      "stages": [
+        "🌱",
+        "🥀",
+        "🌹"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751504511296,
+      "lastWatered": 1751504868936,
+      "lastFertilized": 1751505264994,
+      "growthTime": 75937,
+      "waterNeeded": 3,
+      "timesWatered": 1,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 100,
+      "stagePercent": 100
+    },
+    {
+      "type": "cherry",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌸"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751504512063,
+      "lastWatered": 1751504868936,
+      "lastFertilized": 1751505264994,
+      "growthTime": 84375,
+      "waterNeeded": 3,
+      "timesWatered": 1,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 100,
+      "stagePercent": 100
+    },
+    {
+      "type": "rose",
+      "stages": [
+        "🌱",
+        "🥀",
+        "🌹"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751504522018,
+      "lastWatered": 1751504868936,
+      "lastFertilized": 1751505264994,
+      "growthTime": 75937,
+      "waterNeeded": 3,
+      "timesWatered": 1,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 100,
+      "stagePercent": 100
+    },
+    {
+      "type": "cherry",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌸"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751504522229,
+      "lastWatered": 1751504868936,
+      "lastFertilized": 1751505264994,
+      "growthTime": 84375,
+      "waterNeeded": 3,
+      "timesWatered": 1,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 100,
+      "stagePercent": 100
+    },
+    {
+      "type": "tulip",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌷"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751504540075,
+      "lastWatered": 1751504868936,
+      "lastFertilized": 1751505264994,
+      "growthTime": 63281,
+      "waterNeeded": 2,
+      "timesWatered": 1,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 100,
+      "stagePercent": 100
+    },
+    {
+      "type": "tulip",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌷"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751504541346,
+      "lastWatered": 1751504868936,
+      "lastFertilized": 1751505264994,
+      "growthTime": 63281,
+      "waterNeeded": 2,
+      "timesWatered": 1,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 100,
+      "stagePercent": 100
+    },
+    {
+      "type": "sunflower",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌻"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505062951,
+      "lastWatered": 1751505062951,
+      "lastFertilized": 1751505066069,
+      "growthTime": 90000,
+      "waterNeeded": 2,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 100,
+      "stagePercent": 100
+    },
+    {
+      "type": "daisy",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌼"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505064162,
+      "lastWatered": 1751505064162,
+      "lastFertilized": 1751505066069,
+      "growthTime": 67500,
+      "waterNeeded": 1,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 100,
+      "stagePercent": 100
+    },
+    {
+      "type": "sunflower",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌻"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505064659,
+      "lastWatered": 1751505064659,
+      "lastFertilized": 1751505066069,
+      "growthTime": 90000,
+      "waterNeeded": 2,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 100,
+      "stagePercent": 100
+    },
+    {
+      "type": "rose",
+      "stages": [
+        "🌱",
+        "🥀",
+        "🌹"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505166800,
+      "lastWatered": 1751505166800,
+      "lastFertilized": 1751505196214,
+      "growthTime": 135000,
+      "waterNeeded": 3,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 89,
+      "stagePercent": 100
+    },
+    {
+      "type": "cherry",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌸"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505167442,
+      "lastWatered": 1751505167442,
+      "lastFertilized": 1751505196214,
+      "growthTime": 150000,
+      "waterNeeded": 3,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 80,
+      "stagePercent": 100
+    },
+    {
+      "type": "cherry",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌸"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505167645,
+      "lastWatered": 1751505167645,
+      "lastFertilized": 1751505196214,
+      "growthTime": 150000,
+      "waterNeeded": 3,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 80,
+      "stagePercent": 100
+    },
+    {
+      "type": "cherry",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌸"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505167869,
+      "lastWatered": 1751505167869,
+      "lastFertilized": 1751505196214,
+      "growthTime": 150000,
+      "waterNeeded": 3,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 80,
+      "stagePercent": 100
+    },
+    {
+      "type": "daisy",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌼"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505198338,
+      "lastWatered": 1751505198338,
+      "lastFertilized": 1751505200336,
+      "growthTime": 67500,
+      "waterNeeded": 1,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 100,
+      "stagePercent": 100
+    },
+    {
+      "type": "tulip",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌷"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505198600,
+      "lastWatered": 1751505198600,
+      "lastFertilized": 1751505200336,
+      "growthTime": 112500,
+      "waterNeeded": 2,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 79,
+      "stagePercent": 100
+    },
+    {
+      "type": "cherry",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌸"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505198816,
+      "lastWatered": 1751505198816,
+      "lastFertilized": 1751505200336,
+      "growthTime": 150000,
+      "waterNeeded": 3,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 59,
+      "stagePercent": 100
+    },
+    {
+      "type": "sunflower",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌻"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505281688,
+      "lastWatered": 1751505281688,
+      "lastFertilized": 1751505287387,
+      "growthTime": 90000,
+      "waterNeeded": 2,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 6,
+      "stagePercent": 19
+    },
+    {
+      "type": "daisy",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌼"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505285450,
+      "lastWatered": 1751505285450,
+      "lastFertilized": 1751505287387,
+      "growthTime": 67500,
+      "waterNeeded": 1,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 3,
+      "stagePercent": 9
+    },
+    {
+      "type": "sunflower",
+      "stages": [
+        "🌱",
+        "🌿",
+        "🌻"
+      ],
+      "currentStage": 0,
+      "emoji": "🌱",
+      "plantedAt": 1751505285743,
+      "lastWatered": 1751505285743,
+      "lastFertilized": 1751505287387,
+      "growthTime": 90000,
+      "waterNeeded": 2,
+      "timesWatered": 0,
+      "health": "healthy",
+      "isHarvestReady": false,
+      "progress": 2,
+      "stagePercent": 5
+    }
+  ],
+  "magic": [
+    {
+      "emoji": "💧",
+      "effect": "water_retention",
+      "strength": 0.5,
+      "placedAt": 1751504877130,
+      "expiresAt": 1751505477130
+    },
+    {
+      "emoji": "💚",
+      "effect": "health_boost",
+      "strength": 1,
+      "placedAt": 1751505179281,
+      "expiresAt": 1751505479281
+    },
+    {
+      "emoji": "💧",
+      "effect": "water_retention",
+      "strength": 0.5,
+      "placedAt": 1751505188086,
+      "expiresAt": 1751505788086
+    },
+    {
+      "emoji": "🐞",
+      "effect": "pest_control",
+      "strength": 1,
+      "placedAt": 1751505188842,
+      "expiresAt": 1751505488842
+    },
+    {
+      "emoji": "🐞",
+      "effect": "pest_control",
+      "strength": 1,
+      "placedAt": 1751505201213,
+      "expiresAt": 1751505501213
+    }
+  ],
+  "stats": {
+    "totalPlanted": 85,
+    "totalHarvested": {
+      "Wed Jul 02 2025": 42
+    },
+    "totalWatered": 27,
+    "totalFertilized": 60,
+    "totalWeedsPulled": 15,
+    "totalMagicPlaced": 83,
+    "totalMagicFaded": 78
+  },
+  "recentHarvests": []
+}

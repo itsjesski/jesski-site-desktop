@@ -1,5 +1,5 @@
 import React from 'react'
-import type { WindowState } from '../../store/desktopStore'
+import type { WindowState } from '../../types/window'
 import { 
   TextViewer, 
   WebsiteViewer, 

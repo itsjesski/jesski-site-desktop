@@ -6,7 +6,7 @@ import { twitchService } from './src/services/backend/twitchService.js';
 import { affirmationsAPI } from './src/services/backend/affirmationsAPI.js';
 import { createServer } from 'http';
 import { attachGardenWebSocketServer } from './src/services/websocket/garden/gardenWebSocketServer.js';
-import { generateEphemeralToken } from './src/services/websocket/tokenManager.js';
+import { generateEphemeralToken, validateToken, getSystemStatus } from './src/services/websocket/tokenManager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -14,31 +14,69 @@ const __dirname = dirname(__filename);
 const app = express();
 const port = process.env.PORT || 8080;
 
-// Response caching system
+const authMiddleware = (req, res, next) => {
+  if (req.path === '/health' || req.path === '/token' || 
+      req.originalUrl === '/api/health' || req.originalUrl === '/api/token') {
+    return next();
+  }
+  
+  const authHeader = req.headers.authorization;
+  const token = authHeader ? authHeader.replace('Bearer ', '') : (req.query.token || '');
+  const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+  
+  if (!(validateToken(token) || (apiKey && process.env.AFFIRMATIONS_API_KEYS && 
+        process.env.AFFIRMATIONS_API_KEYS.split(',').map(k => k.trim()).includes(apiKey)))) {
+    if (req.originalUrl.includes('/api/garden/')) {
+      const now = Date.now();
+      const lastGardenAuthLog = global.lastGardenAuthLog || 0;
+      if (now - lastGardenAuthLog > 60000) {
+        console.log(`Garden API auth failed: ${req.originalUrl} (rate-limited logging)`);
+        global.lastGardenAuthLog = now;
+      }
+    } else {
+      console.log(`Authentication failed for ${req.originalUrl}: Missing or invalid token/API key`);
+    }
+    return res.status(401).json({
+      error: 'Unauthorized: Invalid or missing token'
+    });
+  }
+  
+  next();
+};
+
+// Response caching system (memory-optimized for 512MB environment)
 const responseCache = new Map();
+const MAX_CACHE_ENTRIES = 50; // Limit cache size
 const CACHE_TTL = {
-  health: 30 * 1000,        // 30 seconds
-  twitch: 60 * 1000,        // 1 minute
-  affirmations: 300 * 1000, // 5 minutes
-  static: 3600 * 1000       // 1 hour
+  health: 30 * 1000,
+  twitch: 60 * 1000,
+  affirmations: 300 * 1000,
+  static: 3600 * 1000
 };
 
 // Generic cache middleware
 const cacheMiddleware = (ttl) => (req, res, next) => {
-  const key = req.originalUrl;
+  const authInfo = req.headers.authorization || req.query.token || req.headers['x-api-key'] || '';
+  const key = `${req.originalUrl}|${authInfo}`;
   const cached = responseCache.get(key);
   
   if (cached && Date.now() - cached.timestamp < ttl) {
-    // Set cache headers
     res.set('X-Cache', 'HIT');
     res.set('Cache-Control', `public, max-age=${Math.floor(ttl / 1000)}`);
     return res.json(cached.data);
   }
   
-  // Override res.json to cache the response
   const originalJson = res.json;
   res.json = function(data) {
-    responseCache.set(key, { data, timestamp: Date.now() });
+    if (res.statusCode >= 200 && res.statusCode < 400) {
+      // Implement LRU-style cache eviction to prevent memory bloat
+      if (responseCache.size >= MAX_CACHE_ENTRIES) {
+        // Remove oldest entries (simple FIFO for performance)
+        const oldestKeys = Array.from(responseCache.keys()).slice(0, Math.floor(MAX_CACHE_ENTRIES * 0.2));
+        oldestKeys.forEach(k => responseCache.delete(k));
+      }
+      responseCache.set(key, { data, timestamp: Date.now() });
+    }
     res.set('X-Cache', 'MISS');
     res.set('Cache-Control', `public, max-age=${Math.floor(ttl / 1000)}`);
     return originalJson.call(this, data);
@@ -47,21 +85,140 @@ const cacheMiddleware = (ttl) => (req, res, next) => {
   next();
 };
 
-// Periodic cache cleanup
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, value] of responseCache.entries()) {
-    // Remove entries older than 1 hour regardless of TTL
-    if (now - value.timestamp > 3600000) {
-      responseCache.delete(key);
+// Define public API endpoints that don't need authentication
+app.get('/api/health', cacheMiddleware(CACHE_TTL.health), (req, res) => {
+  memoryMonitor.check(); // Check memory on health endpoint calls
+  
+  const systemStatus = getSystemStatus();
+  const memUsage = process.memoryUsage();
+  const healthStatus = {
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    version: '1.0.0',
+    service: 'jesski-desktop',
+    memory: {
+      heapUsed: `${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`,
+      heapTotal: `${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`,
+      rss: `${Math.round(memUsage.rss / 1024 / 1024)}MB`,
+      external: `${Math.round(memUsage.external / 1024 / 1024)}MB`,
+      usage: `${Math.round((memUsage.heapUsed / (512 * 1024 * 1024)) * 100)}%` // % of 512MB
+    },
+    cache: {
+      entries: responseCache.size,
+      hitRate: res.get('X-Cache') === 'HIT' ? 'cached' : 'fresh'
+    },
+    security: {
+      activeTokens: systemStatus.activeTokens,
+      tokenCapacity: `${systemStatus.activeTokens}/${systemStatus.maxTokens}`,
+      apiCallsThisMinute: systemStatus.currentApiCalls,
+      rateLimitedIPs: systemStatus.trackedIPs
+    }
+  };
+  
+  res.status(200).json(healthStatus);
+});
+
+// Ephemeral token endpoints (no user accounts, no personal data)
+app.post('/api/token', (req, res) => {
+  try {
+    // Get client IP for rate limiting (temporary, privacy-safe)
+    const clientIP = req.headers['x-forwarded-for']?.split(',')[0] || 
+                    req.connection?.remoteAddress || 
+                    req.socket?.remoteAddress || 
+                    'unknown';
+                    
+    const token = generateEphemeralToken(clientIP);
+    res.json({ token, expiresIn: 3600 });
+  } catch (error) {
+    console.error('Error generating token:', error.message);
+    if (error.message.includes('Too many token requests') || error.message.includes('Server at capacity')) {
+      res.status(429).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Failed to generate token' });
     }
   }
-  console.log(`Cache cleanup completed. Active entries: ${responseCache.size}`);
-}, 10 * 60 * 1000); // Clean every 10 minutes
+});
+
+// Debug GET version of token endpoint for testing
+app.get('/api/token', (req, res) => {
+  try {
+    const clientIP = req.headers['x-forwarded-for']?.split(',')[0] || 
+                    req.connection?.remoteAddress || 
+                    req.socket?.remoteAddress || 
+                    'unknown';
+                    
+    const token = generateEphemeralToken(clientIP);
+    res.json({ token, expiresIn: 3600, debug: 'GET method' });
+  } catch (error) {
+    console.error('Error generating token:', error.message);
+    if (error.message.includes('Too many token requests') || error.message.includes('Server at capacity')) {
+      res.status(429).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Failed to generate token' });
+    }
+  }
+});
+
+// Apply auth middleware to all API routes EXCEPT /health and /token
+// The order of middleware is important - this must come BEFORE the routes are defined
+const apiPaths = [
+  '/api/affirmations', 
+  '/api/twitch'
+];
+
+apiPaths.forEach(path => {
+  app.use(path, authMiddleware);
+});
+
+// Memory monitoring for low-memory environment
+const memoryMonitor = {
+  lastCheck: 0,
+  threshold: 400 * 1024 * 1024, // 400MB threshold (80% of 512MB)
+  checkInterval: 60000, // Check every minute
+  
+  check() {
+    const now = Date.now();
+    if (now - this.lastCheck < this.checkInterval) return;
+    
+    const memUsage = process.memoryUsage();
+    this.lastCheck = now;
+    
+    if (memUsage.heapUsed > this.threshold) {
+      console.warn(`⚠️  High memory usage: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`);
+      this.cleanup();
+    }
+  },
+  
+  cleanup() {
+    // Force garbage collection if available
+    if (global.gc) {
+      global.gc();
+      console.log('🧹 Forced garbage collection');
+    }
+    
+    // Clear cache if memory is high
+    if (responseCache.size > 20) {
+      const toRemove = Math.floor(responseCache.size * 0.5);
+      const keys = Array.from(responseCache.keys()).slice(0, toRemove);
+      keys.forEach(k => responseCache.delete(k));
+      console.log(`🧹 Emergency cache cleanup: removed ${toRemove} entries`);
+    }
+  }
+};
+
+
 
 // Middleware
 app.use(express.json({ limit: '1mb' })); // Limit request body size
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// Memory monitoring middleware
+app.use((req, res, next) => {
+  memoryMonitor.check();
+  next();
+});
 
 // Compression middleware for better performance
 app.use((req, res, next) => {
@@ -69,13 +226,12 @@ app.use((req, res, next) => {
   const originalJson = res.json;
   res.json = function(data) {
     res.set('Content-Type', 'application/json; charset=utf-8');
-    return originalJson.call(this, data);
+    // Remove undefined values to reduce payload size
+    const cleanData = JSON.parse(JSON.stringify(data));
+    return originalJson.call(this, cleanData);
   };
   next();
 });
-
-// Apply rate limiting to API routes only (removed IP-based tracking for privacy)
-// Rate limiting is handled per-token in the WebSocket garden server
 
 // Allowed hosts for security
 const allowedHosts = [
@@ -130,23 +286,7 @@ app.use((req, res, next) => {
   }
 });
 
-// API Routes with caching
-app.get('/api/health', cacheMiddleware(CACHE_TTL.health), (req, res) => {
-  const healthStatus = {
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
-    version: '1.0.0',
-    service: 'jesski-desktop',
-    cache: {
-      entries: responseCache.size,
-      hitRate: res.get('X-Cache') === 'HIT' ? 'cached' : 'fresh'
-    }
-  };
-  
-  res.status(200).json(healthStatus);
-});
+// API Routes with caching (health endpoint moved to top)
 
 // Simple liveness probe (alternative health check)
 app.get('/health', (req, res) => {
@@ -227,32 +367,7 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Test endpoint works!' });
 });
 
-// Ephemeral token endpoint (no user accounts, no personal data)
-// Universal token system for all API endpoints that need authentication
-app.post('/api/token', (req, res) => {
-  console.log('POST /api/token called');
-  try {
-    const token = generateEphemeralToken();
-    console.log('Token generated successfully:', token.substring(0, 8) + '...');
-    res.json({ token, expiresIn: 3600 });
-  } catch (error) {
-    console.error('Error generating token:', error);
-    res.status(500).json({ error: 'Failed to generate token' });
-  }
-});
 
-// Debug GET version of token endpoint for testing
-app.get('/api/token', (req, res) => {
-  console.log('GET /api/token called');
-  try {
-    const token = generateEphemeralToken();
-    console.log('Token generated successfully:', token.substring(0, 8) + '...');
-    res.json({ token, expiresIn: 3600, debug: 'GET method' });
-  } catch (error) {
-    console.error('Error generating token:', error);
-    res.status(500).json({ error: 'Failed to generate token' });
-  }
-});
 
 // 404 handler
 app.use((req, res) => {
@@ -280,4 +395,53 @@ server.listen(port, '0.0.0.0', () => {
   console.log(`🏠 Allowed hosts: ${allowedHosts.join(', ')}`);
   console.log(`🌱 Garden WebSocket: ws://localhost:${port}/garden/ws`);
   console.log(`📱 For development, use the Vite dev server (usually http://localhost:5173)`);
+});
+
+// Periodic cache cleanup to prevent memory leaks (optimized for low-memory environment)
+setInterval(() => {
+  const now = Date.now();
+  let cleaned = 0;
+  
+  // Clean expired cache entries
+  for (const [key, value] of responseCache.entries()) {
+    if (now - value.timestamp > 3600000) { // Remove entries older than 1 hour
+      responseCache.delete(key);
+      cleaned++;
+    }
+  }
+  
+  // Force cleanup if cache is still too large
+  if (responseCache.size > MAX_CACHE_ENTRIES) {
+    const oldestKeys = Array.from(responseCache.keys()).slice(0, responseCache.size - MAX_CACHE_ENTRIES);
+    oldestKeys.forEach(k => responseCache.delete(k));
+    cleaned += oldestKeys.length;
+  }
+  
+  if (cleaned > 0) {
+    console.log(`🧹 Cache cleanup: removed ${cleaned} entries, ${responseCache.size} remaining`);
+  }
+  
+  // Memory check and cleanup
+  const memUsage = process.memoryUsage();
+  if (memUsage.heapUsed > memoryMonitor.threshold) {
+    console.warn(`⚠️  High memory usage detected: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`);
+    memoryMonitor.cleanup();
+  }
+}, 15 * 60 * 1000); // Clean every 15 minutes
+
+// Graceful shutdown handling for production
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 SIGINT received, shutting down gracefully');
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
 });
