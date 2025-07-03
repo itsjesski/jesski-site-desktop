@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function StatsPanel({ garden, totalPlants, harvestReady, needWater }) {
+export default function StatsPanel({ garden, communityStats, totalPlants, harvestReady, needWater }) {
   return (
     <div className="w-full lg:w-80 bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col max-h-full lg:max-h-full">
       <div className="p-3 lg:p-4 border-b border-gray-200">
@@ -85,29 +85,37 @@ export default function StatsPanel({ garden, totalPlants, harvestReady, needWate
           </div>
         </div>
 
-        {/* Community Stats */}
-        <div>
-          <h3 className="font-semibold mb-2 text-blue-800">🌍 Community Stats</h3>
+        {/* Community Stats - All Time Totals */}
+        <div className="p-3 bg-blue-50 rounded-lg">
+          <h3 className="font-semibold mb-2 text-blue-800">🌍 Community All-Time Stats</h3>
           <div className="text-sm space-y-1">
             <div className="flex justify-between">
               <span>🌱 Total Planted:</span>
-              <span className="font-medium">{garden.stats.totalPlanted}</span>
+              <span className="font-medium">{(communityStats?.totalPlanted || garden.stats.totalPlanted).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span>💧 Total Watered:</span>
-              <span className="font-medium">{garden.stats.totalWatered}</span>
+              <span className="font-medium">{(communityStats?.totalWatered || garden.stats.totalWatered).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span>🌼 Total Fertilized:</span>
-              <span className="font-medium">{garden.stats.totalFertilized}</span>
+              <span className="font-medium">{(communityStats?.totalFertilized || garden.stats.totalFertilized).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span>🧤 Weeds Pulled:</span>
-              <span className="font-medium">{garden.stats.totalWeedsPulled}</span>
+              <span className="font-medium">{(communityStats?.totalWeedsPulled || garden.stats.totalWeedsPulled).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span>✨ Magic Spells:</span>
-              <span className="font-medium">{garden.stats.totalMagicPlaced}</span>
+              <span className="font-medium">{(communityStats?.totalMagicPlaced || garden.stats.totalMagicPlaced).toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>🧺 Total Harvested:</span>
+              <span className="font-medium">
+                {(communityStats?.totalHarvested || 
+                  (garden.stats.totalHarvested ? Object.values(garden.stats.totalHarvested).reduce((sum, count) => sum + count, 0) : 0)
+                ).toLocaleString()}
+              </span>
             </div>
           </div>
         </div>

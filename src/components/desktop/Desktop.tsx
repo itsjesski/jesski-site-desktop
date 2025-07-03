@@ -1,5 +1,5 @@
 import React from 'react'
-import type { WindowState } from '../../store/desktopStore'
+import type { WindowState } from '../../types/window'
 import { useDesktopStore } from '../../store/desktopStore'
 import { Window } from '../windows/Window'
 import { Taskbar } from './Taskbar'

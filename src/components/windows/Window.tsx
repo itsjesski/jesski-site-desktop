@@ -1,7 +1,7 @@
 import React from 'react'
 import { ResizableBox } from 'react-resizable'
 import { X, Minus, Maximize2, Minimize2 } from 'lucide-react'
-import type { WindowState } from '../../store/desktopStore'
+import type { WindowState } from '../../types/window'
 import { useDesktopStore } from '../../store/desktopStore'
 import { ApplicationRegistry } from './ApplicationRegistry'
 import { useDraggable } from '../../hooks/useDraggable'

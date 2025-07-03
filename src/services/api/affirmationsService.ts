@@ -1,4 +1,4 @@
-import { apiCall } from '../api/client'
+import { API_ENDPOINTS, authApiCall } from './client'
 
 export interface AffirmationResponse {
   affirmation: string
@@ -7,17 +7,37 @@ export interface AffirmationResponse {
   totalCount: number
 }
 
-class AffirmationsService {
-  private readonly apiKey = 'desktop-notifications'
+export interface MultipleAffirmationsResponse {
+  affirmations: Array<{
+    affirmation: string
+    id: number
+  }>
+  count: number
+  timestamp: string
+  totalCount: number
+}
 
+class AffirmationsService {
   async getRandomAffirmation(): Promise<string> {
-    const data = await apiCall('/api/affirmations/random', {
-      headers: {
-        'x-api-key': this.apiKey
-      }
-    }) as AffirmationResponse
-    
-    return data.affirmation
+    try {
+      const data = await authApiCall(API_ENDPOINTS.affirmations.random) as AffirmationResponse;
+      return data.affirmation;
+    } catch (error) {
+      console.error('Error fetching affirmation:', error);
+      return 'You are doing great today!';
+    }
+  }
+  
+  async getMultipleAffirmations(count: number = 5): Promise<string[]> {
+    try {
+      const endpoint = `${API_ENDPOINTS.affirmations.multiple}?count=${count}`;
+      const data = await authApiCall(endpoint) as MultipleAffirmationsResponse;
+      
+      return data.affirmations.map(item => item.affirmation);
+    } catch (error) {
+      console.error('Error fetching multiple affirmations:', error);
+      return ['You are doing great today!'];
+    }
   }
 }
 

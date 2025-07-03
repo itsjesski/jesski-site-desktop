@@ -13,22 +13,17 @@ class TwitchService {
     this.tokenExpiration = 0;
     this.refreshToken = null;
     
-    // Internal caching for API responses
     this.cache = new Map();
     this.CACHE_TTL = {
-      stream: 30 * 1000,    // 30 seconds for stream data
-      user: 300 * 1000,     // 5 minutes for user data
-      token: 3600 * 1000    // 1 hour for tokens
+      stream: 30 * 1000,
+      user: 300 * 1000,
+      token: 3600 * 1000
     };
-
-    console.log('🔧 Twitch Service initialized:');
-    console.log('   Client ID:', this.clientId ? `${this.clientId.slice(0, 8)}...` : 'NOT SET');
 
     if (!this.clientId || !this.clientSecret) {
       console.warn('⚠️ Twitch Client ID or Secret not configured. Twitch features will use demo mode.');
     }
     
-    // Periodic cache cleanup
     setInterval(() => {
       const now = Date.now();
       for (const [key, value] of this.cache.entries()) {
@@ -36,10 +31,9 @@ class TwitchService {
           this.cache.delete(key);
         }
       }
-    }, 5 * 60 * 1000); // Clean every 5 minutes
+    }, 5 * 60 * 1000);
   }
   
-  // Generic cache helper
   getCached(key, ttl) {
     const cached = this.cache.get(key);
     if (cached && Date.now() - cached.timestamp < ttl) {

@@ -26,8 +26,14 @@ const gamesHubItems = [
 
 export const GamesHubWindow: React.FC = () => {
 	const [clickingItem, setClickingItem] = useState<string | null>(null);
+	const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
 	const handleItemClick = (item: typeof gamesHubItems[0]) => {
+		// Single click just selects the item
+		setSelectedItem(item.id);
+	};
+
+	const handleItemDoubleClick = (item: typeof gamesHubItems[0]) => {
 		// Prevent double-clicking from opening multiple windows
 		if (clickingItem === item.id) return;
 		
@@ -61,14 +67,22 @@ export const GamesHubWindow: React.FC = () => {
 			<div className="flex-1 p-4 overflow-auto pb-2">
 				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 					{gamesHubItems.map((item) => (
-						<button
+						<div
 							key={item.id}
-							className={`flex flex-col items-center p-3 rounded-lg hover:bg-blue-50 hover:border-blue-200 border border-transparent group transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-								clickingItem === item.id ? 'opacity-50 pointer-events-none' : ''
-							}`}
+							className={`flex flex-col items-center p-3 rounded-lg hover:bg-blue-50 hover:border-blue-200 border transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer ${
+								selectedItem === item.id ? 'bg-blue-100 border-blue-300' : 'border-transparent'
+							} ${clickingItem === item.id ? 'opacity-50 pointer-events-none' : ''}`}
 							onClick={() => handleItemClick(item)}
+							onDoubleClick={() => handleItemDoubleClick(item)}
 							title={item.description}
-							disabled={clickingItem === item.id}
+							role="button"
+							tabIndex={0}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									handleItemDoubleClick(item);
+								}
+							}}
 						>
 							{/* File Icon */}
 							<div className="mb-2 text-4xl filter drop-shadow-sm group-hover:scale-110 transition-transform">
@@ -85,16 +99,11 @@ export const GamesHubWindow: React.FC = () => {
 								<div>{item.size}</div>
 								<div>{item.modified}</div>
 							</div>
-						</button>
+						</div>
 					))}
 				</div>
 			</div>
 			
-			{/* Status Bar */}
-			<div className="bg-gray-50 border-t border-gray-200 p-2 text-xs text-gray-600 flex items-center justify-between flex-shrink-0">
-				<span>{gamesHubItems.length} items</span>
-				<span>Ready</span>
-			</div>
 		</div>
 	);
 };

@@ -1,17 +1,16 @@
-// Frontend Twitch API service that uses backend endpoints
-import { API_ENDPOINTS, apiCall } from './client'
+import { API_ENDPOINTS, authApiCall, initializeAuthToken } from './client'
 import type { TwitchStreamData, TwitchFollower, TwitchSubscriber, TwitchUser } from '../../types/twitch'
 
 class TwitchAPIClient {
   private isConnected: boolean = false
   private lastConnectionAttempt: number = 0
-  private connectionRetryInterval: number = 300000 // 5 minutes
+  private connectionRetryInterval: number = 300000
 
   constructor() {
-    // Automatically attempt to connect when client is created
+    initializeAuthToken().catch(err => console.error('Failed to initialize token:', err));
+    
     this.connect()
     
-    // Auto-refresh connection when window becomes visible
     if (typeof window !== 'undefined') {
       window.addEventListener('focus', () => {
         this.refreshConnection()
@@ -36,26 +35,23 @@ class TwitchAPIClient {
 
     try {
       // Test connection by trying to get health endpoint
-      await apiCall('/api/health')
+      await authApiCall('/api/health')
       this.isConnected = true
     } catch {
       this.isConnected = false
     }
   }
 
-  // Check if client is connected
   isApiConnected(): boolean {
     return this.isConnected
   }
 
-  // Ensure connection before making API calls
   private async ensureConnection(): Promise<void> {
     if (!this.isConnected) {
       await this.connect()
     }
   }
 
-  // Check if stream is live
   async isStreamLive(username: string): Promise<{
     isLive: boolean
     streamData?: TwitchStreamData
@@ -68,7 +64,7 @@ class TwitchAPIClient {
         return this.getDemoStreamStatus()
       }
       
-      const response = await apiCall(API_ENDPOINTS.twitch.stream(username))
+      const response = await authApiCall(API_ENDPOINTS.twitch.stream(username))
       return response
     } catch {
       return this.getDemoStreamStatus()
@@ -84,7 +80,7 @@ class TwitchAPIClient {
         return this.getDemoUserInfo(username)
       }
       
-      const response = await apiCall(API_ENDPOINTS.twitch.user(username))
+      const response = await authApiCall(API_ENDPOINTS.twitch.user(username))
       return response
     } catch {
       return this.getDemoUserInfo(username)
@@ -145,7 +141,13 @@ class TwitchAPIClient {
       id: '123456789',
       login: username,
       display_name: username.charAt(0).toUpperCase() + username.slice(1),
-      profile_image_url: 'https://via.placeholder.com/300x300.png?text=Demo+User'
+      profile_image_url: 'https://via.placeholder.com/300x300.png?text=Demo+User',
+      offline_image_url: 'https://via.placeholder.com/1920x1080.jpg?text=Offline',
+      type: '',
+      broadcaster_type: 'affiliate',
+      description: 'Demo user for testing',
+      view_count: Math.floor(Math.random() * 5000),
+      created_at: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString() // About a year ago
     }
   }
 

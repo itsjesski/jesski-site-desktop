@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import type { WindowState } from '../store/desktopStore'
-import { getTextFile, type TextFile } from '../utils/textLoader'
+import type { WindowState } from '../types/window'
+import { getTextFile } from '../utils/textLoader'
+import type { TextFile } from '../types/text'
 
 interface TextViewerProps {
   window: WindowState

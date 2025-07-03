@@ -22,7 +22,7 @@ Welcome to the **Jesski Community Virtual Garden** — a real-time, collaborativ
 - **Frontend**: React + TypeScript + Vite, TailwindCSS, Zustand (state), Lucide Icons, modern UI/UX.
 - **Backend**: Node.js, Express, WebSocket (ws), flat file (JSON) storage.
 - **Security**: Ephemeral token system for all endpoints and WebSocket connections, with rate limiting. Permanent admin token from environment for admin actions.
-- **No Databases**: All persistent data is stored in `src/data/garden/gardenState.json`.
+- **No Databases**: All persistent data is stored in `public/data/gardenState.json` (auto-created if missing, publicly accessible for transparency).
 
 ---
 
@@ -46,7 +46,8 @@ Welcome to the **Jesski Community Virtual Garden** — a real-time, collaborativ
 
 - `src/components/garden/` — Frontend garden app (React, emoji visuals, WebSocket logic)
 - `src/services/garden/` — Backend logic (WebSocket server, token manager)
-- `src/data/garden/gardenState.json` — Flat file storage for garden state and stats
+- `public/data/gardenState.json` — Flat file storage for garden state and stats (auto-created, publicly accessible)
+- `public/data/games.csv` — Game data storage (publicly accessible)
 - `server.js` — Main server (Express + WebSocket integration)
 
 ---

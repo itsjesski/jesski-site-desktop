@@ -30,10 +30,30 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 5173,
     host: 'localhost',
+    // Ignore public/data directory to prevent hot reload on garden state changes
+    watch: {
+      ignored: ['**/public/data/**']
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8080',
-        changeOrigin: true
+        changeOrigin: true,
+        // Add custom proxy request handlers and better error logging
+        // This ensures auth headers are properly forwarded
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
+            if (req.headers.authorization) {
+              proxyReq.setHeader('Authorization', req.headers.authorization);
+            }
+          });
+          
+          proxy.on('error', (err, _req, res) => {
+            res.writeHead(500, {
+              'Content-Type': 'text/plain',
+            });
+            res.end('Proxy error: ' + err);
+          });
+        }
       },
       '/garden/ws': {
         target: 'http://localhost:8080',
