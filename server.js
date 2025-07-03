@@ -17,6 +17,16 @@ const __dirname = dirname(__filename);
 const app = express();
 const port = process.env.PORT || 8080;
 
+// Configure Express to trust proxies properly for rate limiting
+// Trust first proxy in development, and specific proxies in production
+if (process.env.NODE_ENV === 'production') {
+  // In production, trust specific proxy IPs or ranges
+  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+} else {
+  // In development, trust first proxy (for local development tools)
+  app.set('trust proxy', 1);
+}
+
 const authMiddleware = (req, res, next) => {
   if (req.path === '/health' || req.path === '/token' || 
       req.originalUrl === '/api/health' || req.originalUrl === '/api/token') {
