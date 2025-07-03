@@ -77,4 +77,4 @@ export const SYSTEM_CONFIG = {
       maxRequests: 60,
     }
   }
-} as const;
+};

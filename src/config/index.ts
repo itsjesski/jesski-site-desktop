@@ -3,11 +3,10 @@
  * Centralizes environment-dependent settings for the frontend
  */
 
-// Re-export organized config modules
+// Re-export organized config modules (from JavaScript files for backend compatibility)
 export { GARDEN_CONFIG, DEFAULT_GARDEN_STATE, DEFAULT_COMMUNITY_STATS } from './garden.js'
 export { TOKEN_CONFIG } from './token.js'
 export { SYSTEM_CONFIG } from './system.js'
-export { SERVER_CONFIG } from './server.js'
 
 // Frontend-specific configuration
 export const config = {

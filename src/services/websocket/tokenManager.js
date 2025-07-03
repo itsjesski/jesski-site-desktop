@@ -1,8 +1,9 @@
 import crypto from 'crypto';
 import { TOKEN_CONFIG } from '../../config/token.js';
 
+// Extract configuration values
 const {
-  tokenExpiryMs,
+  tokenExpiryMs: TOKEN_EXPIRY_MS,
   rateLimitWindowMs,
   rateLimitMax,
   tokenGenerationLimit,
@@ -14,7 +15,12 @@ const {
   suspiciousPatterns
 } = TOKEN_CONFIG.limits;
 
+const { tokenCleanupIntervalMs } = TOKEN_CONFIG.timing;
+
 const tokens = new Map();
+
+// Token request rate limiting by IP (for preventing abuse)
+const tokenRequestLimiter = new Map(); // ip -> { count, resetTime }
 
 // Global token generation rate limiting (no IP tracking for privacy)
 let tokenGenerationCount = 0;
@@ -54,7 +60,7 @@ export function generateEphemeralToken(clientIP = null) {
   }
 
   const token = crypto.randomBytes(24).toString('hex');
-  tokens.set(token, { expires: Date.now() + tokenExpiryMs, lastActions: [] });
+  tokens.set(token, { expires: Date.now() + TOKEN_EXPIRY_MS, lastActions: [] });
   
   // Initialize behavior tracking
   behaviorTracker.set(token, { actions: [], patterns: {} });

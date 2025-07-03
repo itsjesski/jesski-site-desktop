@@ -6,9 +6,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { validateToken, rateLimitToken, refreshToken } from '../tokenManager.js';
-import { GARDEN_CONFIG, DEFAULT_GARDEN_STATE, DEFAULT_COMMUNITY_STATS } from '../../config/garden.js';
-import { SYSTEM_CONFIG } from '../../config/system.js';
-import { batchWriteJSON } from '../../utils/batchedFileWriter.js';
+import { GARDEN_CONFIG, DEFAULT_GARDEN_STATE, DEFAULT_COMMUNITY_STATS } from '../../../config/garden.js';
+import { SYSTEM_CONFIG } from '../../../config/system.js';
+import { batchWriteJSON } from '../../../utils/batchedFileWriter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

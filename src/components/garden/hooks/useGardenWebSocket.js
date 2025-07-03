@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getAuthToken, initializeAuthToken } from '../../../services/api/client';
 import { GARDEN_CONFIG } from '../../../config/garden.js';
 
-const WS_URL = process.env.NODE_ENV === 'production'
+const WS_URL = import.meta.env.PROD
   ? (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/garden/ws'
   : 'ws://localhost:8080/garden/ws';
 
