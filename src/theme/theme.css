@@ -50,7 +50,7 @@
 
   /* Desktop theme */
   --desktop-bg: linear-gradient(135deg, var(--color-accent-400), var(--color-secondary-500), var(--color-accent-300));
-  --desktop-bg-image: url('/src/images/Background.png'); /* Background image */
+  --desktop-bg-image: url('/src/assets/Background.png'); /* Background image */
   --desktop-bg-size: cover;
   --desktop-bg-position: center;
   --desktop-bg-repeat: no-repeat;

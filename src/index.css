@@ -1,6 +1,31 @@
 @import "tailwindcss";
 @import "./theme/theme.css";
 
+/* Button styles for garden app */
+.btn {
+  @apply px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+}
+
+/* Animation styles for garden elements */
+.animate-pop {
+  animation: pop 0.3s ease-out;
+}
+
+.animate-fadein {
+  animation: fadein 0.5s ease-in;
+}
+
+@keyframes pop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fadein {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
 /* Reset default browser styles for full viewport */
 html, body {
   margin: 0;

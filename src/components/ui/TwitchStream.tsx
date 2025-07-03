@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { ExternalLink, VideoOff, Minus, Maximize, X } from 'lucide-react'
-import { twitchAPI, type TwitchStreamData } from '../services/twitchAPIClient'
-import { useDraggable } from '../hooks/useDraggable'
+import { twitchAPI, type TwitchStreamData } from '../../services/api/twitchAPIClient'
+import { useDraggable } from '../../hooks/useDraggable'
 
 interface TwitchStreamProps {
   onClose: () => void

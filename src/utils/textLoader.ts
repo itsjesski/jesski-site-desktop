@@ -1,12 +1,4 @@
-// Text file loader utility
-// This module handles loading text files from the src/text directory
-
-// Define the text file registry
-export interface TextFile {
-  fileName: string
-  displayName: string
-  content: string
-}
+import type { TextFile } from '../types/text'
 
 // Registry of available text files with their content
 export const textFiles: Record<string, Omit<TextFile, 'content'> & { loader: () => Promise<string> }> = {

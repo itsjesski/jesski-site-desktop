@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Users, MessageCircle, UserPlus, Crown, Gift } from 'lucide-react'
-import { twitchAPI, type TwitchFollower, type TwitchSubscriber } from '../services/twitchAPIClient'
+import { twitchAPI, type TwitchFollower, type TwitchSubscriber } from '../services/api/twitchAPIClient'
 
 export const TwitchChat: React.FC = () => {
   const [activityItems, setActivityItems] = useState<Array<{
@@ -112,7 +112,7 @@ export const TwitchChat: React.FC = () => {
           </div>
         ) : (
           <iframe
-            src={`https://www.twitch.tv/embed/${twitchChannel}/chat?parent=localhost&parent=127.0.0.1&parent=${globalThis.window?.location.hostname || 'localhost'}&darkpopout`}
+            src={`https://www.twitch.tv/embed/${twitchChannel}/chat?parent=${globalThis.window?.location.hostname || 'localhost'}&parent=localhost&parent=127.0.0.1&darkpopout`}
             height="100%"
             width="100%"
             className="border-0"
