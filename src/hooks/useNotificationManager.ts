@@ -1,39 +1,44 @@
 import { useState, useEffect, useCallback } from 'react'
 import { affirmationsService } from '../services/api/affirmationsService'
 import type { NotificationMessage, ActiveNotification } from '../types/notifications'
+import { secureStorage } from '../utils/secureStorage'
 
-const NOTIFICATION_MUTE_KEY = 'jesski-notifications-muted'
-
-// Helper function to load mute status from localStorage
-const loadMuteStatus = (): boolean => {
-  if (typeof window === 'undefined') return false
+// Helper function to check if notifications are enabled
+const areNotificationsEnabled = (): boolean => {
+  if (typeof window === 'undefined') return true
   
   try {
-    const saved = localStorage.getItem(NOTIFICATION_MUTE_KEY)
-    return saved === 'true'
+    // Check if affirmations are enabled (this controls the notification system now)
+    const affirmationsSetting = secureStorage.getItem('jesski-desktop-affirmations')
+    return affirmationsSetting !== 'false'
   } catch (error) {
-    console.warn('Failed to load notification mute status from localStorage:', error)
-    return false
+    console.warn('Failed to load affirmations setting from storage:', error)
+    return true
   }
 }
 
-// Helper function to save mute status to localStorage
-const saveMuteStatus = (isMuted: boolean): void => {
-  if (typeof window === 'undefined') return
+// Helper function to check if affirmations are enabled
+const areAffirmationsEnabled = (): boolean => {
+  if (typeof window === 'undefined') return true
   
   try {
-    localStorage.setItem(NOTIFICATION_MUTE_KEY, String(isMuted))
+    const affirmationsSetting = secureStorage.getItem('jesski-desktop-affirmations')
+    return affirmationsSetting !== 'false'
   } catch (error) {
-    console.warn('Failed to save notification mute status to localStorage:', error)
+    console.warn('Failed to load affirmations setting from storage:', error)
+    return true
   }
 }
 
 export const useNotificationManager = () => {
   const [activeNotifications, setActiveNotifications] = useState<ActiveNotification[]>([])
-  const [isMuted, setIsMuted] = useState<boolean>(loadMuteStatus)
 
   const showNotification = useCallback(async (notification?: NotificationMessage) => {
-    if (isMuted) return // Don't show notifications when muted
+    const notificationsEnabled = areNotificationsEnabled()
+    const affirmationsEnabled = areAffirmationsEnabled()
+    
+    // Don't show notifications if disabled
+    if (!notificationsEnabled) return
     
     // Only show one notification at a time - if one is active, skip this one
     if (activeNotifications.length > 0) return
@@ -43,6 +48,9 @@ export const useNotificationManager = () => {
     if (notification) {
       notificationToShow = notification
     } else {
+      // Don't show affirmations if they're disabled
+      if (!affirmationsEnabled) return
+      
       // Get a random affirmation from the API
       try {
         const affirmation = await affirmationsService.getRandomAffirmation()
@@ -67,7 +75,7 @@ export const useNotificationManager = () => {
     }
     
     setActiveNotifications([activeNotification]) // Always replace with single notification
-  }, [isMuted, activeNotifications.length])
+  }, [activeNotifications.length])
 
   const dismissNotification = useCallback((id: string) => {
     setActiveNotifications(prev => prev.filter(notification => notification.id !== id))
@@ -77,21 +85,13 @@ export const useNotificationManager = () => {
     setActiveNotifications([])
   }, [])
 
-  const toggleMute = useCallback(() => {
-    setIsMuted(prev => {
-      const newMutedState = !prev
-      saveMuteStatus(newMutedState) // Save to localStorage
-      return newMutedState
-    })
-    // If unmuting, dismiss all current notifications for a fresh start
-    if (isMuted) {
-      setActiveNotifications([])
-    }
-  }, [isMuted])
-
   // Random notification system
   useEffect(() => {
-    if (isMuted) return // Don't schedule notifications when muted
+    const notificationsEnabled = areNotificationsEnabled()
+    const affirmationsEnabled = areAffirmationsEnabled()
+    
+    // Don't schedule notifications if disabled
+    if (!notificationsEnabled || !affirmationsEnabled) return
     
     let currentTimer: ReturnType<typeof setTimeout>
 
@@ -103,8 +103,8 @@ export const useNotificationManager = () => {
       const randomInterval = Math.random() * (maxInterval - minInterval) + minInterval
       
       currentTimer = setTimeout(() => {
-        // Only show notification if there are no active notifications
-        if (activeNotifications.length === 0) {
+        // Only show notification if there are no active notifications and both settings are still enabled
+        if (activeNotifications.length === 0 && areNotificationsEnabled() && areAffirmationsEnabled()) {
           showNotification()
         }
         
@@ -116,7 +116,7 @@ export const useNotificationManager = () => {
     // Initial delay before first notification (10 to 30 seconds)
     const initialDelay = Math.random() * 20000 + 10000
     const initialTimer = setTimeout(() => {
-      if (activeNotifications.length === 0) {
+      if (activeNotifications.length === 0 && areNotificationsEnabled() && areAffirmationsEnabled()) {
         showNotification()
       }
       scheduleNextNotification()
@@ -128,14 +128,12 @@ export const useNotificationManager = () => {
         clearTimeout(currentTimer)
       }
     }
-  }, [showNotification, activeNotifications.length, isMuted])
+  }, [showNotification, activeNotifications.length])
 
   return {
     activeNotifications,
-    isMuted,
     showNotification,
     dismissNotification,
-    dismissAllNotifications,
-    toggleMute
+    dismissAllNotifications
   }
 }

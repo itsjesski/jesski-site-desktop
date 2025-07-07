@@ -1,0 +1,23 @@
+About Jess
+
+Hi there! I'm Jess, a passionate software developer who loves creating
+interactive web experiences and desktop applications.
+
+Background:
+- Full-stack developer with 5+ years of experience
+- Specialized in React, TypeScript, and modern web technologies
+- Love creating pixel-perfect UIs and smooth user experiences
+
+Current Focus:
+- Building modern web applications with React 19
+- Exploring desktop-style interfaces in the browser
+- Streaming development sessions on Twitch
+- Contributing to open-source projects
+
+When I'm not coding:
+- Playing video games (especially indie games)
+- Collecting cute stickers and digital art
+- Learning new programming languages and frameworks
+- Sharing knowledge with the developer community
+
+Feel free to connect with me on GitHub or catch my streams on Twitch!

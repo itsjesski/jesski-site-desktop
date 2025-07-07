@@ -15,6 +15,7 @@ export interface WindowState {
 export interface DesktopState {
   windows: WindowState[]
   nextZIndex: number
+  activeWindowId?: string
   hasShownWelcome: boolean
   showTwitchStream: boolean
   openWindow: (window: Omit<WindowState, 'id' | 'zIndex'>) => void

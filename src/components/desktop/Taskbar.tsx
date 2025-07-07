@@ -7,8 +7,6 @@ import { SystemTray } from '../ui/SystemTray'
 interface TaskbarProps {
   isStartMenuOpen: boolean
   onStartMenuToggle: () => void
-  isMuted?: boolean
-  onToggleMute?: () => void
 }
 
 const getIconForComponent = (component: string) => {
@@ -26,9 +24,7 @@ const getIconForComponent = (component: string) => {
 
 export const Taskbar: React.FC<TaskbarProps> = ({ 
   isStartMenuOpen, 
-  onStartMenuToggle, 
-  isMuted = false, 
-  onToggleMute 
+  onStartMenuToggle
 }) => {
   const { windows, focusWindow, minimizeWindow, closeWindow } = useDesktopStore()
   const [currentTime, setCurrentTime] = React.useState(new Date())
@@ -143,10 +139,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
         {/* System Tray - Right Section */}
         <div className="flex-shrink-0 ml-2 sm:ml-4 flex items-center gap-2">
           {/* System Tray */}
-          <SystemTray 
-            isMuted={isMuted}
-            onToggleMute={onToggleMute}
-          />
+          <SystemTray />
           
           {/* Date and Time */}
           <div className="text-right px-1 sm:px-3 py-2 text-xs sm:text-sm" style={{ color: 'var(--taskbar-text)' }}>
