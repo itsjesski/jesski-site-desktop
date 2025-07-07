@@ -1,70 +1,58 @@
 import type { TextFile } from '../types/text'
 
-// Registry of available text files with their content
-export const textFiles: Record<string, Omit<TextFile, 'content'> & { loader: () => Promise<string> }> = {
-  'README.txt': {
-    fileName: 'README.txt',
-    displayName: 'README.txt',
-    loader: async () => {
-      const module = await import('../text/README.txt?raw')
-      return module.default
-    }
-  },
-  'projects.txt': {
-    fileName: 'projects.txt',
-    displayName: 'My Projects',
-    loader: async () => {
-      const module = await import('../text/projects.txt?raw')
-      return module.default
-    }
-  },
-  'about.txt': {
-    fileName: 'about.txt',
-    displayName: 'About Me',
-    loader: async () => {
-      const module = await import('../text/about.txt?raw')
-      return module.default
-    }
-  },
-  'devnotes.txt': {
-    fileName: 'devnotes.txt',
-    displayName: 'Development Notes',
-    loader: async () => {
-      const module = await import('../text/devnotes.txt?raw')
-      return module.default
-    }
-  }
-}
-
-// Function to get text file content
+// Function to get text file content dynamically from the text folder
 export const getTextFile = async (fileName: string): Promise<TextFile | null> => {
-  const fileInfo = textFiles[fileName]
-  if (!fileInfo) {
-    return null
+  // Additional security: validate filename before dynamic import
+  if (!fileName || typeof fileName !== 'string') {
+    return null;
   }
-
+  
+  // Auto-append .txt if not present (for cleaner URLs)
+  const fullFileName = fileName.endsWith('.txt') ? fileName : `${fileName}.txt`;
+  
+  // Must be a .txt file with safe characters only
+  if (!fullFileName.endsWith('.txt') || !/^[a-zA-Z0-9\-_\s]+\.txt$/.test(fullFileName)) {
+    console.warn('Invalid filename for text import:', fullFileName);
+    return null;
+  }
+  
+  // Length check
+  if (fullFileName.length > 100) {
+    console.warn('Filename too long:', fullFileName);
+    return null;
+  }
+  
   try {
-    const content = await fileInfo.loader()
+    // Fetch from public directory - works in both dev and production
+    const response = await fetch(`/text/${fullFileName}`);
+    
+    if (!response.ok) {
+      console.warn(`Text file not found: ${fullFileName}`);
+      return null;
+    }
+    
+    const content = await response.text();
+    
     return {
-      fileName: fileInfo.fileName,
-      displayName: fileInfo.displayName,
-      content
+      fileName: fullFileName,
+      displayName: fileName.replace('.txt', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      content: content
     }
   } catch (error) {
-    console.error(`Failed to load text file: ${fileName}`, error)
+    // File doesn't exist or can't be loaded
+    console.warn(`Text file not found: ${fullFileName}`)
     return null
   }
 }
 
-// Function to get all available text files
-export const getAllTextFileInfo = (): Array<Omit<TextFile, 'content'>> => {
-  return Object.values(textFiles).map(({ fileName, displayName }) => ({
-    fileName,
-    displayName
-  }))
-}
-
-// Function to check if a file exists
-export const textFileExists = (fileName: string): boolean => {
-  return fileName in textFiles
+// Function to check if a file exists (uses public directory)
+export const textFileExists = async (fileName: string): Promise<boolean> => {
+  try {
+    // Auto-append .txt if not present
+    const fullFileName = fileName.endsWith('.txt') ? fileName : `${fileName}.txt`;
+    const response = await fetch(`/text/${fullFileName}`);
+    return response.ok;
+  } catch {
+    return false
+  }
 }

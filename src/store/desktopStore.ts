@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import type { WindowState, DesktopState } from '../types/window'
+import { soundManager } from '../services/soundManager'
+import { secureStorage } from '../utils/secureStorage'
 
 // Utility function to calculate optimal window size
 const calculateOptimalWindowSize = (
@@ -56,37 +58,51 @@ const calculateCenteredPosition = (
 export const useDesktopStore = create<DesktopState>((set, get) => ({
   windows: [],
   nextZIndex: 100,
+  activeWindowId: undefined,
   hasShownWelcome: false,
   showTwitchStream: false, // Will be set to true when stream is detected as live
   
   initializeWelcomeWindow: () => {
+    // Check if welcome guide should be shown
+    const showWelcome = secureStorage.getItem('jesski-desktop-show-welcome') !== 'false';
+    
+    if (!showWelcome) {
+      set({ hasShownWelcome: true });
+      return;
+    }
+    
     // Always show the welcome window since we're showing boot animation every time
     if (!get().hasShownWelcome) {
       // Calculate center position that avoids desktop icons
       const viewportWidth = window.innerWidth
       const viewportHeight = window.innerHeight
-      const windowWidth = 700
-      const windowHeight = 500
+      // Check if user has seen the welcome README before
+      const hasSeenWelcome = secureStorage.getItem('jesski-desktop-welcome-seen') === 'true';
       
-      // Use the centralized positioning function
-      const centeredPosition = calculateCenteredPosition(
-        windowWidth,
-        windowHeight,
-        viewportWidth,
-        viewportHeight
-      )
-      
-      // Open the README.txt welcome window
-      const welcomeWindowData = {
-        title: 'README.txt',
-        component: 'text-viewer',
-        isMinimized: false,
-        isMaximized: false,
-        position: centeredPosition,
-        size: { width: windowWidth, height: windowHeight },
-        data: {
-          fileName: 'README.txt',
-          content: `Welcome to Jess's Desktop!
+      // Only open welcome window if user hasn't seen it before
+      if (!hasSeenWelcome) {
+        const windowWidth = 700
+        const windowHeight = 500
+        
+        // Use the centralized positioning function
+        const centeredPosition = calculateCenteredPosition(
+          windowWidth,
+          windowHeight,
+          viewportWidth,
+          viewportHeight
+        )
+        
+        // Open the README welcome window
+        const welcomeWindowData = {
+          title: 'Welcome - README',
+          component: 'text-viewer',
+          isMinimized: false,
+          isMaximized: false,
+          position: centeredPosition,
+          size: { width: windowWidth, height: windowHeight },
+          data: {
+            fileName: 'README.txt',
+            content: `Welcome to Jess's Desktop!
 
 This is a Windows-style desktop interface built with React and TypeScript.
 
@@ -111,15 +127,19 @@ Navigation Tips:
 Thanks for visiting! Feel free to explore and have fun with the desktop experience.
 
 Enjoy exploring!`
+          }
         }
+        
+        get().openWindow(welcomeWindowData)
       }
-      
-      get().openWindow(welcomeWindowData)
       set({ hasShownWelcome: true })
     }
   },
   
   openWindow: (windowData) => {
+    // Play window open sound
+    soundManager.play('pop');
+    
     // Check if a window with the same component and title already exists (including minimized ones)
     const state = get();
     const existingWindow = state.windows.find(w => 
@@ -187,21 +207,34 @@ Enjoy exploring!`
   },
   
   closeWindow: (id) => {
-    const windowToClose = get().windows.find(w => w.id === id)
+    // Play window close sound
+    soundManager.play('click');
+    
+    const state = get();
+    const windowToClose = state.windows.find(w => w.id === id)
     
     // If closing the welcome README window, mark it as seen
     if (windowToClose?.component === 'text-viewer' && 
         windowToClose?.data?.fileName === 'README.txt' && 
-        get().hasShownWelcome) {
-      localStorage.setItem('jesski-desktop-welcome-seen', 'true')
+        state.hasShownWelcome) {
+      secureStorage.setItem('jesski-desktop-welcome-seen', 'true')
     }
     
-    set((state) => ({
-      windows: state.windows.filter((w) => w.id !== id),
-    }))
+    const newWindows = state.windows.filter((w) => w.id !== id);
+    const newActiveWindowId = state.activeWindowId === id ? 
+      (newWindows.length > 0 ? newWindows[newWindows.length - 1].id : undefined) : 
+      state.activeWindowId;
+    
+    set({
+      windows: newWindows,
+      activeWindowId: newActiveWindowId,
+    });
   },
   
   minimizeWindow: (id) => {
+    // Play click sound for minimize
+    soundManager.play('click');
+    
     set((state) => ({
       windows: state.windows.map((w) =>
         w.id === id ? { ...w, isMinimized: !w.isMinimized } : w
@@ -224,6 +257,7 @@ Enjoy exploring!`
         w.id === id ? { ...w, zIndex: currentZIndex, isMinimized: false } : w
       ),
       nextZIndex: currentZIndex + 1,
+      activeWindowId: id,
     }))
   },
   

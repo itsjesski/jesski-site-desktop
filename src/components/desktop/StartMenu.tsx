@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { User, FileText, Trophy, Folder, Video } from 'lucide-react'
+import { User, Trophy, Folder, Video } from 'lucide-react'
 import type { WindowState } from '../../types/window'
 
 interface StartMenuProps {
@@ -10,37 +10,6 @@ interface StartMenuProps {
 }
 
 const startMenuItems = [
-    {
-    id: 'readme',
-    label: 'README',
-    icon: FileText,
-    action: () => ({
-      title: 'README.txt',
-      component: 'text-viewer',
-      isMinimized: false,
-      isMaximized: false,
-      position: { x: 0, y: 0 }, // Will be auto-centered
-      size: { width: 750, height: 500 },
-      data: {
-        fileName: 'README.txt',
-        content: `Welcome to Jess's Desktop!
-
-This is a Windows-style desktop interface built with React and TypeScript.
-
-Features:
-- Draggable and resizable windows
-- Desktop icons
-- Taskbar with open applications
-- Various applications (About, Text viewer, Projects, Stickers)
-
-Double-click on icons to open applications.
-Drag windows around to organize your workspace.
-Use the taskbar to switch between open applications.
-
-Enjoy exploring!`
-      }
-    })
-  },
   {
     id: 'about',
     label: 'About Me',

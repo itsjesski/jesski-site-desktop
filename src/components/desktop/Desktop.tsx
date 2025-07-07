@@ -1,6 +1,7 @@
 import React from 'react'
 import type { WindowState } from '../../types/window'
 import { useDesktopStore } from '../../store/desktopStore'
+import { useUrlSync } from '../../hooks/useUrlSync'
 import { Window } from '../windows/Window'
 import { Taskbar } from './Taskbar'
 import { DesktopIcon } from './DesktopIcon'
@@ -110,10 +111,13 @@ const desktopIcons = [
 
 export const Desktop: React.FC = () => {
   const { windows, openWindow, initializeWelcomeWindow, showTwitchStream, setTwitchStreamVisible } = useDesktopStore()
-  const { activeNotifications, isMuted, dismissNotification, toggleMute } = useNotificationManager()
+  const { activeNotifications, dismissNotification } = useNotificationManager()
   const [isStartMenuOpen, setIsStartMenuOpen] = React.useState(false)
   const [iconColumns, setIconColumns] = React.useState<Array<typeof desktopIcons>>([])
   const [isMobile, setIsMobile] = React.useState(false)
+
+  // Initialize URL synchronization
+  useUrlSync();
 
   const handleIconDoubleClick = (iconAction: () => Omit<WindowState, 'id' | 'zIndex'> | null) => {
     const windowData = iconAction()
@@ -306,8 +310,6 @@ export const Desktop: React.FC = () => {
       <Taskbar 
         isStartMenuOpen={isStartMenuOpen}
         onStartMenuToggle={handleStartMenuToggle}
-        isMuted={isMuted}
-        onToggleMute={toggleMute}
       />
 
       {/* Start Menu - Rendered at top level for proper positioning */}

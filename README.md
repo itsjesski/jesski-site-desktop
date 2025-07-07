@@ -24,6 +24,13 @@ A nostalgic desktop environment built as a web application, featuring a retro Wi
 - **Stream Embed**: Watch live streams directly in the desktop environment
 - **Automatic Updates**: Stream status updates every few minutes
 
+### 🔗 URL Routing & Sharing
+- **Deep Linking**: Direct URLs to specific applications and desktop states
+- **Shareable Windows**: Every window has a unique URL for easy sharing
+- **Compact Multi-Window URLs**: Efficient encoding for complex desktop layouts
+- **Clean URLs**: User-friendly paths without technical file extensions
+- **Cross-Session Compatibility**: URLs work across different browser sessions
+
 ---
 
 ## 🛠️ Tech Stack
@@ -65,6 +72,12 @@ A nostalgic desktop environment built as a web application, featuring a retro Wi
 - **Organized Configs**: Separated concerns for garden, system, server, and token settings
 - **Type Safety**: Full TypeScript support with proper typing
 - **Environment Handling**: Development and production configurations
+
+### URL Routing System
+- **React Router Integration**: Seamless navigation between desktop states
+- **Compact Encoding**: Efficient compression for multi-window desktop layouts
+- **Security Validation**: Input sanitization and path traversal protection
+- **Static Asset Serving**: Optimized text file loading from public directory
 
 ### Real-time Features
 - **WebSocket Garden**: Real-time multiplayer garden updates

@@ -1,8 +1,10 @@
 import React from 'react'
+import { BrowserRouter } from 'react-router-dom'
 import { Desktop } from './components/desktop/Desktop'
 import { BootLoader } from './components/ui/BootLoader'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
 import { initializeAuthToken } from './services/api/client'
+import { soundManager } from './services/soundManager'
 import './App.css'
 
 function App() {
@@ -17,6 +19,34 @@ function App() {
     );
   }, []);
 
+  // Add global click sound effect
+  React.useEffect(() => {
+    const handleGlobalClick = (event: MouseEvent) => {
+      // Only play click sound for actual clickable elements or buttons
+      const target = event.target as HTMLElement;
+      const isClickable = target.tagName === 'BUTTON' || 
+                         target.tagName === 'A' || 
+                         target.hasAttribute('role') && (
+                           target.getAttribute('role') === 'button' ||
+                           target.getAttribute('role') === 'tab' ||
+                           target.getAttribute('role') === 'menuitem'
+                         ) ||
+                         target.style.cursor === 'pointer' ||
+                         target.classList.contains('cursor-pointer') ||
+                         target.closest('button, a, [role="button"], [role="tab"], [role="menuitem"], .cursor-pointer');
+      
+      if (isClickable) {
+        soundManager.play('click');
+      }
+    };
+
+    // Add listener after boot completes
+    if (hasBooted) {
+      document.addEventListener('click', handleGlobalClick);
+      return () => document.removeEventListener('click', handleGlobalClick);
+    }
+  }, [hasBooted]);
+
   const handleBootComplete = () => {
     setIsBooting(false)
     
@@ -28,8 +58,10 @@ function App() {
 
   return (
     <ErrorBoundary>
-      {isBooting && <BootLoader onBootComplete={handleBootComplete} />}
-      {hasBooted && <Desktop />}
+      <BrowserRouter>
+        {isBooting && <BootLoader onBootComplete={handleBootComplete} />}
+        {hasBooted && <Desktop />}
+      </BrowserRouter>
     </ErrorBoundary>
   )
 }

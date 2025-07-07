@@ -1,10 +1,11 @@
 import React from 'react'
 import { ResizableBox } from 'react-resizable'
-import { X, Minus, Maximize2, Minimize2 } from 'lucide-react'
+import { X, Minus, Maximize2, Minimize2, Share2 } from 'lucide-react'
 import type { WindowState } from '../../types/window'
 import { useDesktopStore } from '../../store/desktopStore'
 import { ApplicationRegistry } from './ApplicationRegistry'
 import { useDraggable } from '../../hooks/useDraggable'
+import { ShareMenu } from '../ui/ShareMenu'
 
 interface WindowProps {
   window: WindowState
@@ -24,6 +25,9 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
     width: globalThis.window?.innerWidth || 1024,
     height: globalThis.window?.innerHeight || 768
   })
+
+  const [showShareMenu, setShowShareMenu] = React.useState(false)
+  const [shareMenuPosition, setShareMenuPosition] = React.useState({ x: 0, y: 0 })
 
   React.useEffect(() => {
     const handleResize = () => {
@@ -93,6 +97,33 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
         >
           <span id={`window-title-${window.id}`} className="text-sm font-medium">{window.title}</span>
           <div className="flex items-center space-x-1" role="group" aria-label="Window controls">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                const rect = e.currentTarget.getBoundingClientRect()
+                setShareMenuPosition({ 
+                  x: rect.left, 
+                  y: rect.bottom + 5 
+                })
+                setShowShareMenu(true)
+              }}
+              className="p-2 rounded touch-manipulation cursor-pointer flex items-center justify-center transition-colors"
+              style={{ 
+                minHeight: '36px', 
+                minWidth: '36px',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+              }}
+              aria-label={`Share ${window.title}`}
+              title="Share window"
+            >
+              <Share2 size={16} aria-hidden="true" />
+            </button>
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -227,6 +258,33 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation()
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  setShareMenuPosition({ 
+                    x: rect.left, 
+                    y: rect.bottom + 5 
+                  })
+                  setShowShareMenu(true)
+                }}
+                className="p-2 rounded touch-manipulation cursor-pointer flex items-center justify-center transition-colors"
+                style={{ 
+                  minHeight: '36px', 
+                  minWidth: '36px',
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }}
+                aria-label={`Share ${window.title}`}
+                title="Share window"
+              >
+                <Share2 size={16} aria-hidden="true" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
                   minimizeWindow(window.id)
                 }}
                 className="p-2 rounded touch-manipulation cursor-pointer flex items-center justify-center transition-colors"
@@ -321,6 +379,15 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
           </div>
         </div>
       </ResizableBox>
+      
+      {/* Share Menu */}
+      {showShareMenu && (
+        <ShareMenu
+          window={window}
+          position={shareMenuPosition}
+          onClose={() => setShowShareMenu(false)}
+        />
+      )}
     </div>
   )
 }

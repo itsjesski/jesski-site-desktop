@@ -102,32 +102,13 @@ const cacheMiddleware = (ttl) => (req, res, next) => {
 app.get('/api/health', cacheMiddleware(CACHE_TTL.health), (req, res) => {
   memoryMonitor.check(); // Check memory on health endpoint calls
   
-  const systemStatus = getSystemStatus();
-  const memUsage = process.memoryUsage();
   const healthStatus = {
     status: 'ok',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
+    uptime: Math.round(process.uptime()),
     environment: process.env.NODE_ENV || 'development',
     version: '1.0.0',
-    service: 'jesski-desktop',
-    memory: {
-      heapUsed: `${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`,
-      heapTotal: `${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`,
-      rss: `${Math.round(memUsage.rss / 1024 / 1024)}MB`,
-      external: `${Math.round(memUsage.external / 1024 / 1024)}MB`,
-      usage: `${Math.round((memUsage.heapUsed / (512 * 1024 * 1024)) * 100)}%` // % of 512MB
-    },
-    cache: {
-      entries: responseCache.size,
-      hitRate: res.get('X-Cache') === 'HIT' ? 'cached' : 'fresh'
-    },
-    security: {
-      activeTokens: systemStatus.activeTokens,
-      tokenCapacity: `${systemStatus.activeTokens}/${systemStatus.maxTokens}`,
-      apiCallsThisMinute: systemStatus.currentApiCalls,
-      rateLimitedIPs: systemStatus.trackedIPs
-    }
+    service: 'jesski-desktop'
   };
   
   res.status(200).json(healthStatus);
