@@ -41,6 +41,20 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
     return () => globalThis.window?.removeEventListener('resize', handleResize)
   }, [])
 
+  // Close share menu when window unmounts or loses focus
+  React.useEffect(() => {
+    return () => {
+      setShowShareMenu(false)
+    }
+  }, [])
+
+  // Close share menu if window gets minimized or loses focus
+  React.useEffect(() => {
+    if (window.isMinimized) {
+      setShowShareMenu(false)
+    }
+  }, [window.isMinimized])
+
   const { ref: dragRef, position, dragHandleProps } = useDraggable({
     initialPosition: window.position,
     onDrag: (newPosition) => {
@@ -100,12 +114,18 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
             <button
               onClick={(e) => {
                 e.stopPropagation()
-                const rect = e.currentTarget.getBoundingClientRect()
-                setShareMenuPosition({ 
-                  x: rect.left, 
-                  y: rect.bottom + 5 
-                })
-                setShowShareMenu(true)
+                e.preventDefault()
+                
+                try {
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  setShareMenuPosition({ 
+                    x: rect.left, 
+                    y: rect.bottom + 5 
+                  })
+                  setShowShareMenu(true)
+                } catch (error) {
+                  console.warn('Failed to show share menu:', error)
+                }
               }}
               className="p-2 rounded touch-manipulation cursor-pointer flex items-center justify-center transition-colors"
               style={{ 
@@ -258,12 +278,18 @@ export const Window: React.FC<WindowProps> = ({ window }) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  setShareMenuPosition({ 
-                    x: rect.left, 
-                    y: rect.bottom + 5 
-                  })
-                  setShowShareMenu(true)
+                  e.preventDefault()
+                  
+                  try {
+                    const rect = e.currentTarget.getBoundingClientRect()
+                    setShareMenuPosition({ 
+                      x: rect.left, 
+                      y: rect.bottom + 5 
+                    })
+                    setShowShareMenu(true)
+                  } catch (error) {
+                    console.warn('Failed to show share menu:', error)
+                  }
                 }}
                 className="p-2 rounded touch-manipulation cursor-pointer flex items-center justify-center transition-colors"
                 style={{ 
