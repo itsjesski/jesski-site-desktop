@@ -1,16 +1,13 @@
 import React, { useState } from 'react'
-import sticker4 from '../../assets/stickers/4.png'
-import sticker5 from '../../assets/stickers/5.png'
-import sticker6 from '../../assets/stickers/6.png'
-import sticker7 from '../../assets/stickers/7.png'
-import sticker8 from '../../assets/stickers/8.png'
+import { getImageUrl } from '../../utils/imagePreloader'
+import { OptimizedImage } from '../../utils/imageOptimizer'
 
 const stickers = [
-  { id: 'sticker4', src: sticker4, x: '85%', y: '10%', size: 60 },
-  { id: 'sticker5', src: sticker5, x: '90%', y: '60%', size: 50 },
-  { id: 'sticker6', src: sticker6, x: '10%', y: '85%', size: 45 },
-  { id: 'sticker7', src: sticker7, x: '95%', y: '85%', size: 40 },
-  { id: 'sticker8', src: sticker8, x: '85%', y: '35%', size: 55 },
+  { id: 'sticker4', key: 'sticker4' as const, x: '85%', y: '10%', size: 60 },
+  { id: 'sticker5', key: 'sticker5' as const, x: '90%', y: '60%', size: 50 },
+  { id: 'sticker6', key: 'sticker6' as const, x: '10%', y: '85%', size: 45 },
+  { id: 'sticker7', key: 'sticker7' as const, x: '95%', y: '85%', size: 40 },
+  { id: 'sticker8', key: 'sticker8' as const, x: '85%', y: '35%', size: 55 },
 ]
 
 const WiggleSticker: React.FC<{ sticker: typeof stickers[0] }> = ({ sticker }) => {
@@ -36,9 +33,10 @@ const WiggleSticker: React.FC<{ sticker: typeof stickers[0] }> = ({ sticker }) =
       }}
       onClick={handleClick}
     >
-      <img
-        src={sticker.src}
+      <OptimizedImage
+        src={getImageUrl(sticker.key)}
         alt="Decorative sticker"
+        className="transition-transform duration-200"
         style={{
           width: `${sticker.size}px`,
           height: `${sticker.size}px`,

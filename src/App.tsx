@@ -53,14 +53,28 @@ function App() {
     // Small delay to show transition
     setTimeout(() => {
       setHasBooted(true)
-    }, 200)
+    }, 300) // Slightly longer delay for smoother transition
   }
 
   return (
     <ErrorBoundary>
       <BrowserRouter>
-        {isBooting && <BootLoader onBootComplete={handleBootComplete} />}
-        {hasBooted && <Desktop />}
+        <div className="relative">
+          {isBooting && (
+            <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${
+              isBooting ? 'opacity-100' : 'opacity-0'
+            }`}>
+              <BootLoader onBootComplete={handleBootComplete} />
+            </div>
+          )}
+          {hasBooted && (
+            <div className={`transition-opacity duration-500 ${
+              hasBooted && !isBooting ? 'opacity-100' : 'opacity-0'
+            }`}>
+              <Desktop />
+            </div>
+          )}
+        </div>
       </BrowserRouter>
     </ErrorBoundary>
   )
