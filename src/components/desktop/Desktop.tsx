@@ -10,7 +10,7 @@ import { Notification } from '../ui/Notification'
 import { StartMenu } from './StartMenu'
 import { DesktopStickers } from './DesktopStickers'
 import { FileText, User, Folder, Palette, Video, MessageCircle, Monitor, Gamepad2 } from 'lucide-react'
-import BackgroundImage from '../../assets/Background.png'
+import { getImageUrl } from '../../utils/imagePreloader'
 import { twitchAPI } from '../../services/api/twitchAPIClient'
 import { useNotificationManager } from '../../hooks/useNotificationManager'
 
@@ -115,9 +115,28 @@ export const Desktop: React.FC = () => {
   const [isStartMenuOpen, setIsStartMenuOpen] = React.useState(false)
   const [iconColumns, setIconColumns] = React.useState<Array<typeof desktopIcons>>([])
   const [isMobile, setIsMobile] = React.useState(false)
+  const [isVisible, setIsVisible] = React.useState(false)
+  const [backgroundLoaded, setBackgroundLoaded] = React.useState(false)
 
   // Initialize URL synchronization
   useUrlSync();
+
+  // Smooth fade-in effect after mount and background loads
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (backgroundLoaded) {
+        setIsVisible(true)
+      }
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [backgroundLoaded])
+
+  // Listen for background image load
+  React.useEffect(() => {
+    const img = new Image()
+    img.onload = () => setBackgroundLoaded(true)
+    img.src = getImageUrl('background')
+  }, [])
 
   const handleIconDoubleClick = (iconAction: () => Omit<WindowState, 'id' | 'zIndex'> | null) => {
     const windowData = iconAction()
@@ -231,9 +250,11 @@ export const Desktop: React.FC = () => {
 
   return (
     <div 
-      className="fixed inset-0 h-screen w-screen overflow-hidden"
+      className={`fixed inset-0 h-screen w-screen overflow-hidden transition-opacity duration-500 ${
+        isVisible ? 'opacity-100' : 'opacity-0'
+      }`}
       style={{
-        backgroundImage: `url(${BackgroundImage})`,
+        backgroundImage: `url(${getImageUrl('background')})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'

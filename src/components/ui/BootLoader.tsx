@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import sticker4 from '../../assets/stickers/4.png'
-import sticker5 from '../../assets/stickers/5.png'
-import sticker6 from '../../assets/stickers/6.png'
-import sticker7 from '../../assets/stickers/7.png'
-import sticker8 from '../../assets/stickers/8.png'
+import { preloadImagesWithRetry, getImageUrl } from '../../utils/imagePreloader'
+import { OptimizedImage } from '../../utils/imageOptimizer'
 
 interface BootLoaderProps {
   onBootComplete: () => void
@@ -11,48 +8,81 @@ interface BootLoaderProps {
 
 const bootMessages = [
   'Starting JessOS...',
-  'Loading components...',
+  'Loading images...',
   'Preparing desktop...',
   'Almost ready!'
 ]
 
-const stickerIcons = [sticker4, sticker5, sticker6, sticker7, sticker8]
+const stickerKeys = ['sticker4', 'sticker5', 'sticker6', 'sticker7', 'sticker8'] as const
 
 export const BootLoader: React.FC<BootLoaderProps> = ({ onBootComplete }) => {
   const [currentMessage, setCurrentMessage] = useState(0)
   const [progress, setProgress] = useState(0)
+  const [imagesLoaded, setImagesLoaded] = useState(false)
   const showStickers = true // Always show stickers throughout the animation
 
   useEffect(() => {
-    const messageInterval = setInterval(() => {
-      setCurrentMessage(prev => {
-        if (prev < bootMessages.length - 1) {
-          return prev + 1
-        }
-        return prev
-      })
-    }, 300) // Faster message transitions
+    let messageInterval: number
+    let progressInterval: number
+    let bootTimeout: number
 
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev < 100) {
-          return Math.min(prev + 3, 100) // Cap at exactly 100%
-        }
-        return prev
+    const startBoot = async () => {
+      // Start preloading images immediately
+      preloadImagesWithRetry(2, (loaded, total) => {
+        // Update progress based on image loading (0-60%)
+        const imageProgress = Math.floor((loaded / total) * 60)
+        setProgress(Math.max(progress, imageProgress))
+      }).then((result) => {
+        setImagesLoaded(true)
+        console.log(`Image preload completed: ${result.loaded}/${result.total} images loaded`)
+      }).catch((error) => {
+        console.error('Image preload failed:', error)
+        setImagesLoaded(true) // Continue anyway
       })
-    }, 40) // Smoother progress updates
 
-    // Complete boot after 2 seconds (brief but not rushed)
-    const bootTimeout = setTimeout(() => {
-      onBootComplete()
-    }, 2000)
+      // Start message rotation
+      messageInterval = window.setInterval(() => {
+        setCurrentMessage(prev => {
+          if (prev < bootMessages.length - 1) {
+            return prev + 1
+          }
+          return prev
+        })
+      }, 400)
+
+      // Update progress independently (60-100% after images)
+      progressInterval = window.setInterval(() => {
+        setProgress(prev => {
+          if (prev < 100) {
+            const increment = imagesLoaded ? 4 : 2 // Faster after images load
+            return Math.min(prev + increment, 100)
+          }
+          return prev
+        })
+      }, 50)
+
+      // Complete boot after minimum time and images loaded
+      bootTimeout = window.setTimeout(() => {
+        // Ensure we wait for images and minimum time
+        const checkComplete = () => {
+          if (imagesLoaded && progress >= 95) {
+            onBootComplete()
+          } else {
+            setTimeout(checkComplete, 100)
+          }
+        }
+        checkComplete()
+      }, 2500) // Slightly longer minimum time
+    }
+
+    startBoot()
 
     return () => {
-      clearInterval(messageInterval)
-      clearInterval(progressInterval)
-      clearTimeout(bootTimeout)
+      if (messageInterval) window.clearInterval(messageInterval)
+      if (progressInterval) window.clearInterval(progressInterval)
+      if (bootTimeout) window.clearTimeout(bootTimeout)
     }
-  }, [onBootComplete])
+  }, [onBootComplete, progress, imagesLoaded])
 
   return (
     <div 
@@ -74,16 +104,17 @@ export const BootLoader: React.FC<BootLoaderProps> = ({ onBootComplete }) => {
         {/* Animated Stickers */}
         {showStickers && (
           <div className="mb-8 flex justify-center space-x-4">
-            {stickerIcons.map((sticker, index) => (
-              <img
+            {stickerKeys.map((stickerKey, index) => (
+              <OptimizedImage
                 key={index}
-                src={sticker}
+                src={getImageUrl(stickerKey)}
                 alt="Loading sticker"
                 className="w-8 h-8 animate-bounce"
                 style={{
                   animationDelay: `${index * 0.1}s`,
                   animationDuration: '1s'
                 }}
+                draggable={false}
               />
             ))}
           </div>
