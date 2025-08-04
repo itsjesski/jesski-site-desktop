@@ -8,7 +8,8 @@ import {
   TwitchChat,
   GamesLibrary,
   StreamerSoftware,
-  SettingsApp
+  SettingsApp,
+  MusicApp
 } from '../../applications'
 import GardenApp from '../garden/GardenApp';
 import { GamesHubWindow } from './GamesHubWindow';
@@ -35,6 +36,8 @@ export const ApplicationRegistry: React.FC<ApplicationRegistryProps> = ({ window
       return <StreamerSoftware window={window} />
     case 'settings':
       return <SettingsApp window={window} />
+    case 'music-app':
+      return <MusicApp />
     case 'garden-app':
       return <GardenApp />;
     case 'games-hub':
