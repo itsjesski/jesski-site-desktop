@@ -9,7 +9,7 @@ import { TwitchStream } from '../ui/TwitchStream'
 import { Notification } from '../ui/Notification'
 import { StartMenu } from './StartMenu'
 import { DesktopStickers } from './DesktopStickers'
-import { FileText, User, Folder, Palette, Video, MessageCircle, Monitor, Gamepad2 } from 'lucide-react'
+import { FileText, User, Folder, Palette, Video, MessageCircle, Monitor, Gamepad2, Music } from 'lucide-react'
 import { getImageUrl } from '../../utils/imagePreloader'
 import { twitchAPI } from '../../services/api/twitchAPIClient'
 import { useNotificationManager } from '../../hooks/useNotificationManager'
@@ -94,6 +94,19 @@ const desktopIcons = [
       isMaximized: false,
       position: { x: 0, y: 0 }, // Will be auto-centered
       size: { width: 900, height: 650 }
+    })
+  },
+  {
+    id: 'music',
+    label: 'Music Player',
+    icon: Music,
+    action: () => ({
+      title: '♪ Jesski\'s Music Player',
+      component: 'music-app',
+      isMinimized: false,
+      isMaximized: false,
+      position: { x: 0, y: 0 }, // Will be auto-centered
+      size: { width: 900, height: 600 }
     })
   },
   {
