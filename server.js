@@ -312,7 +312,7 @@ app.use((req, res, next) => {
       "default-src 'self'; " +
       "script-src 'self' 'unsafe-inline' https://embed.twitch.tv; " +
       "connect-src 'self' wss: ws: https://api.twitch.tv; " +
-      "frame-src https://embed.twitch.tv https://www.twitch.tv https://player.twitch.tv; " +
+      "frame-src https://embed.twitch.tv https://www.twitch.tv https://player.twitch.tv https://open.spotify.com; " +
       "img-src 'self' data: https:; " +
       "style-src 'self' 'unsafe-inline';"
     );
