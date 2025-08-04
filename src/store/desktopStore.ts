@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import type { WindowState, DesktopState } from '../types/window'
 import { soundManager } from '../services/soundManager'
-import { secureStorage } from '../utils/secureStorage'
 
 // Utility function to calculate optimal window size
 const calculateOptimalWindowSize = (
@@ -61,80 +60,6 @@ export const useDesktopStore = create<DesktopState>((set, get) => ({
   activeWindowId: undefined,
   hasShownWelcome: false,
   showTwitchStream: false, // Will be set to true when stream is detected as live
-  
-  initializeWelcomeWindow: () => {
-    // Check if welcome guide should be shown
-    const showWelcome = secureStorage.getItem('jesski-desktop-show-welcome') !== 'false';
-    
-    if (!showWelcome) {
-      set({ hasShownWelcome: true });
-      return;
-    }
-    
-    // Always show the welcome window since we're showing boot animation every time
-    if (!get().hasShownWelcome) {
-      // Calculate center position that avoids desktop icons
-      const viewportWidth = window.innerWidth
-      const viewportHeight = window.innerHeight
-      // Check if user has seen the welcome README before
-      const hasSeenWelcome = secureStorage.getItem('jesski-desktop-welcome-seen') === 'true';
-      
-      // Only open welcome window if user hasn't seen it before
-      if (!hasSeenWelcome) {
-        const windowWidth = 700
-        const windowHeight = 500
-        
-        // Use the centralized positioning function
-        const centeredPosition = calculateCenteredPosition(
-          windowWidth,
-          windowHeight,
-          viewportWidth,
-          viewportHeight
-        )
-        
-        // Open the README welcome window
-        const welcomeWindowData = {
-          title: 'Welcome - README',
-          component: 'text-viewer',
-          isMinimized: false,
-          isMaximized: false,
-          position: centeredPosition,
-          size: { width: windowWidth, height: windowHeight },
-          data: {
-            fileName: 'README.txt',
-            content: `Welcome to Jess's Desktop!
-
-This is a Windows-style desktop interface built with React and TypeScript.
-
-Features:
-- Draggable and resizable windows
-- Desktop icons
-- Taskbar with open applications
-- Various applications (About, Text viewer, Projects, Stickers)
-- Interactive stickers you can drag around and make wiggle!
-
-Getting Started:
-• Double-click on desktop icons to open applications
-• Drag windows around to organize your workspace
-• Use the taskbar to switch between open applications
-• Try the stickers app for some fun interactive elements
-
-Navigation Tips:
-• Click the Start button to access all applications
-• Windows can be minimized, maximized, and resized
-• The interface is fully responsive and touch-friendly
-
-Thanks for visiting! Feel free to explore and have fun with the desktop experience.
-
-Enjoy exploring!`
-          }
-        }
-        
-        get().openWindow(welcomeWindowData)
-      }
-      set({ hasShownWelcome: true })
-    }
-  },
   
   openWindow: (windowData) => {
     // Play window open sound
@@ -211,14 +136,6 @@ Enjoy exploring!`
     soundManager.play('click');
     
     const state = get();
-    const windowToClose = state.windows.find(w => w.id === id)
-    
-    // If closing the welcome README window, mark it as seen
-    if (windowToClose?.component === 'text-viewer' && 
-        windowToClose?.data?.fileName === 'README.txt' && 
-        state.hasShownWelcome) {
-      secureStorage.setItem('jesski-desktop-welcome-seen', 'true')
-    }
     
     const newWindows = state.windows.filter((w) => w.id !== id);
     const newActiveWindowId = state.activeWindowId === id ? 

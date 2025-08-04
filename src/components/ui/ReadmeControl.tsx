@@ -1,17 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { HelpCircle } from 'lucide-react';
 import { useDesktopStore } from '../../store/desktopStore';
 import { soundManager } from '../../services/soundManager';
 
 export const ReadmeControl: React.FC = () => {
   const openWindow = useDesktopStore(state => state.openWindow);
-  const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
-
-  useEffect(() => {
-    // Check if user has seen the welcome README
-    const seen = localStorage.getItem('jesski-desktop-welcome-seen') === 'true';
-    setHasSeenWelcome(seen);
-  }, []);
 
   const handleOpenReadme = () => {
     soundManager.play('click');
@@ -30,12 +23,6 @@ export const ReadmeControl: React.FC = () => {
     };
 
     openWindow(windowData);
-
-    // Mark as seen when manually opened
-    if (!hasSeenWelcome) {
-      localStorage.setItem('jesski-desktop-welcome-seen', 'true');
-      setHasSeenWelcome(true);
-    }
   };
 
   return (
