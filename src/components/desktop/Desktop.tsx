@@ -110,7 +110,7 @@ const desktopIcons = [
 ]
 
 export const Desktop: React.FC = () => {
-  const { windows, openWindow, initializeWelcomeWindow, showTwitchStream, setTwitchStreamVisible } = useDesktopStore()
+  const { windows, openWindow, showTwitchStream, setTwitchStreamVisible } = useDesktopStore()
   const { activeNotifications, dismissNotification } = useNotificationManager()
   const [isStartMenuOpen, setIsStartMenuOpen] = React.useState(false)
   const [iconColumns, setIconColumns] = React.useState<Array<typeof desktopIcons>>([])
@@ -154,10 +154,7 @@ export const Desktop: React.FC = () => {
     setIsStartMenuOpen(false)
   }
 
-  // Initialize welcome window on first load
-  React.useEffect(() => {
-    initializeWelcomeWindow()
-  }, [initializeWelcomeWindow])
+
 
   // Detect mobile and update state
   React.useEffect(() => {
