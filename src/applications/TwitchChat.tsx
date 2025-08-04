@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Users, MessageCircle, UserPlus, Crown, Gift } from 'lucide-react'
-import { twitchAPI, type TwitchFollower, type TwitchSubscriber } from '../services/api/twitchAPIClient'
+import type { TwitchFollower, TwitchSubscriber } from '../services/api/twitchAPIClient'
 
 export const TwitchChat: React.FC = () => {
   const [activityItems, setActivityItems] = useState<Array<{
@@ -22,26 +22,86 @@ export const TwitchChat: React.FC = () => {
         setError(null)
         setIsLoading(true)
         
-        // Fetch more followers and subscribers for recent activity
-        const [followersData, subscribersData] = await Promise.all([
-          twitchAPI.getFollowers(10), // Get more followers
-          twitchAPI.getSubscribers(8)  // Get more subscribers
-        ])
+        // Generate fake followers and subscribers data for demo
+        const now = Date.now()
+        const fakeFollowers: TwitchFollower[] = [
+          { user_id: '1', user_name: 'CutePuppy123', user_login: 'cutepuppy123', followed_at: new Date(now - 180000).toISOString() }, // 3 min ago
+          { user_id: '2', user_name: 'GamerDog99', user_login: 'gamerdog99', followed_at: new Date(now - 720000).toISOString() }, // 12 min ago
+          { user_id: '3', user_name: 'StreamFan', user_login: 'streamfan', followed_at: new Date(now - 1800000).toISOString() }, // 30 min ago
+          { user_id: '4', user_name: 'NewViewer', user_login: 'newviewer', followed_at: new Date(now - 2700000).toISOString() }, // 45 min ago
+          { user_id: '5', user_name: 'DoggieFollower', user_login: 'doggiefollower', followed_at: new Date(now - 3600000).toISOString() }, // 1 hour ago
+          { user_id: '6', user_name: 'RetroGamer42', user_login: 'retrogamer42', followed_at: new Date(now - 7200000).toISOString() }, // 2 hours ago
+          { user_id: '7', user_name: 'ChillVibes', user_login: 'chillvibes', followed_at: new Date(now - 14400000).toISOString() }, // 4 hours ago
+          { user_id: '8', user_name: 'NightOwl88', user_login: 'nightowl88', followed_at: new Date(now - 21600000).toISOString() }, // 6 hours ago
+          { user_id: '9', user_name: 'CoffeeAddict', user_login: 'coffeeaddict', followed_at: new Date(now - 43200000).toISOString() }, // 12 hours ago
+          { user_id: '10', user_name: 'MorningPerson', user_login: 'morningperson', followed_at: new Date(now - 64800000).toISOString() }, // 18 hours ago
+        ]
+
+        const fakeSubscribers: TwitchSubscriber[] = [
+          { 
+            user_id: '11', 
+            user_name: 'LoyalViewer', 
+            user_login: 'loyalviewer', 
+            tier: '1000', 
+            is_gift: false,
+            subscribed_at: new Date(now - 900000).toISOString() // 15 min ago
+          },
+          { 
+            user_id: '12', 
+            user_name: 'SuperFan', 
+            user_login: 'superfan', 
+            tier: '2000', 
+            is_gift: false,
+            subscribed_at: new Date(now - 5400000).toISOString() // 1.5 hours ago
+          },
+          { 
+            user_id: '13', 
+            user_name: 'GiftedSub', 
+            user_login: 'giftedsub', 
+            tier: '1000', 
+            is_gift: true, 
+            gifter_name: 'GenerousViewer',
+            subscribed_at: new Date(now - 10800000).toISOString() // 3 hours ago
+          },
+          { 
+            user_id: '14', 
+            user_name: 'TierThree', 
+            user_login: 'tierthree', 
+            tier: '3000', 
+            is_gift: false,
+            subscribed_at: new Date(now - 86400000).toISOString() // 1 day ago
+          },
+          { 
+            user_id: '15', 
+            user_name: 'WeeklySupporter', 
+            user_login: 'weeklysupporter', 
+            tier: '1000', 
+            is_gift: false,
+            subscribed_at: new Date(now - 259200000).toISOString() // 3 days ago
+          },
+          { 
+            user_id: '16', 
+            user_name: 'BigDonator', 
+            user_login: 'bigdonator', 
+            tier: '2000', 
+            is_gift: false,
+            subscribed_at: new Date(now - 432000000).toISOString() // 5 days ago
+          },
+        ]
 
         // Combine and sort activity by timestamp
         const combinedActivity = [
-          ...followersData.map(follower => ({
+          ...fakeFollowers.slice(0, 10).map(follower => ({
             id: `follow_${follower.user_id}`,
             type: 'follow' as const,
             user_name: follower.user_name,
             timestamp: follower.followed_at,
             data: follower
           })),
-          ...subscribersData.map(subscriber => ({
+          ...fakeSubscribers.slice(0, 8).map(subscriber => ({
             id: `sub_${subscriber.user_id}`,
             type: 'subscribe' as const,
             user_name: subscriber.user_name,
-            // Use subscribed_at if available, otherwise fall back to current logic
             timestamp: subscriber.subscribed_at || new Date(Date.now() - Math.random() * 86400000).toISOString(),
             data: subscriber
           }))
