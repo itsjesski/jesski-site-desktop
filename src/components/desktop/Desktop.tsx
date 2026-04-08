@@ -129,7 +129,6 @@ export const Desktop: React.FC = () => {
   const [iconColumns, setIconColumns] = React.useState<Array<typeof desktopIcons>>([])
   const [isMobile, setIsMobile] = React.useState(false)
   const [isVisible, setIsVisible] = React.useState(false)
-  const [backgroundLoaded, setBackgroundLoaded] = React.useState(false)
 
   // Initialize URL synchronization
   useUrlSync();
@@ -137,18 +136,9 @@ export const Desktop: React.FC = () => {
   // Smooth fade-in effect after mount and background loads
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      if (backgroundLoaded) {
-        setIsVisible(true)
-      }
+      setIsVisible(true)
     }, 100)
     return () => clearTimeout(timer)
-  }, [backgroundLoaded])
-
-  // Listen for background image load
-  React.useEffect(() => {
-    const img = new Image()
-    img.onload = () => setBackgroundLoaded(true)
-    img.src = getImageUrl('background')
   }, [])
 
   const handleIconDoubleClick = (iconAction: () => Omit<WindowState, 'id' | 'zIndex'> | null) => {

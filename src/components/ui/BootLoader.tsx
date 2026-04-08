@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { preloadImagesWithRetry, getImageUrl } from '../../utils/imagePreloader'
 import { OptimizedImage } from '../../utils/imageOptimizer'
 
@@ -18,7 +18,8 @@ const stickerKeys = ['sticker4', 'sticker5', 'sticker6', 'sticker7', 'sticker8']
 export const BootLoader: React.FC<BootLoaderProps> = ({ onBootComplete }) => {
   const [currentMessage, setCurrentMessage] = useState(0)
   const [progress, setProgress] = useState(0)
-  const [imagesLoaded, setImagesLoaded] = useState(false)
+  const progressRef = useRef(0)
+  const imagesLoadedRef = useRef(false)
   const showStickers = true // Always show stickers throughout the animation
 
   useEffect(() => {
@@ -29,15 +30,18 @@ export const BootLoader: React.FC<BootLoaderProps> = ({ onBootComplete }) => {
     const startBoot = async () => {
       // Start preloading images immediately
       preloadImagesWithRetry(2, (loaded, total) => {
-        // Update progress based on image loading (0-60%)
         const imageProgress = Math.floor((loaded / total) * 60)
-        setProgress(Math.max(progress, imageProgress))
+        setProgress(prev => {
+          const next = Math.max(prev, imageProgress)
+          progressRef.current = next
+          return next
+        })
       }).then((result) => {
-        setImagesLoaded(true)
+        imagesLoadedRef.current = true
         console.log(`Image preload completed: ${result.loaded}/${result.total} images loaded`)
       }).catch((error) => {
         console.error('Image preload failed:', error)
-        setImagesLoaded(true) // Continue anyway
+        imagesLoadedRef.current = true
       })
 
       // Start message rotation
@@ -54,8 +58,10 @@ export const BootLoader: React.FC<BootLoaderProps> = ({ onBootComplete }) => {
       progressInterval = window.setInterval(() => {
         setProgress(prev => {
           if (prev < 100) {
-            const increment = imagesLoaded ? 4 : 2 // Faster after images load
-            return Math.min(prev + increment, 100)
+            const increment = imagesLoadedRef.current ? 4 : 2
+            const next = Math.min(prev + increment, 100)
+            progressRef.current = next
+            return next
           }
           return prev
         })
@@ -63,16 +69,15 @@ export const BootLoader: React.FC<BootLoaderProps> = ({ onBootComplete }) => {
 
       // Complete boot after minimum time and images loaded
       bootTimeout = window.setTimeout(() => {
-        // Ensure we wait for images and minimum time
         const checkComplete = () => {
-          if (imagesLoaded && progress >= 95) {
+          if (imagesLoadedRef.current && progressRef.current >= 95) {
             onBootComplete()
           } else {
             setTimeout(checkComplete, 100)
           }
         }
         checkComplete()
-      }, 2500) // Slightly longer minimum time
+      }, 2500)
     }
 
     startBoot()
@@ -82,7 +87,7 @@ export const BootLoader: React.FC<BootLoaderProps> = ({ onBootComplete }) => {
       if (progressInterval) window.clearInterval(progressInterval)
       if (bootTimeout) window.clearTimeout(bootTimeout)
     }
-  }, [onBootComplete, progress, imagesLoaded])
+  }, [onBootComplete])
 
   return (
     <div 

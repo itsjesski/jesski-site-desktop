@@ -48,12 +48,16 @@ export const useUrlSync = () => {
           size: { width: 800, height: 600 },
           data: windowData.data
         });
-      } else if (activeApp && windowData.component === activeApp) {
+      } else if (
+        activeApp &&
+        windowData.component === activeApp &&
+        activeWindowId !== existingWindow.id
+      ) {
         // Focus the active window if specified
         focusWindow(existingWindow.id);
       }
     });
-  }, [location.pathname, location.search, windows, openWindow, focusWindow]);
+  }, [location.pathname, location.search, windows, openWindow, focusWindow, activeWindowId]);
 
   // Initial URL sync on mount
   useEffect(() => {
