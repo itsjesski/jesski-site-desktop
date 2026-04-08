@@ -12,15 +12,14 @@ const getApiBaseUrl = () => {
     
     return '';
   }
-  
-  const currentPort = window.location.port;
-  if (currentPort === '5173') {
-    return 'http://localhost:8080';
-  } else if (currentPort === '8080') {
+
+  const currentHostname = window.location.hostname;
+  const isLocalDevHost = currentHostname === 'localhost' || currentHostname === '127.0.0.1';
+
+  if (isLocalDevHost) {
     return '';
   }
-  
-  // Default fallback
+
   return 'http://localhost:8080';
 };
 
