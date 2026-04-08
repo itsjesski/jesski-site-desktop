@@ -74,6 +74,61 @@ function scheduleTokenRefresh(expiryTime: number) {
   }
 }
 
+type TokenResponse = {
+  token: string;
+  expiresIn?: number;
+};
+
+async function requestTokenFromApi(): Promise<TokenResponse> {
+  const tokenUrl = `${API_BASE_URL}${API_ENDPOINTS.token}`;
+
+  const tryParseError = async (response: Response) => {
+    const data = await response.json().catch(() => ({}));
+    if (data && typeof data.error === 'string') {
+      return data.error;
+    }
+    return `Failed to get token: ${response.status}`;
+  };
+
+  let postError: string | null = null;
+
+  try {
+    const postResponse = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (postResponse.ok) {
+      const data = await postResponse.json();
+      if (data?.token && typeof data.token === 'string') {
+        return data as TokenResponse;
+      }
+      throw new Error('Invalid token payload from POST /api/token');
+    }
+
+    postError = await tryParseError(postResponse);
+  } catch (error) {
+    postError = error instanceof Error ? error.message : 'POST /api/token failed';
+  }
+
+  const getResponse = await fetch(tokenUrl, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  });
+
+  if (!getResponse.ok) {
+    const getError = await tryParseError(getResponse);
+    throw new Error(`${postError || 'POST /api/token failed'}; fallback GET failed: ${getError}`);
+  }
+
+  const getData = await getResponse.json();
+  if (!getData?.token || typeof getData.token !== 'string') {
+    throw new Error('Invalid token payload from GET /api/token');
+  }
+
+  return getData as TokenResponse;
+}
+
 export function initializeAuthToken(): Promise<string> {
   if (tokenInitialized) {
     return Promise.resolve(cachedToken || '');
@@ -84,33 +139,23 @@ export function initializeAuthToken(): Promise<string> {
   }
 
   tokenInitializePromise = new Promise<string>((resolve, reject) => {
-    fetch(`${API_BASE_URL}${API_ENDPOINTS.token}`, { 
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Failed to get token: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      cachedToken = data.token;
-      tokenExpiry = Date.now() + (data.expiresIn * 1000 || 3600000);
-      tokenInitialized = true;
-      
-      // Schedule proactive refresh
-      if (tokenExpiry) {
-        scheduleTokenRefresh(tokenExpiry);
-      }
-      
-      resolve(data.token);
-    })
-    .catch(err => {
-      console.error('Error initializing auth token:', err);
-      tokenInitializePromise = null;
-      reject(err);
-    });
+    requestTokenFromApi()
+      .then(data => {
+        cachedToken = data.token;
+        tokenExpiry = Date.now() + ((data.expiresIn || 3600) * 1000);
+        tokenInitialized = true;
+
+        if (tokenExpiry) {
+          scheduleTokenRefresh(tokenExpiry);
+        }
+
+        resolve(data.token);
+      })
+      .catch(err => {
+        console.error('Error initializing auth token:', err);
+        tokenInitializePromise = null;
+        reject(err);
+      });
   });
 
   return tokenInitializePromise;
@@ -128,27 +173,10 @@ export async function getAuthToken(): Promise<string> {
   }
   
   try {
-    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.token}`, { 
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      if (response.status === 429) {
-        throw new Error(errorData.error || 'Rate limited: Too many requests');
-      }
-      throw new Error(`Failed to get token: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    if (!data.token || typeof data.token !== 'string') {
-      throw new Error('Invalid token received from server');
-    }
+    const data = await requestTokenFromApi();
     
     cachedToken = data.token;
-    tokenExpiry = now + (data.expiresIn * 1000 || 3600000);
+    tokenExpiry = now + ((data.expiresIn || 3600) * 1000);
     
     // Schedule proactive refresh
     if (tokenExpiry) {
@@ -158,7 +186,8 @@ export async function getAuthToken(): Promise<string> {
     return data.token;
   } catch (error) {
     console.error('Error fetching auth token:', error);
-    throw new Error('Failed to get authentication token');
+    const errorMessage = error instanceof Error ? error.message : 'Unknown token error';
+    throw new Error(`Failed to get authentication token: ${errorMessage}`);
   }
 }
 

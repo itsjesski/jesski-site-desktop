@@ -28,14 +28,56 @@ export const useUrlSync = () => {
       location.search
     );
 
+    const isSameWindowTarget = (
+      existing: { component: string; data?: Record<string, unknown> },
+      incoming: { component?: string; data?: Record<string, unknown> }
+    ) => {
+      if (!incoming.component || existing.component !== incoming.component) {
+        return false;
+      }
+
+      if (!incoming.data) {
+        return true;
+      }
+
+      const existingData = existing.data ?? {};
+
+      if (
+        incoming.component === 'text-viewer' &&
+        typeof incoming.data.fileName === 'string'
+      ) {
+        return existingData.fileName === incoming.data.fileName;
+      }
+
+      if (
+        incoming.component === 'website-viewer' &&
+        typeof incoming.data.url === 'string'
+      ) {
+        return existingData.url === incoming.data.url;
+      }
+
+      if (
+        incoming.component === 'games-library' &&
+        typeof incoming.data.selectedGame === 'string'
+      ) {
+        return existingData.selectedGame === incoming.data.selectedGame;
+      }
+
+      return true;
+    };
+
     // Only open windows if they don't already exist
     urlWindows.forEach(windowData => {
       if (!windowData.component) return;
 
+      const currentState = useDesktopStore.getState();
+
       // Check if window already exists
-      const existingWindow = windows.find(w => 
-        w.component === windowData.component && 
-        w.title === windowData.title
+      const existingWindow = currentState.windows.find(w =>
+        isSameWindowTarget(w, {
+          component: windowData.component,
+          data: windowData.data as Record<string, unknown> | undefined,
+        })
       );
 
       if (!existingWindow) {
@@ -51,13 +93,13 @@ export const useUrlSync = () => {
       } else if (
         activeApp &&
         windowData.component === activeApp &&
-        activeWindowId !== existingWindow.id
+        currentState.activeWindowId !== existingWindow.id
       ) {
         // Focus the active window if specified
         focusWindow(existingWindow.id);
       }
     });
-  }, [location.pathname, location.search, windows, openWindow, focusWindow, activeWindowId]);
+  }, [location.pathname, location.search, openWindow, focusWindow]);
 
   // Initial URL sync on mount
   useEffect(() => {
