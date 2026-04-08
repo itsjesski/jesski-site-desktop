@@ -28,9 +28,10 @@ export type ImageKey = keyof typeof CRITICAL_IMAGES
  * Preload all critical images
  */
 export async function preloadImagesWithRetry(
-  _maxRetries = 1, // Keep for compatibility but not used
+  maxRetries = 1,
   onProgress?: (loaded: number, total: number) => void
 ): Promise<{ success: boolean; loaded: number; total: number }> {
+  void maxRetries
   const imageEntries = Object.entries(CRITICAL_IMAGES)
   const total = imageEntries.length
   let loaded = 0

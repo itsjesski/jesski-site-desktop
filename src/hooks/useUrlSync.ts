@@ -41,7 +41,7 @@ export const useUrlSync = () => {
       if (!existingWindow) {
         openWindow({
           title: windowData.title || windowData.component,
-          component: windowData.component as any,
+          component: windowData.component,
           isMinimized: false,
           isMaximized: false,
           position: { x: 100, y: 100 },
@@ -61,7 +61,7 @@ export const useUrlSync = () => {
     if (location.pathname !== '/' || location.search) {
       syncFromUrl();
     }
-  }, []); // Only run once on mount
+  }, [location.pathname, location.search, syncFromUrl]);
 
   // Sync to URL when desktop state changes
   useEffect(() => {

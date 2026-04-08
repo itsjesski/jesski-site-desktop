@@ -3,7 +3,7 @@
  */
 
 // URL validation regex patterns
-const URL_PATTERN = /^https?:\/\/[^\s<>"{}|\\^`\[\]]+$/;
+const URL_PATTERN = /^https?:\/\/[^\s<>"{}|\\^`[\]]+$/;
 const SAFE_STRING_PATTERN = /^[a-zA-Z0-9\-_.\s]+$/;
 
 /**
@@ -19,7 +19,7 @@ export const validateFileName = (fileName: string): string | null => {
   // Remove any path traversal attempts and normalize
   const cleanFileName = fileName
     .replace(/\.\./g, '')           // Remove ..
-    .replace(/[\/\\]/g, '')         // Remove slashes
+    .replace(/[/\\]/g, '')         // Remove slashes
     .replace(/^\.+/, '')            // Remove leading dots
     .trim();
 

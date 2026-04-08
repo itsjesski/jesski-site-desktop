@@ -37,7 +37,7 @@ export class TwitchAPIClient {
       // Test connection by trying to get health endpoint
       await authApiCall('/api/health')
       this.isConnected = true
-    } catch (error) {
+    } catch {
       this.isConnected = false
     }
   }
@@ -69,13 +69,13 @@ export class TwitchAPIClient {
   }
 
   // Get followers (endpoint not available - returns empty data)
-  async getFollowers(_limit: number = 20): Promise<TwitchFollower[]> {
+  async getFollowers(): Promise<TwitchFollower[]> {
     // Followers endpoint not implemented in backend
     return []
   }
 
   // Get subscribers (endpoint not available - returns empty data)
-  async getSubscribers(_limit: number = 20): Promise<TwitchSubscriber[]> {
+  async getSubscribers(): Promise<TwitchSubscriber[]> {
     // Subscribers endpoint not implemented in backend
     return []
   }

@@ -38,7 +38,7 @@ export const getTextFile = async (fileName: string): Promise<TextFile | null> =>
       displayName: fileName.replace('.txt', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
       content: content
     }
-  } catch (error) {
+  } catch {
     // File doesn't exist or can't be loaded
     console.warn(`Text file not found: ${fullFileName}`)
     return null

@@ -140,7 +140,7 @@ export const routeToWindowData = (route: AppRoute): Partial<WindowState> => {
   const validatedParams = route.params ? validateAppParams(route.app, route.params) : null;
   
   const windowData: Partial<WindowState> = {
-    component: route.app as any,
+    component: route.app,
     title: getWindowTitle(route.app, validatedParams || undefined),
   };
 
