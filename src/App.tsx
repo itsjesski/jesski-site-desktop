@@ -48,12 +48,8 @@ function App() {
   }, [hasBooted]);
 
   const handleBootComplete = () => {
+    setHasBooted(true)
     setIsBooting(false)
-    
-    // Small delay to show transition
-    setTimeout(() => {
-      setHasBooted(true)
-    }, 300) // Slightly longer delay for smoother transition
   }
 
   return (
@@ -69,7 +65,7 @@ function App() {
           )}
           {hasBooted && (
             <div className={`transition-opacity duration-500 ${
-              hasBooted && !isBooting ? 'opacity-100' : 'opacity-0'
+              hasBooted ? 'opacity-100' : 'opacity-0'
             }`}>
               <Desktop />
             </div>

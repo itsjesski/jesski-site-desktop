@@ -19,7 +19,10 @@ const REVERSE_APP_DICT: Record<string, string> = Object.fromEntries(
 /**
  * Compresses desktop state to minimal format
  */
-const compressDesktopState = (routes: AppRoute[], activeApp?: string): string => {
+const compressDesktopState = (
+  routes: AppRoute[],
+  options?: { activeApp?: string; activeWindowIndex?: number }
+): string => {
   // Convert to compact format: [app, params_as_string]
   const compact = routes.map(route => {
     const app = APP_DICT[route.app] || route.app;
@@ -35,11 +38,19 @@ const compressDesktopState = (routes: AppRoute[], activeApp?: string): string =>
     return `${app}:${paramStr}`;
   });
   
-  // Add active app if different from first
+  // Add active window index for precise restoration when possible
   let result = compact.join(',');
-  if (activeApp && activeApp !== routes[0]?.app) {
+
+  if (
+    typeof options?.activeWindowIndex === 'number' &&
+    options.activeWindowIndex >= 0 &&
+    options.activeWindowIndex < routes.length
+  ) {
+    result += `|i=${options.activeWindowIndex}`;
+  } else if (options?.activeApp && options.activeApp !== routes[0]?.app) {
+    const activeApp = options.activeApp;
     const compressedActive = APP_DICT[activeApp] || activeApp;
-    result += `|${compressedActive}`;
+    result += `|a=${compressedActive}`;
   }
   
   return result;
@@ -48,8 +59,12 @@ const compressDesktopState = (routes: AppRoute[], activeApp?: string): string =>
 /**
  * Decompresses desktop state from minimal format
  */
-const decompressDesktopState = (compressed: string): { routes: AppRoute[], activeApp?: string } => {
-  const [routePart, activePart] = compressed.split('|');
+const decompressDesktopState = (compressed: string): {
+  routes: AppRoute[];
+  activeApp?: string;
+  activeWindowIndex?: number;
+} => {
+  const [routePart, ...metaParts] = compressed.split('|');
   const routes: AppRoute[] = [];
   
   for (const routeStr of routePart.split(',')) {
@@ -73,9 +88,31 @@ const decompressDesktopState = (compressed: string): { routes: AppRoute[], activ
     routes.push(route);
   }
   
-  const activeApp = activePart ? (REVERSE_APP_DICT[activePart] || activePart) : undefined;
-  
-  return { routes, activeApp };
+  let activeApp: string | undefined;
+  let activeWindowIndex: number | undefined;
+
+  for (const part of metaParts) {
+    if (!part) continue;
+
+    if (part.startsWith('i=')) {
+      const parsed = Number.parseInt(part.slice(2), 10);
+      if (!Number.isNaN(parsed) && parsed >= 0) {
+        activeWindowIndex = parsed;
+      }
+      continue;
+    }
+
+    if (part.startsWith('a=')) {
+      const activePart = part.slice(2);
+      activeApp = REVERSE_APP_DICT[activePart] || activePart;
+      continue;
+    }
+
+    // Backward compatibility with old format: "|<compressedApp>"
+    activeApp = REVERSE_APP_DICT[part] || part;
+  }
+
+  return { routes, activeApp, activeWindowIndex };
 };
 
 /**
@@ -108,6 +145,34 @@ export interface DesktopRoute {
   activeWindow?: string;
 }
 
+const encodeWindowTitle = (title: string): string => encodeURIComponent(title);
+
+const decodeWindowTitle = (encodedTitle?: string): string | null => {
+  if (!encodedTitle) {
+    return null;
+  }
+
+  try {
+    const decoded = decodeURIComponent(encodedTitle).trim();
+    if (!decoded || decoded.length > 120) {
+      return null;
+    }
+
+    // Strip control characters while keeping punctuation/symbols users expect in titles
+    const sanitized = Array.from(decoded)
+      .filter(character => {
+        const codePoint = character.codePointAt(0) ?? 0;
+        return codePoint >= 0x20 && codePoint !== 0x7f;
+      })
+      .join('')
+      .trim();
+
+    return sanitized || null;
+  } catch {
+    return null;
+  }
+};
+
 /**
  * Converts window state to URL route format
  */
@@ -129,6 +194,14 @@ export const windowToRoute = (window: WindowState): AppRoute => {
     }
   }
 
+  const defaultTitle = getWindowTitle(route.app, route.params);
+  if (window.title && window.title !== defaultTitle) {
+    route.params = {
+      ...(route.params || {}),
+      t: encodeWindowTitle(window.title),
+    };
+  }
+
   return route;
 };
 
@@ -136,12 +209,14 @@ export const windowToRoute = (window: WindowState): AppRoute => {
  * Converts URL route to window data format
  */
 export const routeToWindowData = (route: AppRoute): Partial<WindowState> => {
+  const explicitTitle = decodeWindowTitle(route.params?.t);
+
   // Validate parameters first
   const validatedParams = route.params ? validateAppParams(route.app, route.params) : null;
   
   const windowData: Partial<WindowState> = {
     component: route.app,
-    title: getWindowTitle(route.app, validatedParams || undefined),
+    title: explicitTitle || getWindowTitle(route.app, validatedParams || undefined),
   };
 
   // Add specific data based on app type - only if params are valid
@@ -202,8 +277,9 @@ export const encodeDesktopState = (windows: WindowState[], activeWindowId?: stri
     return '/';
   }
 
-  const routes = windows.map(windowToRoute);
-  const activeWindow = activeWindowId ? windows.find(w => w.id === activeWindowId) : undefined;
+  const sortedWindows = [...windows].sort((a, b) => a.zIndex - b.zIndex);
+  const routes = sortedWindows.map(windowToRoute);
+  const activeWindow = activeWindowId ? sortedWindows.find(w => w.id === activeWindowId) : undefined;
   
   if (routes.length === 1) {
     const route = routes[0];
@@ -213,10 +289,16 @@ export const encodeDesktopState = (windows: WindowState[], activeWindowId?: stri
   }
 
   // Multiple windows - use compact encoding
-  const desktopRoutes = windows.map(windowToRoute);
+  const desktopRoutes = sortedWindows.map(windowToRoute);
   const activeApp = activeWindow ? windowToRoute(activeWindow).app : undefined;
+  const activeWindowIndex = activeWindow
+    ? sortedWindows.findIndex(w => w.id === activeWindow.id)
+    : undefined;
   
-  const compactState = compressDesktopState(desktopRoutes, activeApp);
+  const compactState = compressDesktopState(desktopRoutes, {
+    activeApp,
+    activeWindowIndex,
+  });
   const encodedState = encodeForUrl(compactState);
 
   return `/desktop?d=${encodedState}`;
@@ -228,6 +310,7 @@ export const encodeDesktopState = (windows: WindowState[], activeWindowId?: stri
 export const decodeDesktopState = (pathname: string, search: string): {
   windows: Partial<WindowState>[];
   activeApp?: string;
+  activeWindowIndex?: number;
 } => {
   const urlParams = new URLSearchParams(search);
   
@@ -242,7 +325,7 @@ export const decodeDesktopState = (pathname: string, search: string): {
     
     try {
       const compactState = decodeFromUrl(encodedState);
-      const { routes, activeApp } = decompressDesktopState(compactState);
+      const { routes, activeApp, activeWindowIndex } = decompressDesktopState(compactState);
       
       // Limit number of windows to prevent abuse
       if (routes.length > 10) {
@@ -253,7 +336,7 @@ export const decodeDesktopState = (pathname: string, search: string): {
       // Convert routes to window states
       const windows = routes.map(routeToWindowData);
       
-      return { windows, activeApp };
+      return { windows, activeApp, activeWindowIndex };
     } catch (error) {
       console.warn('Failed to decode desktop state:', error);
       return { windows: [] };

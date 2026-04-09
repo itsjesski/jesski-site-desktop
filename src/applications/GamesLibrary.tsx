@@ -73,9 +73,12 @@ export const GamesLibrary: React.FC = () => {
 
   // Load and parse CSV data
   useEffect(() => {
+    const abortController = new AbortController()
+    let isCancelled = false
+
     const loadGames = async () => {
       try {
-        const response = await fetch('/data/games.csv')
+        const response = await fetch('/data/games.csv', { signal: abortController.signal })
         const csvText = await response.text()
         
         // Parse CSV (basic implementation)
@@ -112,15 +115,26 @@ export const GamesLibrary: React.FC = () => {
           return game as unknown as Game
         })
         
-        setGames(parsedGames)
+        if (!isCancelled && !abortController.signal.aborted) {
+          setGames(parsedGames)
+        }
       } catch (error) {
-        console.error('Failed to load games:', error)
+        if ((error as DOMException).name !== 'AbortError') {
+          console.error('Failed to load games:', error)
+        }
       } finally {
-        setLoading(false)
+        if (!isCancelled && !abortController.signal.aborted) {
+          setLoading(false)
+        }
       }
     }
     
     loadGames()
+
+    return () => {
+      isCancelled = true
+      abortController.abort()
+    }
   }, [])
 
   // Get unique genres and platforms for filters

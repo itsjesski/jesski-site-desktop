@@ -265,7 +265,7 @@ export const Desktop: React.FC = () => {
         <DesktopStickers />
         
         {/* Desktop Icons - Responsive vertical columns like Windows */}
-        <main id="main-content" className="relative h-full w-full hidden sm:block p-4" role="main" aria-label="Desktop">
+        <main id="desktop-main-content" className="relative h-full w-full hidden sm:block p-4" role="main" aria-label="Desktop">
           <div 
             role="group" 
             aria-label="Desktop shortcuts"
@@ -300,7 +300,7 @@ export const Desktop: React.FC = () => {
         </main>
 
         {/* Mobile Welcome Screen - Only shown on mobile */}
-        <main id="main-content" className="sm:hidden flex items-center justify-center h-full p-6" role="main" aria-label="Mobile welcome screen">
+        <main id="mobile-main-content" className="sm:hidden flex items-center justify-center h-full p-6" role="main" aria-label="Mobile welcome screen">
           <div className="text-center" style={{ color: 'var(--text-primary)' }}>
             <div className="mb-4">
               <User size={48} className="mx-auto mb-2 opacity-80" aria-hidden="true" />
