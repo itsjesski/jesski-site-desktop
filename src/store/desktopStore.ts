@@ -54,6 +54,48 @@ const calculateCenteredPosition = (
   }
 }
 
+const normalizeFileName = (value: unknown): string | null => {
+  if (typeof value !== 'string' || !value.trim()) {
+    return null
+  }
+
+  const trimmed = value.trim().toLowerCase()
+  return trimmed.endsWith('.txt') ? trimmed : `${trimmed}.txt`
+}
+
+const normalizeUrl = (value: unknown): string | null => {
+  if (typeof value !== 'string' || !value.trim()) {
+    return null
+  }
+
+  try {
+    return new URL(value).toString()
+  } catch {
+    return value.trim()
+  }
+}
+
+const getWindowTargetKey = (windowData: Pick<WindowState, 'component' | 'data'>): string => {
+  const { component, data } = windowData
+
+  switch (component) {
+    case 'text-viewer': {
+      const fileName = normalizeFileName(data?.fileName)
+      return fileName ? `${component}|file=${fileName}` : component
+    }
+    case 'website-viewer': {
+      const url = normalizeUrl(data?.url)
+      return url ? `${component}|url=${url}` : component
+    }
+    case 'games-library': {
+      const selectedGame = typeof data?.selectedGame === 'string' ? data.selectedGame.trim() : ''
+      return selectedGame ? `${component}|game=${selectedGame}` : component
+    }
+    default:
+      return component
+  }
+}
+
 export const useDesktopStore = create<DesktopState>((set, get) => ({
   windows: [],
   nextZIndex: 100,
@@ -65,12 +107,10 @@ export const useDesktopStore = create<DesktopState>((set, get) => ({
     // Play window open sound
     soundManager.play('pop');
     
-    // Check if a window with the same component and title already exists (including minimized ones)
+    // Check if a window with the same semantic target already exists (including minimized ones)
     const state = get();
-    const existingWindow = state.windows.find(w => 
-      w.component === windowData.component && 
-      w.title === windowData.title
-    );
+    const incomingTargetKey = getWindowTargetKey(windowData)
+    const existingWindow = state.windows.find(w => getWindowTargetKey(w) === incomingTargetKey)
     
     // If window exists (even if minimized), restore and focus it instead of creating a new one
     if (existingWindow) {
