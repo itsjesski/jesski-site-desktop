@@ -358,9 +358,22 @@ app.get('/api/affirmations/multiple', cacheMiddleware(CACHE_TTL.affirmations), a
 
 // Serve static files from the dist directory with caching
 app.use(express.static(join(__dirname, 'dist'), {
+  index: false,
   maxAge: '1h', // Cache static files for 1 hour
   etag: true,
-  lastModified: true
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      return;
+    }
+
+    if (/\.(js|css|mjs|cjs|svg|png|jpg|jpeg|gif|webp|woff|woff2|ttf|otf)$/.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+    }
+  }
 }));
 
 // Cache for index.html to avoid repeated file reads
@@ -392,7 +405,9 @@ app.use((req, res, next) => {
     }
   }
   
-  res.set('Cache-Control', 'no-cache'); // Don't cache the HTML in browsers
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
   res.send(indexHtmlCache);
 });
 
