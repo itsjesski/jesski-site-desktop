@@ -115,14 +115,4 @@ export const useUrlSync = () => {
     const timeoutId = setTimeout(syncToUrl, 100);
     return () => clearTimeout(timeoutId);
   }, [syncToUrl]);
-
-  // Handle browser back/forward navigation
-  useEffect(() => {
-    const handlePopState = () => {
-      syncFromUrl();
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [syncFromUrl]);
 };

@@ -105,70 +105,72 @@ export const useDesktopStore = create<DesktopState>((set, get) => ({
   
   openWindow: (windowData) => {
     // Play window open sound
-    soundManager.play('pop');
-    
-    // Check if a window with the same semantic target already exists (including minimized ones)
-    const state = get();
+    soundManager.play('pop')
+
     const incomingTargetKey = getWindowTargetKey(windowData)
-    const existingWindow = state.windows.find(w => getWindowTargetKey(w) === incomingTargetKey)
-    
-    // If window exists (even if minimized), restore and focus it instead of creating a new one
-    if (existingWindow) {
-      state.focusWindow(existingWindow.id); // This will also un-minimize if needed
-      return;
-    }
-    
-    const id = `window-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    
-    // Check if we're on mobile
-    const isMobile = window.innerWidth < 768
-    
-    // Calculate optimal size based on content and viewport
-    const optimalSize = calculateOptimalWindowSize(
-      windowData.component,
-      window.innerWidth,
-      window.innerHeight
-    )
-    
-    // Calculate centered position based on the optimal size
-    const centeredPosition = calculateCenteredPosition(
-      optimalSize.width,
-      optimalSize.height,
-      window.innerWidth,
-      window.innerHeight
-    )
-    
-    // Adjust window properties for mobile or use optimal sizing and centered positioning
-    const adjustedWindowData = isMobile ? {
-      ...windowData,
-      position: { x: 10, y: 10 },
-      size: { 
-        width: window.innerWidth - 20, // Use almost full width
-        height: window.innerHeight - 100 // Leave space for taskbar and some margin
-      },
-      isMaximized: false // Start non-maximized so users can see it's a window
-    } : {
-      ...windowData,
-      size: optimalSize,
-      position: centeredPosition // Use centered position instead of provided position
-    }
-    
-    const currentZIndex = get().nextZIndex;
-    const newWindow: WindowState = {
-      ...adjustedWindowData,
-      id,
-      zIndex: currentZIndex,
-    }
-    
-    set((state) => ({
-      windows: [...state.windows, newWindow],
-      nextZIndex: currentZIndex + 1,
-    }))
-    
-    // Use setTimeout to ensure the window is added to state before focusing
-    setTimeout(() => {
-      get().focusWindow(id);
-    }, 0);
+
+    set((state) => {
+      const currentZIndex = state.nextZIndex
+      const existingWindow = state.windows.find(
+        (windowEntry) => getWindowTargetKey(windowEntry) === incomingTargetKey
+      )
+
+      if (existingWindow) {
+        return {
+          windows: state.windows.map((windowEntry) =>
+            windowEntry.id === existingWindow.id
+              ? { ...windowEntry, zIndex: currentZIndex, isMinimized: false }
+              : windowEntry
+          ),
+          nextZIndex: currentZIndex + 1,
+          activeWindowId: existingWindow.id,
+        }
+      }
+
+      const id = `window-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      const isMobile = window.innerWidth < 768
+
+      const optimalSize = calculateOptimalWindowSize(
+        windowData.component,
+        window.innerWidth,
+        window.innerHeight
+      )
+
+      const centeredPosition = calculateCenteredPosition(
+        optimalSize.width,
+        optimalSize.height,
+        window.innerWidth,
+        window.innerHeight
+      )
+
+      const adjustedWindowData = isMobile
+        ? {
+            ...windowData,
+            position: { x: 10, y: 10 },
+            size: {
+              width: window.innerWidth - 20,
+              height: window.innerHeight - 100,
+            },
+            isMaximized: false,
+          }
+        : {
+            ...windowData,
+            size: optimalSize,
+            position: centeredPosition,
+          }
+
+      const newWindow: WindowState = {
+        ...adjustedWindowData,
+        id,
+        zIndex: currentZIndex,
+      }
+
+      return {
+        windows: [...state.windows, newWindow],
+        nextZIndex: currentZIndex + 1,
+        activeWindowId: id,
+      }
+    })
   },
   
   closeWindow: (id) => {

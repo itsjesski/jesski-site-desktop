@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { ExternalLink } from 'lucide-react'
 
@@ -16,10 +16,21 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
   onDoubleClick 
 }) => {
   const [isSelected, setIsSelected] = useState(false)
+  const lastDoubleClickTimeRef = useRef(0)
 
   const handleClick = () => {
     setIsSelected(true)
     setTimeout(() => setIsSelected(false), 200)
+  }
+
+  const handleDoubleClick = () => {
+    const now = Date.now()
+    if (now - lastDoubleClickTimeRef.current < 350) {
+      return
+    }
+
+    lastDoubleClickTimeRef.current = now
+    onDoubleClick()
   }
 
   return (
@@ -27,14 +38,14 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
       className={`cursor-pointer select-none group desktop-icon touch-manipulation flex justify-center flex-shrink-0 relative`}
       style={{ minHeight: '44px', minWidth: '44px', width: '90px' }}
       onClick={handleClick}
-      onDoubleClick={onDoubleClick}
+      onDoubleClick={handleDoubleClick}
       role="button"
       tabIndex={2}
       aria-label={`${isExternalLink ? 'Open link to' : 'Open'} ${label}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
-          onDoubleClick()
+          handleDoubleClick()
         }
       }}
     >
