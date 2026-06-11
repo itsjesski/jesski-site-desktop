@@ -21,7 +21,6 @@ Architecture:
 Recent Features:
 - Twitch stream integration with live detection (COMPLETED: Real API integration)
 - Boot loader animation with stickers
-- Drag & drop sticker pack application
 - File-based text content system
 - Desktop icon management with responsive layout
 
@@ -63,4 +62,3 @@ Performance Optimizations:
 - Lazy loading of applications
 - Memoized components to prevent unnecessary re-renders
 - Efficient window z-index management
-- Optimized sticker animations

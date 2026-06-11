@@ -28,16 +28,5 @@ export const ImagePlaceholder: React.FC<ImagePlaceholderProps> = ({
     </div>
   )
 }
-
 export const StickerPlaceholder: React.FC<{ size: number }> = ({ size }) => {
-  return (
-    <div
-      className="bg-gray-200 animate-pulse rounded-lg opacity-30"
-      style={{
-        width: `${size}px`,
-        height: `${size}px`,
-        filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.1))'
-      }}
-    />
-  )
-}
+
