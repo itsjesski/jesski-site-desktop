@@ -16,7 +16,6 @@ const calculateOptimalWindowSize = (
     'about': { width: 800, height: 650 },
     'text-viewer': { width: 850, height: 600 },
     'website-viewer': { width: 1000, height: 750 },
-    'sticker-pack': { width: 750, height: 600 },
     'twitch-chat': { width: 900, height: 650 },
     'games-library': { width: 1000, height: 700 },
     'streamer-software': { width: 900, height: 650 }

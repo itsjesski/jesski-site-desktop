@@ -4,7 +4,6 @@
  */
 
 // Re-export organized config modules (from JavaScript files for backend compatibility)
-export { GARDEN_CONFIG, DEFAULT_GARDEN_STATE, DEFAULT_COMMUNITY_STATS } from './garden.js'
 export { TOKEN_CONFIG } from './token.js'
 export { SYSTEM_CONFIG } from './system.js'
 
@@ -25,13 +24,6 @@ export const config = {
     url: import.meta.env.PROD
       ? (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host
       : 'ws://localhost:8080',
-    
-    garden: {
-      endpoint: '/garden/ws',
-      refreshInterval: 3000, // 3 seconds
-      maxIdleTime: 60000, // 1 minute
-      rateLimitDelay: 1000, // 1 second
-    },
   },
 
   // API configuration

@@ -8,8 +8,7 @@ import { DesktopIcon } from './DesktopIcon'
 import { TwitchStream } from '../ui/TwitchStream'
 import { Notification } from '../ui/Notification'
 import { StartMenu } from './StartMenu'
-import { DesktopStickers } from './DesktopStickers'
-import { FileText, User, Folder, Palette, Video, MessageCircle, Monitor, Gamepad2, Music } from 'lucide-react'
+import { FileText, User, Folder, Video, MessageCircle, Monitor, Gamepad2, Music } from 'lucide-react'
 import { getImageUrl } from '../../utils/imagePreloader'
 import { twitchAPI } from '../../services/api/twitchAPIClient'
 import { useNotificationManager } from '../../hooks/useNotificationManager'
@@ -55,11 +54,6 @@ const desktopIcons = [
     })
   },
   {
-    id: 'stickers',
-    label: 'Stickers',
-    icon: Palette,
-    action: createWindowAction('Cute Stickers', 'sticker-pack')
-  },  {
     id: 'chat',
     label: 'Chat',
     icon: MessageCircle,
@@ -70,17 +64,19 @@ const desktopIcons = [
       isMaximized: false,
       position: { x: 0, y: 0 }, // Will be auto-centered
       size: { width: 900, height: 650 }
-    })  },  {
+    })
+  },
+  {
     id: 'games',
     label: 'Games',
     icon: Gamepad2,
     action: () => ({
-      title: 'Games',
-      component: 'games-hub',
+      title: 'Games Library',
+      component: 'games-library',
       isMinimized: false,
       isMaximized: false,
       position: { x: 0, y: 0 }, // Will be auto-centered
-      size: { width: 900, height: 750 }
+      size: { width: 1000, height: 700 }
     })
   },
   {
@@ -215,39 +211,6 @@ export const Desktop: React.FC = () => {
     return () => clearInterval(interval)
   }, [setTwitchStreamVisible])
 
-  // Listen for custom events from GamesHubWindow to open apps
-  React.useEffect(() => {
-    function handleGardenApp() {
-      openWindow({
-        title: 'Community Garden',
-        component: 'garden-app',
-        isMinimized: false,
-        isMaximized: false,
-        position: { x: 0, y: 0 },
-        size: { width: 900, height: 650 }
-      });
-    }
-    
-    function handleGameReviews() {
-      openWindow({
-        title: 'Games Library',
-        component: 'games-library',
-        isMinimized: false,
-        isMaximized: false,
-        position: { x: 0, y: 0 },
-        size: { width: 1000, height: 700 }
-      });
-    }
-    
-    globalThis.window.addEventListener('open-garden-app', handleGardenApp);
-    globalThis.window.addEventListener('open-game-reviews', handleGameReviews);
-    
-    return () => {
-      globalThis.window.removeEventListener('open-garden-app', handleGardenApp);
-      globalThis.window.removeEventListener('open-game-reviews', handleGameReviews);
-    };
-  }, [openWindow]);
-
   return (
     <div 
       className={`fixed inset-0 h-screen w-screen overflow-hidden transition-opacity duration-500 ${
@@ -261,9 +224,6 @@ export const Desktop: React.FC = () => {
       }}
     >      {/* Desktop Background */}
       <div className="absolute inset-0" style={{ paddingBottom: '52px' }}>
-        {/* Decorative Stickers */}
-        <DesktopStickers />
-        
         {/* Desktop Icons - Responsive vertical columns like Windows */}
         <main id="desktop-main-content" className="relative h-full w-full hidden sm:block p-4" role="main" aria-label="Desktop">
           <div 

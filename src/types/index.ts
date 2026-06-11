@@ -2,40 +2,6 @@
  * Shared TypeScript types for the desktop application
  */
 
-// Garden related types
-export interface PlantState {
-  id: string;
-  type: string;
-  stage: number;
-  health: number;
-  position: {
-    x: number;
-    y: number;
-  };
-  plantedAt: number;
-  wateredAt?: number;
-  fertilizedAt?: number;
-  weedFree?: boolean;
-  plantedBy?: string;
-}
-
-export interface MagicEffect {
-  id: string;
-  type: string;
-  position: {
-    x: number;
-    y: number;
-  };
-  createdAt: number;
-  createdBy?: string;
-}
-
-export interface GardenState {
-  plants: PlantState[];
-  magic: MagicEffect[];
-  lastActivity: number;
-}
-
 // WebSocket message types
 export interface WebSocketMessage {
   type: string;

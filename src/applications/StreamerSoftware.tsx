@@ -262,9 +262,9 @@ export const StreamerSoftware: React.FC<StreamerSoftwareProps> = () => {
                 <div
                   key={scene.id}
                   className={`p-2 rounded text-sm cursor-pointer transition-colors ${
-                    scene.active ? 'bg-blue-600' : 'hover:bg-gray-600'
+                    scene.active ? 'bg-green-700' : 'hover:bg-gray-600'
                   }`}
-                  style={{ backgroundColor: scene.active ? '#0066cc' : 'transparent' }}
+                  style={{ backgroundColor: scene.active ? '#166534' : 'transparent' }}
                 >
                   {scene.name}
                 </div>

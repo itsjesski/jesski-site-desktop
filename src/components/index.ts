@@ -8,7 +8,6 @@ export { ApplicationRegistry } from './windows/ApplicationRegistry'
 export { Desktop } from './desktop/Desktop'
 export { Taskbar } from './desktop/Taskbar'
 export { DesktopIcon } from './desktop/DesktopIcon'
-export { DesktopStickers } from './desktop/DesktopStickers'
 export { StartMenu } from './desktop/StartMenu'
 
 // UI components

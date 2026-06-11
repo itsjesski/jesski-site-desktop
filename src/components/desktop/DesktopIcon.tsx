@@ -68,7 +68,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
       }}
       >
         <div 
-          className="p-3 rounded-lg shadow-md mb-2 border relative"
+          className="w-full p-3 rounded-lg shadow-md border relative flex flex-col items-center"
           style={{
             backgroundColor: 'var(--icon-bg)',
             borderColor: 'var(--icon-border)'
@@ -84,13 +84,16 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
               <ExternalLink size={10} className="text-white" />
             </div>
           )}
+          <span 
+            className="text-xs font-semibold text-center leading-tight break-words mt-2"
+            style={{
+              color: 'var(--icon-text)',
+              textShadow: '0 1px 2px rgba(0, 0, 0, 0.6)'
+            }}
+          >
+            {label}
+          </span>
         </div>
-        <span 
-          className="text-xs font-medium text-center leading-tight break-words drop-shadow-sm"
-          style={{ color: 'var(--icon-text)' }}
-        >
-          {label}
-        </span>
       </div>
     </div>
   )

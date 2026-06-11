@@ -19,7 +19,7 @@ export const WebsiteViewer: React.FC<WebsiteViewerProps> = ({ window: windowStat
     <div className="h-full flex flex-col p-6 overflow-y-auto overflow-x-hidden">
       <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto text-center">
         {/* Website Icon */}
-        <div className="w-24 h-24 bg-blue-500 rounded-lg mb-6 flex items-center justify-center shadow-lg">
+        <div className="w-24 h-24 bg-green-700 rounded-lg mb-6 flex items-center justify-center shadow-lg">
           <Globe size={48} className="text-white" />
         </div>
         
@@ -31,7 +31,7 @@ export const WebsiteViewer: React.FC<WebsiteViewerProps> = ({ window: windowStat
         {/* Open Button */}
         <button
           onClick={handleOpenSite}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg"
+          className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg"
         >
           <ExternalLink size={20} />
           <span>Open {siteName}</span>

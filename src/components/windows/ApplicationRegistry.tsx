@@ -4,15 +4,12 @@ import {
   TextViewer, 
   WebsiteViewer, 
   AboutApp, 
-  StickerPack,
   TwitchChat,
   GamesLibrary,
   StreamerSoftware,
   SettingsApp,
   MusicApp
 } from '../../applications'
-import GardenApp from '../garden/GardenApp';
-import { GamesHubWindow } from './GamesHubWindow';
 
 interface ApplicationRegistryProps {
   window: WindowState
@@ -26,8 +23,6 @@ export const ApplicationRegistry: React.FC<ApplicationRegistryProps> = ({ window
       return <WebsiteViewer window={window} />
     case 'about':
       return <AboutApp window={window} />
-    case 'sticker-pack':
-      return <StickerPack />
     case 'twitch-chat':
       return <TwitchChat />
     case 'games-library':
@@ -38,10 +33,6 @@ export const ApplicationRegistry: React.FC<ApplicationRegistryProps> = ({ window
       return <SettingsApp window={window} />
     case 'music-app':
       return <MusicApp />
-    case 'garden-app':
-      return <GardenApp />;
-    case 'games-hub':
-      return <GamesHubWindow />;
     default:
       return (
         <div className="p-4">

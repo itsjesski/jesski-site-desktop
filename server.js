@@ -7,7 +7,6 @@ import { readFileSync } from 'fs';
 import { twitchService } from './src/services/backend/twitchService.js';
 import { affirmationsAPI } from './src/services/backend/affirmationsAPI.js';
 import { createServer } from 'http';
-import { attachGardenWebSocketServer } from './src/services/websocket/garden/gardenWebSocketServer.js';
 import { generateEphemeralToken, validateToken, getSystemStatus } from './src/services/websocket/tokenManager.js';
 import { SYSTEM_CONFIG } from './src/config/system.js';
 
@@ -39,16 +38,7 @@ const authMiddleware = (req, res, next) => {
   
   if (!(validateToken(token) || (apiKey && process.env.AFFIRMATIONS_API_KEYS && 
         process.env.AFFIRMATIONS_API_KEYS.split(',').map(k => k.trim()).includes(apiKey)))) {
-    if (req.originalUrl.includes('/api/garden/')) {
-      const now = Date.now();
-      const lastGardenAuthLog = global.lastGardenAuthLog || 0;
-      if (now - lastGardenAuthLog > 60000) {
-        console.log(`Garden API auth failed: ${req.originalUrl} (rate-limited logging)`);
-        global.lastGardenAuthLog = now;
-      }
-    } else {
-      console.log(`Authentication failed for ${req.originalUrl}: Missing or invalid token/API key`);
-    }
+    console.log(`Authentication failed for ${req.originalUrl}: Missing or invalid token/API key`);
     return res.status(401).json({
       error: 'Unauthorized: Invalid or missing token'
     });
@@ -432,9 +422,6 @@ app.use((err, req, res, next) => {
 
 const server = createServer(app);
 
-// Attach the garden WebSocket server
-attachGardenWebSocketServer(server);
-
 server.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Backend Server is running on port ${port}`);
   console.log(`🔌 API: http://localhost:${port}/api/health`);
@@ -443,7 +430,6 @@ server.listen(port, '0.0.0.0', () => {
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`⏱️  Started at: ${new Date().toISOString()}`);
   console.log(`🏠 Allowed hosts: ${allowedHosts.join(', ')}`);
-  console.log(`🌱 Garden WebSocket: ws://localhost:${port}/garden/ws`);
   console.log(`📱 For development, use the Vite dev server (usually http://localhost:5173)`);
 });
 

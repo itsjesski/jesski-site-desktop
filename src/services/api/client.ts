@@ -36,11 +36,6 @@ export const API_ENDPOINTS = {
     random: '/api/affirmations/random',
     multiple: '/api/affirmations/multiple',
     info: '/api/affirmations/info'
-  },
-  garden: {
-    ws: '/garden/ws',
-    actions: '/api/garden/actions',
-    state: '/api/garden/state'
   }
 };
 

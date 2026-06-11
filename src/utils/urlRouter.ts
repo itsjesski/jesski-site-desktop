@@ -7,7 +7,6 @@ const APP_DICT: Record<string, string> = {
   'text-viewer': 't', 
   'website-viewer': 'w',
   'games-library': 'g',
-  'sticker-pack': 's',
   'twitch-chat': 'c',
   'streamer-software': 'r'
 };
@@ -256,8 +255,6 @@ const getWindowTitle = (app: string, params?: Record<string, string>): string =>
       return params?.file || 'Text Viewer';
     case 'website-viewer':
       return 'Website Viewer';
-    case 'sticker-pack':
-      return 'Sticker Pack';
     case 'twitch-chat':
       return 'Twitch Chat';
     case 'games-library':

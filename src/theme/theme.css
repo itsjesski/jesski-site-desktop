@@ -1,40 +1,44 @@
-/* Theme Variables - inspired by warm, natural aesthetic */
+/* Theme Variables - goblin-core forest aesthetic */
 :root {
-  /* Primary Colors - Warm browns and amber tones */
-  --color-primary-50: #fdf8f6;
-  --color-primary-100: #f2e8e5;
-  --color-primary-200: #eaddd7;
-  --color-primary-300: #e0cfc5;
-  --color-primary-400: #d2bab0;
-  --color-primary-500: #b8997a;
-  --color-primary-600: #a08765;
-  --color-primary-700: #8b7355;
-  --color-primary-800: #725d46;
-  --color-primary-900: #5d4a38;
+  /* Primary Colors - Deep forest greens */
+  --color-primary-50: #f3f7f0;
+  --color-primary-100: #e4eedf;
+  --color-primary-200: #cadbbf;
+  --color-primary-300: #abc59c;
+  --color-primary-400: #88ab78;
+  --color-primary-500: #6c8f5d;
+  --color-primary-600: #547349;
+  --color-primary-700: #3f5737;
+  --color-primary-800: #2d3f28;
+  --color-primary-900: #1e2b1a;
 
-  /* Secondary Colors - Natural greens */
-  --color-secondary-50: #f0fdf4;
-  --color-secondary-100: #dcfce7;
-  --color-secondary-200: #bbf7d0;
-  --color-secondary-300: #86efac;
-  --color-secondary-400: #4ade80;
-  --color-secondary-500: #22c55e;
-  --color-secondary-600: #16a34a;
-  --color-secondary-700: #15803d;
-  --color-secondary-800: #166534;
-  --color-secondary-900: #14532d;
+  /* Secondary Colors - Moss and fern tones */
+  --color-secondary-50: #f4fbf3;
+  --color-secondary-100: #e6f4e3;
+  --color-secondary-200: #c8e7c2;
+  --color-secondary-300: #9fd59a;
+  --color-secondary-400: #73be70;
+  --color-secondary-500: #4ea450;
+  --color-secondary-600: #3a873f;
+  --color-secondary-700: #2e6a34;
+  --color-secondary-800: #25522a;
+  --color-secondary-900: #1a3d20;
 
-  /* Accent Colors - Warm amber */
-  --color-accent-50: #fffbeb;
-  --color-accent-100: #fef3c7;
-  --color-accent-200: #fde68a;
-  --color-accent-300: #fcd34d;
-  --color-accent-400: #fbbf24;
-  --color-accent-500: #f59e0b;
-  --color-accent-600: #d97706;
-  --color-accent-700: #b45309;
-  --color-accent-800: #92400e;
-  --color-accent-900: #78350f;
+  /* Accent Colors - Swamp gold / mushroom tan */
+  --color-accent-50: #fcf8ed;
+  --color-accent-100: #f5ecd1;
+  --color-accent-200: #ead8a6;
+  --color-accent-300: #ddbe73;
+  --color-accent-400: #cfa150;
+  --color-accent-500: #b7843a;
+  --color-accent-600: #94692f;
+  --color-accent-700: #735028;
+  --color-accent-800: #593f21;
+  --color-accent-900: #47331d;
+
+  /* Compatibility aliases for legacy references */
+  --color-blue-500: var(--color-secondary-500);
+  --color-blue-600: var(--color-secondary-600);
 
   /* Neutral Colors - Warm grays */
   --color-neutral-50: #fafaf9;
@@ -49,7 +53,7 @@
   --color-neutral-900: #1c1917;
 
   /* Desktop theme */
-  --desktop-bg: linear-gradient(135deg, var(--color-accent-400), var(--color-secondary-500), var(--color-accent-300));
+  --desktop-bg: linear-gradient(135deg, var(--color-primary-700), var(--color-secondary-700), var(--color-accent-700));
   --desktop-bg-image: url('/src/assets/Background.png'); /* Background image */
   --desktop-bg-size: cover;
   --desktop-bg-position: center;
@@ -63,27 +67,27 @@
   --window-content-bg: var(--color-primary-50);
 
   /* Taskbar theme */
-  --taskbar-bg: var(--color-primary-800);
-  --taskbar-border: var(--color-primary-600);
+  --taskbar-bg: #1f2d1c;
+  --taskbar-border: #3b5a35;
   --taskbar-text: var(--color-primary-50);
-  --taskbar-hover: var(--color-primary-700);
-  --taskbar-active: var(--color-primary-500);
+  --taskbar-hover: #30472b;
+  --taskbar-active: #45623f;
 
   /* Start menu theme */
-  --start-menu-bg: var(--color-primary-700);
-  --start-menu-border: var(--color-primary-600);
+  --start-menu-bg: #2b3f27;
+  --start-menu-border: #3f5d39;
   --start-menu-text: var(--color-primary-50);
-  --start-menu-hover: var(--color-primary-600);
+  --start-menu-hover: #395334;
 
   /* Icon theme */
-  --icon-bg: var(--color-accent-100);
-  --icon-border: var(--color-accent-600);
-  --icon-text: var(--color-primary-900);
-  --icon-hover: var(--color-accent-200);
-  --icon-active: var(--color-accent-300);
+  --icon-bg: rgba(31, 45, 28, 0.82);
+  --icon-border: #6f8f61;
+  --icon-text: #f3f7f0;
+  --icon-hover: rgba(111, 143, 97, 0.35);
+  --icon-active: rgba(111, 143, 97, 0.5);
 
   /* Effects */
-  --window-shadow: 0 10px 15px -3px rgba(92, 73, 56, 0.1), 0 4px 6px -2px rgba(92, 73, 56, 0.05);
+  --window-shadow: 0 10px 15px -3px rgba(30, 43, 26, 0.2), 0 4px 6px -2px rgba(30, 43, 26, 0.12);
   --resize-handle-color: var(--color-primary-600);
   --resize-handle-hover: var(--color-primary-500);
 
@@ -157,7 +161,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(34, 197, 94, 0.3), rgba(252, 211, 77, 0.3));
+  background: linear-gradient(135deg, rgba(63, 87, 55, 0.35), rgba(46, 106, 52, 0.35), rgba(148, 105, 47, 0.25));
   pointer-events: none;
   z-index: 1;
 }

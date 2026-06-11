@@ -25,16 +25,16 @@ export const TwitchChat: React.FC = () => {
         // Generate fake followers and subscribers data for demo
         const now = Date.now()
         const fakeFollowers: TwitchFollower[] = [
-          { user_id: '1', user_name: 'CutePuppy123', user_login: 'cutepuppy123', followed_at: new Date(now - 180000).toISOString() }, // 3 min ago
-          { user_id: '2', user_name: 'GamerDog99', user_login: 'gamerdog99', followed_at: new Date(now - 720000).toISOString() }, // 12 min ago
-          { user_id: '3', user_name: 'StreamFan', user_login: 'streamfan', followed_at: new Date(now - 1800000).toISOString() }, // 30 min ago
-          { user_id: '4', user_name: 'NewViewer', user_login: 'newviewer', followed_at: new Date(now - 2700000).toISOString() }, // 45 min ago
-          { user_id: '5', user_name: 'DoggieFollower', user_login: 'doggiefollower', followed_at: new Date(now - 3600000).toISOString() }, // 1 hour ago
-          { user_id: '6', user_name: 'RetroGamer42', user_login: 'retrogamer42', followed_at: new Date(now - 7200000).toISOString() }, // 2 hours ago
-          { user_id: '7', user_name: 'ChillVibes', user_login: 'chillvibes', followed_at: new Date(now - 14400000).toISOString() }, // 4 hours ago
-          { user_id: '8', user_name: 'NightOwl88', user_login: 'nightowl88', followed_at: new Date(now - 21600000).toISOString() }, // 6 hours ago
-          { user_id: '9', user_name: 'CoffeeAddict', user_login: 'coffeeaddict', followed_at: new Date(now - 43200000).toISOString() }, // 12 hours ago
-          { user_id: '10', user_name: 'MorningPerson', user_login: 'morningperson', followed_at: new Date(now - 64800000).toISOString() }, // 18 hours ago
+          { user_id: '1', user_name: 'GobboScout', user_login: 'gobboscout', followed_at: new Date(now - 180000).toISOString() }, // 3 min ago
+          { user_id: '2', user_name: 'Mossfang', user_login: 'mossfang', followed_at: new Date(now - 720000).toISOString() }, // 12 min ago
+          { user_id: '3', user_name: 'Snaggletooth', user_login: 'snaggletooth', followed_at: new Date(now - 1800000).toISOString() }, // 30 min ago
+          { user_id: '4', user_name: 'BogSneak', user_login: 'bogsneak', followed_at: new Date(now - 2700000).toISOString() }, // 45 min ago
+          { user_id: '5', user_name: 'RustyDagger', user_login: 'rustydagger', followed_at: new Date(now - 3600000).toISOString() }, // 1 hour ago
+          { user_id: '6', user_name: 'CrateLooter', user_login: 'cratelooter', followed_at: new Date(now - 7200000).toISOString() }, // 2 hours ago
+          { user_id: '7', user_name: 'SwampWhisper', user_login: 'swampwhisper', followed_at: new Date(now - 14400000).toISOString() }, // 4 hours ago
+          { user_id: '8', user_name: 'SootNibbler', user_login: 'sootnibbler', followed_at: new Date(now - 21600000).toISOString() }, // 6 hours ago
+          { user_id: '9', user_name: 'GrubShaman', user_login: 'grubshaman', followed_at: new Date(now - 43200000).toISOString() }, // 12 hours ago
+          { user_id: '10', user_name: 'CaveTicker', user_login: 'caveticker', followed_at: new Date(now - 64800000).toISOString() }, // 18 hours ago
         ]
 
         const fakeSubscribers: TwitchSubscriber[] = [
@@ -164,7 +164,7 @@ export const TwitchChat: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-300 mb-2">Chat temporarily unavailable</p>
               <button
                 onClick={() => setChatError(false)}
-                className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+                className="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800 transition-colors"
               >
                 Retry
               </button>
@@ -223,14 +223,14 @@ export const TwitchChat: React.FC = () => {
                 return (
                 <div 
                   key={item.id}
-                  className={`flex items-start space-x-3 p-3 rounded-lg border ${isVeryRecent ? 'ring-1 ring-purple-200' : ''}`}
+                  className={`flex items-start space-x-3 p-3 rounded-lg border ${isVeryRecent ? 'ring-1 ring-green-200' : ''}`}
                   style={{ 
                     backgroundColor: item.type === 'follow' 
-                      ? 'rgba(147, 51, 234, 0.05)' 
-                      : 'rgba(168, 85, 247, 0.05)',
+                      ? 'rgba(22, 101, 52, 0.08)' 
+                      : 'rgba(21, 128, 61, 0.08)',
                     borderColor: item.type === 'follow' 
-                      ? 'rgba(147, 51, 234, 0.1)' 
-                      : 'rgba(168, 85, 247, 0.1)'
+                      ? 'rgba(22, 101, 52, 0.2)' 
+                      : 'rgba(21, 128, 61, 0.2)'
                   }}
                 >
                   <div className="flex-shrink-0">
@@ -260,10 +260,10 @@ export const TwitchChat: React.FC = () => {
                       </p>
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                         item.type === 'follow' 
-                          ? 'bg-pink-100 text-pink-800'
+                          ? 'bg-green-100 text-green-800'
                           : item.data && 'is_gift' in item.data && item.data.is_gift
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-purple-100 text-purple-800'
+                            ? 'bg-emerald-100 text-emerald-800' 
+                            : 'bg-lime-100 text-lime-800'
                       }`}>
                         {item.type === 'follow' 
                           ? 'New Follower' 
