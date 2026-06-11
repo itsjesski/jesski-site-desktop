@@ -6,7 +6,6 @@
 echo "🚀 Starting optimized build process..."
 
 # Set build environment variables
-export NODE_ENV=production
 export NODE_OPTIONS="--max-old-space-size=4096"
 export GENERATE_SOURCEMAP=false
 export DISABLE_ESLINT_PLUGIN=true
@@ -17,7 +16,7 @@ rm -rf dist/ build/ .next/ out/
 
 # Install dependencies with optimizations
 echo "📦 Installing dependencies..."
-npm ci --only=production --silent --no-audit --no-fund --prefer-offline
+npm ci --silent --no-audit --no-fund --prefer-offline
 
 # Build the application
 echo "🔨 Building application..."
