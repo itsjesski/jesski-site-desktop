@@ -7,6 +7,7 @@ const APP_DICT: Record<string, string> = {
   'text-viewer': 't', 
   'website-viewer': 'w',
   'games-library': 'g',
+  'books-library': 'b',
   'twitch-chat': 'c',
   'streamer-software': 'r'
 };
@@ -190,6 +191,8 @@ export const windowToRoute = (window: WindowState): AppRoute => {
       route.params = { url: encodeURIComponent(window.data.url as string) };
     } else if (window.component === 'games-library' && window.data.selectedGame) {
       route.params = { game: window.data.selectedGame as string };
+    } else if (window.component === 'books-library' && window.data.selectedBook) {
+      route.params = { book: window.data.selectedBook as string };
     }
   }
 
@@ -238,6 +241,11 @@ export const routeToWindowData = (route: AppRoute): Partial<WindowState> => {
           windowData.data = { selectedGame: validatedParams.game };
         }
         break;
+      case 'books-library':
+        if (validatedParams.book) {
+          windowData.data = { selectedBook: validatedParams.book };
+        }
+        break;
     }
   }
 
@@ -259,6 +267,8 @@ const getWindowTitle = (app: string, params?: Record<string, string>): string =>
       return 'Twitch Chat';
     case 'games-library':
       return 'Games Library';
+    case 'books-library':
+      return 'Library';
     case 'streamer-software':
       return 'Streamer Software';
     default:

@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { User, Trophy, Folder, Video } from 'lucide-react'
+import { User, Trophy, Folder, Video, BookOpen } from 'lucide-react'
 import type { WindowState } from '../../types/window'
 
 interface StartMenuProps {
@@ -46,6 +46,19 @@ const startMenuItems = [
     action: () => ({
       title: 'Games',
       component: 'games-library',
+      isMinimized: false,
+      isMaximized: false,
+      position: { x: 0, y: 0 }, // Will be auto-centered
+      size: { width: 1000, height: 700 }
+    })
+  },
+  {
+    id: 'library',
+    label: 'Library',
+    icon: BookOpen,
+    action: () => ({
+      title: 'Library',
+      component: 'books-library',
       isMinimized: false,
       isMaximized: false,
       position: { x: 0, y: 0 }, // Will be auto-centered

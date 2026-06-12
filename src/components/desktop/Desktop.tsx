@@ -8,7 +8,7 @@ import { DesktopIcon } from './DesktopIcon'
 import { TwitchStream } from '../ui/TwitchStream'
 import { Notification } from '../ui/Notification'
 import { StartMenu } from './StartMenu'
-import { FileText, User, Folder, Video, MessageCircle, Monitor, Gamepad2, Music } from 'lucide-react'
+import { FileText, User, Folder, Video, MessageCircle, Monitor, Gamepad2, Music, BookOpen } from 'lucide-react'
 import { getImageUrl } from '../../utils/imagePreloader'
 import { twitchAPI } from '../../services/api/twitchAPIClient'
 import { useNotificationManager } from '../../hooks/useNotificationManager'
@@ -73,6 +73,19 @@ const desktopIcons = [
     action: () => ({
       title: 'Games Library',
       component: 'games-library',
+      isMinimized: false,
+      isMaximized: false,
+      position: { x: 0, y: 0 }, // Will be auto-centered
+      size: { width: 1000, height: 700 }
+    })
+  },
+  {
+    id: 'library',
+    label: 'Library',
+    icon: BookOpen,
+    action: () => ({
+      title: 'Library',
+      component: 'books-library',
       isMinimized: false,
       isMaximized: false,
       position: { x: 0, y: 0 }, // Will be auto-centered

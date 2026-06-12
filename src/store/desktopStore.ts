@@ -18,6 +18,7 @@ const calculateOptimalWindowSize = (
     'website-viewer': { width: 1000, height: 750 },
     'twitch-chat': { width: 900, height: 650 },
     'games-library': { width: 1000, height: 700 },
+    'books-library': { width: 1000, height: 700 },
     'streamer-software': { width: 900, height: 650 }
   }
   
@@ -89,6 +90,10 @@ const getWindowTargetKey = (windowData: Pick<WindowState, 'component' | 'data'>)
     case 'games-library': {
       const selectedGame = typeof data?.selectedGame === 'string' ? data.selectedGame.trim() : ''
       return selectedGame ? `${component}|game=${selectedGame}` : component
+    }
+    case 'books-library': {
+      const selectedBook = typeof data?.selectedBook === 'string' ? data.selectedBook.trim() : ''
+      return selectedBook ? `${component}|book=${selectedBook}` : component
     }
     default:
       return component

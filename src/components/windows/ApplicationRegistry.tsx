@@ -6,6 +6,7 @@ import {
   AboutApp, 
   TwitchChat,
   GamesLibrary,
+  BooksLibrary,
   StreamerSoftware,
   SettingsApp,
   MusicApp
@@ -27,6 +28,8 @@ export const ApplicationRegistry: React.FC<ApplicationRegistryProps> = ({ window
       return <TwitchChat />
     case 'games-library':
       return <GamesLibrary />
+    case 'books-library':
+      return <BooksLibrary />
     case 'streamer-software':
       return <StreamerSoftware window={window} />
     case 'settings':
