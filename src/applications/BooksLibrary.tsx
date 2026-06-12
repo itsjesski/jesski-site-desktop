@@ -331,6 +331,8 @@ export const BooksLibrary: React.FC = () => {
     }
   }
 
+  const isReading = (value: string) => getCompletionStatus(value) === 'reading'
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -559,16 +561,28 @@ export const BooksLibrary: React.FC = () => {
                       </td>
                     )}
                     <td className="p-3 text-center">
-                      <div
-                        className="px-2 py-1 rounded text-xs font-medium inline-flex items-center gap-1"
-                        style={{
-                          backgroundColor: getRatingColor(book.Rating),
-                          color: 'white'
-                        }}
-                      >
-                        <Star size={10} />
-                        {book.Rating}/10
-                      </div>
+                      {isReading(book.Completed) ? (
+                        <div
+                          className="px-2 py-1 rounded text-xs font-medium inline-flex items-center"
+                          style={{
+                            backgroundColor: 'var(--color-primary-100)',
+                            color: 'var(--text-secondary)'
+                          }}
+                        >
+                          —
+                        </div>
+                      ) : (
+                        <div
+                          className="px-2 py-1 rounded text-xs font-medium inline-flex items-center gap-1"
+                          style={{
+                            backgroundColor: getRatingColor(book.Rating),
+                            color: 'white'
+                          }}
+                        >
+                          <Star size={10} />
+                          {book.Rating}/10
+                        </div>
+                      )}
                     </td>
                     {showCompleted && (
                       <td className="p-3 text-center">
@@ -777,16 +791,20 @@ export const BooksLibrary: React.FC = () => {
                 </div>
                 <div>
                   <span style={{ color: 'var(--text-secondary)' }}>Rating:</span>
-                  <span
-                    className="ml-2 px-2 py-1 rounded text-xs font-medium inline-flex items-center gap-1"
-                    style={{
-                      backgroundColor: getRatingColor(selectedBook.Rating),
-                      color: 'white'
-                    }}
-                  >
-                    <Star size={10} />
-                    {selectedBook.Rating}/10
-                  </span>
+                  {isReading(selectedBook.Completed) ? (
+                    <span className="ml-2">—</span>
+                  ) : (
+                    <span
+                      className="ml-2 px-2 py-1 rounded text-xs font-medium inline-flex items-center gap-1"
+                      style={{
+                        backgroundColor: getRatingColor(selectedBook.Rating),
+                        color: 'white'
+                      }}
+                    >
+                      <Star size={10} />
+                      {selectedBook.Rating}/10
+                    </span>
+                  )}
                 </div>
                 <div>
                   <span style={{ color: 'var(--text-secondary)' }}>Completed:</span> {
