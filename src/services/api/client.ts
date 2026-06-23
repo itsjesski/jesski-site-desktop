@@ -31,6 +31,7 @@ export const API_ENDPOINTS = {
   twitch: {
     stream: (channel: string) => `/api/twitch/stream/${channel}`,
     user: (username: string) => `/api/twitch/user/${username}`,
+    clips: (channel: string, first: number = 20) => `/api/twitch/clips/${channel}?first=${first}`,
   },
   affirmations: {
     random: '/api/affirmations/random',

@@ -302,7 +302,7 @@ app.use((req, res, next) => {
       "default-src 'self'; " +
       "script-src 'self' 'unsafe-inline' https://embed.twitch.tv; " +
       "connect-src 'self' wss: ws: https://api.twitch.tv; " +
-      "frame-src https://embed.twitch.tv https://www.twitch.tv https://player.twitch.tv https://open.spotify.com; " +
+      "frame-src https://embed.twitch.tv https://www.twitch.tv https://player.twitch.tv https://clips.twitch.tv https://open.spotify.com; " +
       "img-src 'self' data: https:; " +
       "style-src 'self' 'unsafe-inline';"
     );
@@ -338,6 +338,22 @@ app.get('/api/twitch/user/:username', cacheMiddleware(CACHE_TTL.twitch), async (
   } catch (error) {
     console.error('Error getting user info:', error);
     res.status(500).json({ error: 'Failed to get user info' });
+  }
+});
+
+app.get('/api/twitch/clips/:channel', cacheMiddleware(CACHE_TTL.twitch), async (req, res) => {
+  try {
+    const { channel } = req.params;
+    const requestedFirst = Number.parseInt(String(req.query.first || ''), 10);
+    const first = Number.isFinite(requestedFirst)
+      ? Math.max(1, Math.min(25, requestedFirst))
+      : 20;
+
+    const clips = await twitchService.getClipsByChannel(channel, { first });
+    res.json(clips);
+  } catch (error) {
+    console.error('Error getting clips:', error);
+    res.status(500).json({ error: 'Failed to get clips' });
   }
 });
 

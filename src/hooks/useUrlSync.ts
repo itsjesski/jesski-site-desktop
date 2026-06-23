@@ -9,7 +9,7 @@ import { encodeDesktopState, decodeDesktopState } from '../utils/urlRouter';
 export const useUrlSync = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { windows, openWindow, focusWindow, activeWindowId } = useDesktopStore();
+  const { windows, openWindow, focusWindow, activeWindowId, updateWindowData } = useDesktopStore();
   const skipNextSyncFromUrlRef = useRef(false);
 
   // Sync desktop state to URL when windows change
@@ -65,6 +65,13 @@ export const useUrlSync = () => {
         return existingData.selectedGame === incoming.data.selectedGame;
       }
 
+      if (
+        incoming.component === 'twitch-clips' &&
+        typeof incoming.data.clip === 'string'
+      ) {
+        return existingData.clip === incoming.data.clip;
+      }
+
       return true;
     };
 
@@ -84,7 +91,28 @@ export const useUrlSync = () => {
         })
       );
 
+      const existingTwitchClipsWindow = windowData.component === 'twitch-clips'
+        ? currentState.windows.find(w => w.component === 'twitch-clips')
+        : undefined;
+
+      const incomingClipId = typeof (windowData.data as Record<string, unknown> | undefined)?.clip === 'string'
+        ? ((windowData.data as Record<string, unknown>).clip as string)
+        : null;
+
       if (!existingWindow) {
+        if (existingTwitchClipsWindow && incomingClipId) {
+          if (existingTwitchClipsWindow.data?.clip !== incomingClipId) {
+            updateWindowData(existingTwitchClipsWindow.id, { clip: incomingClipId });
+          }
+
+          if (activeApp && currentState.activeWindowId !== existingTwitchClipsWindow.id) {
+            focusWindow(existingTwitchClipsWindow.id);
+          }
+
+          resolvedWindowIds[index] = existingTwitchClipsWindow.id;
+          return;
+        }
+
         openWindow({
           title: windowData.title || windowData.component,
           component: windowData.component,
@@ -102,6 +130,18 @@ export const useUrlSync = () => {
           })
         );
         resolvedWindowIds[index] = openedWindow?.id;
+      } else if (
+        windowData.component === 'twitch-clips' &&
+        incomingClipId
+      ) {
+        if (existingWindow.data?.clip !== incomingClipId) {
+          updateWindowData(existingWindow.id, { clip: incomingClipId });
+        }
+
+        if (activeApp && currentState.activeWindowId !== existingWindow.id) {
+          focusWindow(existingWindow.id);
+        }
+        resolvedWindowIds[index] = existingWindow.id;
       } else if (
         activeApp &&
         windowData.component === activeApp &&
@@ -139,7 +179,7 @@ export const useUrlSync = () => {
         focusWindow(activeWindowByApp.id);
       }
     }
-  }, [location.pathname, location.search, openWindow, focusWindow]);
+  }, [location.pathname, location.search, openWindow, focusWindow, updateWindowData]);
 
   // Initial URL sync on mount
   useEffect(() => {

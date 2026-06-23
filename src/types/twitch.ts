@@ -47,3 +47,26 @@ export interface TwitchUser {
   view_count: number
   created_at: string
 }
+
+export interface TwitchClip {
+  id: string
+  url: string
+  embed_url?: string
+  broadcaster_id: string
+  broadcaster_name: string
+  creator_name: string
+  title: string
+  view_count: number
+  created_at: string
+  thumbnail_url: string
+  duration: number
+  language: string
+  game_id?: string
+}
+
+export interface TwitchClipsResponse {
+  channel: string
+  clips: TwitchClip[]
+  error?: string
+  cached?: boolean
+}

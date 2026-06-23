@@ -17,6 +17,7 @@ const calculateOptimalWindowSize = (
     'text-viewer': { width: 850, height: 600 },
     'website-viewer': { width: 1000, height: 750 },
     'twitch-chat': { width: 900, height: 650 },
+    'twitch-clips': { width: 1000, height: 700 },
     'games-library': { width: 1000, height: 700 },
     'books-library': { width: 1000, height: 700 },
     'streamer-software': { width: 900, height: 650 }
@@ -236,6 +237,14 @@ export const useDesktopStore = create<DesktopState>((set, get) => ({
     set((state) => ({
       windows: state.windows.map((w) =>
         w.id === id ? { ...w, size } : w
+      ),
+    }))
+  },
+
+  updateWindowData: (id, data) => {
+    set((state) => ({
+      windows: state.windows.map((w) =>
+        w.id === id ? { ...w, data: { ...(w.data || {}), ...data } } : w
       ),
     }))
   },

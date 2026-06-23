@@ -163,6 +163,17 @@ export const validateAppParams = (app: string, params: Record<string, string>): 
       }
       break;
 
+    case 'twitch-clips':
+      if (params.clip) {
+        const validClipId = validateSafeString(params.clip, 80);
+        if (validClipId) {
+          validatedParams.clip = validClipId;
+        } else {
+          return null;
+        }
+      }
+      break;
+
     default:
       // For unknown apps, validate all params as safe strings
       for (const [key, value] of Object.entries(params)) {

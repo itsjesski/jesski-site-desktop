@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDesktopStore } from '../../store/desktopStore'
 import { format } from 'date-fns'
-import { Menu, FileText, Globe, User, Folder, X, Music } from 'lucide-react'
+import { Menu, FileText, Globe, User, Folder, X, Music, Tv } from 'lucide-react'
 import { SystemTray } from '../ui/SystemTray'
 
 interface TaskbarProps {
@@ -19,6 +19,8 @@ const getIconForComponent = (component: string) => {
       return User
     case 'music-app':
       return Music
+    case 'twitch-clips':
+      return Tv
     default:
       return Folder
   }

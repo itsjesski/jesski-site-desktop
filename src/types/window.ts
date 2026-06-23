@@ -25,5 +25,6 @@ export interface DesktopState {
   focusWindow: (id: string) => void
   updateWindowPosition: (id: string, position: { x: number; y: number }) => void
   updateWindowSize: (id: string, size: { width: number; height: number }) => void
+  updateWindowData: (id: string, data: Record<string, unknown>) => void
   setTwitchStreamVisible: (visible: boolean) => void
 }

@@ -1,5 +1,5 @@
 import { API_ENDPOINTS, authApiCall, initializeAuthToken } from './client'
-import type { TwitchStreamData, TwitchFollower, TwitchSubscriber, TwitchUser } from '../../types/twitch'
+import type { TwitchClip, TwitchClipsResponse, TwitchStreamData, TwitchFollower, TwitchSubscriber, TwitchUser } from '../../types/twitch'
 
 export class TwitchAPIClient {
   private isConnected: boolean = false
@@ -68,6 +68,17 @@ export class TwitchAPIClient {
     return response
   }
 
+  async getClips(channel: string, first: number = 20): Promise<TwitchClipsResponse> {
+    await this.ensureConnection()
+    const response = await authApiCall(API_ENDPOINTS.twitch.clips(channel, first))
+    return {
+      channel: response?.channel || channel,
+      clips: Array.isArray(response?.clips) ? response.clips : [],
+      error: typeof response?.error === 'string' ? response.error : undefined,
+      cached: Boolean(response?.cached),
+    }
+  }
+
   // Get followers (endpoint not available - returns empty data)
   async getFollowers(): Promise<TwitchFollower[]> {
     // Followers endpoint not implemented in backend
@@ -92,4 +103,4 @@ export class TwitchAPIClient {
 export const twitchAPI = new TwitchAPIClient()
 
 // Export types for use in components
-export type { TwitchStreamData, TwitchFollower, TwitchSubscriber, TwitchUser }
+export type { TwitchClip, TwitchClipsResponse, TwitchStreamData, TwitchFollower, TwitchSubscriber, TwitchUser }

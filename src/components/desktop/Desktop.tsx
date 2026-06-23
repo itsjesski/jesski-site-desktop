@@ -8,7 +8,7 @@ import { DesktopIcon } from './DesktopIcon'
 import { TwitchStream } from '../ui/TwitchStream'
 import { Notification } from '../ui/Notification'
 import { StartMenu } from './StartMenu'
-import { FileText, User, Folder, Video, MessageCircle, Monitor, Gamepad2, Music, BookOpen } from 'lucide-react'
+import { FileText, User, Folder, Video, MessageCircle, Monitor, Gamepad2, Music, BookOpen, Tv } from 'lucide-react'
 import { getImageUrl } from '../../utils/imagePreloader'
 import { twitchAPI } from '../../services/api/twitchAPIClient'
 import { useNotificationManager } from '../../hooks/useNotificationManager'
@@ -64,6 +64,19 @@ const desktopIcons = [
       isMaximized: false,
       position: { x: 0, y: 0 }, // Will be auto-centered
       size: { width: 900, height: 650 }
+    })
+  },
+  {
+    id: 'clips-tv',
+    label: 'Clips TV',
+    icon: Tv,
+    action: () => ({
+      title: 'Twitch Clips TV',
+      component: 'twitch-clips',
+      isMinimized: false,
+      isMaximized: false,
+      position: { x: 0, y: 0 },
+      size: { width: 1000, height: 700 }
     })
   },
   {

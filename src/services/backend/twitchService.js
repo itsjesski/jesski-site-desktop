@@ -17,6 +17,7 @@ class TwitchService {
     this.CACHE_TTL = {
       stream: 30 * 1000,
       user: 300 * 1000,
+      clips: 120 * 1000,
       token: 3600 * 1000
     };
 
@@ -205,6 +206,59 @@ class TwitchService {
     }
   }
 
+  // Get clips for a channel with caching
+  async getClipsByChannel(username, options = {}) {
+    const first = Number.isFinite(options.first) ? Math.max(1, Math.min(25, options.first)) : 20;
+    const cacheKey = `clips_${username}_${first}`;
+    const cached = this.getCached(cacheKey, this.CACHE_TTL.clips);
+    if (cached) {
+      return { ...cached, cached: true };
+    }
+
+    try {
+      const userResponse = await this.makeApiCall(`/users?login=${username}`);
+
+      if (!userResponse.data || userResponse.data.length === 0) {
+        const result = { channel: username, clips: [], error: 'User not found' };
+        this.setCache(cacheKey, result, this.CACHE_TTL.clips);
+        return result;
+      }
+
+      const userId = userResponse.data[0].id;
+      const clipsResponse = await this.makeApiCall(`/clips?broadcaster_id=${userId}&first=${first}`);
+      const clips = Array.isArray(clipsResponse?.data)
+        ? clipsResponse.data.map((clip) => ({
+            id: clip.id,
+            url: clip.url,
+            embed_url: clip.embed_url,
+            broadcaster_id: clip.broadcaster_id,
+            broadcaster_name: clip.broadcaster_name,
+            creator_name: clip.creator_name,
+            title: clip.title,
+            view_count: clip.view_count,
+            created_at: clip.created_at,
+            thumbnail_url: clip.thumbnail_url,
+            duration: clip.duration,
+            language: clip.language,
+            game_id: clip.game_id,
+          }))
+        : [];
+
+      const result = {
+        channel: username,
+        clips,
+      };
+
+      this.setCache(cacheKey, result, this.CACHE_TTL.clips);
+      return result;
+    } catch (error) {
+      console.error('Error getting clips by channel:', error);
+      const result = { channel: username, clips: [], error: error.message };
+      this.setCache(cacheKey, result, this.CACHE_TTL.clips);
+      return result;
+    }
+  }
+
   // Simulated responses for demo mode
   getSimulatedResponse(endpoint) {
     if (endpoint.includes('/streams')) {
@@ -245,6 +299,30 @@ class TwitchService {
           display_name: 'Demo User',
           profile_image_url: 'https://via.placeholder.com/300x300.png?text=Demo+User'
         }]
+      };
+    }
+
+    if (endpoint.includes('/clips')) {
+      const now = Date.now();
+      return {
+        data: Array.from({ length: 12 }, (_, index) => {
+          const clipId = `demo_clip_${index + 1}`;
+          return {
+            id: clipId,
+            url: `https://clips.twitch.tv/${clipId}`,
+            embed_url: `https://clips.twitch.tv/embed?clip=${clipId}`,
+            broadcaster_id: '123456789',
+            broadcaster_name: 'Jesski',
+            creator_name: `Viewer${index + 1}`,
+            title: `Demo Clip #${index + 1}`,
+            view_count: Math.floor(Math.random() * 5000) + 50,
+            created_at: new Date(now - ((index + 1) * 3600000)).toISOString(),
+            thumbnail_url: `https://clips-media-assets2.twitch.tv/${clipId}-preview-480x272.jpg`,
+            duration: Math.floor(Math.random() * 45) + 15,
+            language: 'en',
+            game_id: '509658'
+          };
+        })
       };
     }
     
